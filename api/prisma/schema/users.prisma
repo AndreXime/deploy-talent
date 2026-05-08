@@ -1,0 +1,20 @@
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  role         UserRole
+  tenantId     String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  tenant Tenant? @relation(fields: [tenantId], references: [id], onDelete: SetNull)
+
+  sourcedApplications Application[]        @relation("SourcedBy")
+  movedApplications   ApplicationHistory[] @relation("MovedBy")
+  createdEvaluations  Evaluation[]         @relation("EvaluationCreatedBy")
+  candidateProfile    Candidate?
+
+  @@index([tenantId])
+  @@map("users")
+}
+

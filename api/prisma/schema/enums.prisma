@@ -1,0 +1,23 @@
+enum UserRole {
+  SUPER_ADMIN
+  TENANT_ADMIN
+  RECRUITER
+  CANDIDATE
+}
+
+enum JobStatus {
+  DRAFT
+  PUBLISHED
+  PAUSED
+  CLOSED
+}
+
+enum ApplicationStatus {
+  SOURCED
+  APPLIED
+  IN_PROGRESS
+  REJECTED
+  WITHDRAWN
+  HIRED
+}
+
