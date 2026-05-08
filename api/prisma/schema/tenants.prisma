@@ -4,6 +4,10 @@ model Tenant {
   slug      String   @unique
   isActive  Boolean  @default(true)
   deletedAt DateTime?
+  /** Chave S3: `tenants/{id}/logo/{uuid}.{ext}` */
+  logoKey   String?
+  /** Chave S3: `tenants/{id}/banner/{uuid}.{ext}` */
+  bannerKey String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

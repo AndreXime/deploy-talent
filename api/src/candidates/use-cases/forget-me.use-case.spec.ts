@@ -10,8 +10,8 @@ describe('ForgetMeUseCase', () => {
         update: jest.fn(),
       },
     }
-
-    const useCase = new ForgetMeUseCase(prisma as unknown as PrismaClient)
+    const storage = { deleteObject: jest.fn(async () => undefined) }
+    const useCase = new ForgetMeUseCase(prisma as unknown as PrismaClient, storage as never)
 
     await expect(useCase.execute('u1')).rejects.toBeInstanceOf(ForbiddenException)
   })

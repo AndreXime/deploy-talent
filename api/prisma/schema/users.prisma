@@ -4,6 +4,8 @@ model User {
   passwordHash String
   role         UserRole
   tenantId     String?
+  /** Chave S3: `tenants/{tenantId}/users/{userId}/avatar/{uuid}.{ext}` (recrutadores / admins B2B). */
+  avatarKey    String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 

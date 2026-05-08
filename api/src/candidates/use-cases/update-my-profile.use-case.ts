@@ -1,26 +1,48 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common'
 import type { PrismaClient } from '../../../generated/prisma/client'
 import { PRISMA_CLIENT } from '../../infra/prisma/prisma.constants'
+import { StorageService } from '../../infra/storage/storage.service'
+import { assertKeyMatchesCandidateAvatar } from '../../media/media-key.util'
 import type { UpdateCandidateProfileDto } from '../dto/update-candidate-profile.dto'
 
 @Injectable()
 export class UpdateMyProfileUseCase {
-  constructor(@Inject(PRISMA_CLIENT) private readonly prisma: PrismaClient) {}
+  constructor(
+    @Inject(PRISMA_CLIENT) private readonly prisma: PrismaClient,
+    private readonly storage: StorageService,
+  ) {}
 
   async execute(userId: string, input: UpdateCandidateProfileDto) {
     const profile = await this.prisma.candidate.findFirst({
       where: { userId, deletedAt: null },
-      select: { id: true },
+      select: { id: true, avatarKey: true },
     })
     if (!profile) throw new NotFoundException('Candidate profile not found')
 
+    if (input.avatarKey !== undefined) {
+      const next = input.avatarKey.trim() === '' ? null : input.avatarKey.trim()
+      if (next !== null) assertKeyMatchesCandidateAvatar(next, userId)
+      if (profile.avatarKey && profile.avatarKey !== next) {
+        void this.storage.deleteObject(profile.avatarKey).catch(() => undefined)
+      }
+    }
+
+    const data: {
+      name?: string
+      phone?: string
+      resumeUrl?: string
+      avatarKey?: string | null
+    } = {}
+    if (input.name !== undefined) data.name = input.name
+    if (input.phone !== undefined) data.phone = input.phone
+    if (input.resumeUrl !== undefined) data.resumeUrl = input.resumeUrl
+    if (input.avatarKey !== undefined) {
+      data.avatarKey = input.avatarKey.trim() === '' ? null : input.avatarKey.trim()
+    }
+
     return this.prisma.candidate.update({
       where: { id: profile.id },
-      data: {
-        name: input.name,
-        phone: input.phone,
-        resumeUrl: input.resumeUrl,
-      },
+      data,
     })
   }
 }

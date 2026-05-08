@@ -10,7 +10,8 @@ describe('UpdateMyProfileUseCase', () => {
         update: jest.fn(),
       },
     }
-    const useCase = new UpdateMyProfileUseCase(prisma as unknown as PrismaClient)
+    const storage = { deleteObject: jest.fn(async () => undefined) }
+    const useCase = new UpdateMyProfileUseCase(prisma as unknown as PrismaClient, storage as never)
 
     await expect(useCase.execute('u1', { name: 'N' })).rejects.toBeInstanceOf(NotFoundException)
   })

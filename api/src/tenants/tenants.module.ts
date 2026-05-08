@@ -5,6 +5,7 @@ import { CreateTenantUseCase } from './use-cases/create-tenant.use-case'
 import { ListTenantsUseCase } from './use-cases/list-tenants.use-case'
 import { SoftDeleteTenantUseCase } from './use-cases/soft-delete-tenant.use-case'
 import { SuspendTenantUseCase } from './use-cases/suspend-tenant.use-case'
+import { UpdateTenantBrandingUseCase } from './use-cases/update-tenant-branding.use-case'
 
 @Module({
   controllers: [TenantsController],
@@ -14,6 +15,7 @@ import { SuspendTenantUseCase } from './use-cases/suspend-tenant.use-case'
     SuspendTenantUseCase,
     ActivateTenantUseCase,
     SoftDeleteTenantUseCase,
+    UpdateTenantBrandingUseCase,
   ],
 })
 export class TenantsModule {}

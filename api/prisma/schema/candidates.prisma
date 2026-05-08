@@ -5,6 +5,8 @@ model Candidate {
   email        String
   phone        String?
   resumeUrl    String?
+  /** Chave S3: `candidates/{userId}/avatar/{uuid}.{ext}` */
+  avatarKey    String?
   deletedAt    DateTime?
   anonymizedAt DateTime?
   createdAt    DateTime @default(now())

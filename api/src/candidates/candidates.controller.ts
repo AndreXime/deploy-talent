@@ -62,7 +62,11 @@ export class CandidatesController {
   }
 
   @Patch('me')
-  @ApiOperation({ summary: 'Atualizar nome, telefone e URL do currículo' })
+  @ApiOperation({
+    summary: 'Atualizar perfil',
+    description:
+      'Nome, telefone, currículo (URL) e `avatarKey` (chave S3 após `POST /media/presign-upload` com `CANDIDATE_AVATAR`). String vazia em `avatarKey` remove a foto.',
+  })
   @ApiBody({ type: UpdateCandidateProfileDto })
   @ApiOkResponse({ type: CandidateProfileResponseDto })
   async updateMe(@Request() req: RequestWithUser, @Body() body: UpdateCandidateProfileDto) {

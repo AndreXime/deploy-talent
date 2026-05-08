@@ -14,6 +14,11 @@ export class UpdateCandidateProfileDto {
   phone?: string
 
   @IsOptional()
+  @IsString()
+  @MaxLength(512)
+  avatarKey?: string
+
+  @IsOptional()
   @IsUrl()
   @MaxLength(500)
   resumeUrl?: string

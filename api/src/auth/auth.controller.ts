@@ -1,8 +1,10 @@
 import {
   Body,
   Controller,
+  ForbiddenException,
   HttpCode,
   HttpStatus,
+  Patch,
   Post,
   Request,
   UseGuards,
@@ -19,6 +21,7 @@ import {
 } from '@nestjs/swagger'
 import type { User } from '../../generated/prisma/client'
 import { UserRole } from '../../generated/prisma/client'
+import type { JwtPayload } from './jwt-payload'
 // (Jwt payload handled by passport)
 import { AccessTokenDto, ProvisionedUserDto } from '../infra/docs/dto/swagger-responses.dto'
 import { ApiJwtAuth, ApiJwtTenantB2b, ApiStandardErrors } from '../infra/docs/swagger-decorators'
@@ -27,6 +30,7 @@ import { CreateRecruiterDto } from './dto/create-recruiter.dto'
 import { CreateTenantAdminDto } from './dto/create-tenant-admin.dto'
 import { LoginDto } from './dto/login.dto'
 import { RegisterCandidateDto } from './dto/register-candidate.dto'
+import { UpdateB2BAvatarDto } from './dto/update-b2b-avatar.dto'
 import { JwtAuthGuard } from './guards/jwt-auth.guard'
 import { LocalAuthGuard } from './guards/local-auth.guard'
 import { Roles } from './rbac/roles.decorator'
@@ -34,9 +38,14 @@ import { CreateRecruiterUseCase } from './use-cases/create-recruiter.use-case'
 import { CreateTenantAdminUseCase } from './use-cases/create-tenant-admin.use-case'
 import { LoginUseCase } from './use-cases/login.use-case'
 import { RegisterCandidateUseCase } from './use-cases/register-candidate.use-case'
+import { UpdateB2BAvatarUseCase } from './use-cases/update-b2b-avatar.use-case'
 
 interface RequestWithUser extends ExpressRequest {
   user: User
+}
+
+interface RequestWithJwt extends ExpressRequest {
+  user?: JwtPayload
 }
 
 @Controller('auth')
@@ -48,6 +57,7 @@ export class AuthController {
     private readonly registerCandidateUseCase: RegisterCandidateUseCase,
     private readonly createTenantAdminUseCase: CreateTenantAdminUseCase,
     private readonly createRecruiterUseCase: CreateRecruiterUseCase,
+    private readonly updateB2BAvatar: UpdateB2BAvatarUseCase,
   ) {}
 
   @UseGuards(LocalAuthGuard)
@@ -99,5 +109,29 @@ export class AuthController {
   @ApiStandardErrors(true)
   async createRecruiter(@Body() body: CreateRecruiterDto) {
     return this.createRecruiterUseCase.execute(body)
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @TenantRequired()
+  @Roles(UserRole.TENANT_ADMIN, UserRole.RECRUITER)
+  @Patch('me/avatar')
+  @ApiJwtTenantB2b()
+  @ApiOperation({
+    summary: 'Atualizar foto do usuário B2B',
+    description:
+      'Use `POST /media/presign-upload` com `B2B_USER_AVATAR`, envie a `key` aqui. String vazia remove a foto.',
+  })
+  @ApiBody({ type: UpdateB2BAvatarDto })
+  @ApiOkResponse({ description: 'Usuário atualizado (inclui `avatarKey`)' })
+  @ApiStandardErrors(true)
+  async patchMyAvatar(@Request() req: RequestWithJwt, @Body() body: UpdateB2BAvatarDto) {
+    const user = req.user
+    if (!user) throw new ForbiddenException('Missing authentication')
+    return this.updateB2BAvatar.execute(
+      user.sub,
+      user.tenantId,
+      user.role as UserRole,
+      body.avatarKey,
+    )
   }
 }

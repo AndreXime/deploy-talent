@@ -10,6 +10,7 @@ import { CreateRecruiterUseCase } from './use-cases/create-recruiter.use-case'
 import { CreateTenantAdminUseCase } from './use-cases/create-tenant-admin.use-case'
 import { LoginUseCase } from './use-cases/login.use-case'
 import { RegisterCandidateUseCase } from './use-cases/register-candidate.use-case'
+import { UpdateB2BAvatarUseCase } from './use-cases/update-b2b-avatar.use-case'
 import { ValidateLocalUserUseCase } from './use-cases/validate-local-user.use-case'
 
 @Module({
@@ -33,6 +34,7 @@ import { ValidateLocalUserUseCase } from './use-cases/validate-local-user.use-ca
     RegisterCandidateUseCase,
     CreateTenantAdminUseCase,
     CreateRecruiterUseCase,
+    UpdateB2BAvatarUseCase,
     ValidateLocalUserUseCase,
     LocalStrategy,
     JwtStrategy,

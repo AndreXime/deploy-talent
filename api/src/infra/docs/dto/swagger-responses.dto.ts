@@ -17,6 +17,8 @@ export class TenantResponseDto {
   @ApiProperty() slug!: string
   @ApiProperty() isActive!: boolean
   @ApiProperty({ nullable: true, type: String, format: 'date-time' }) deletedAt!: Date | null
+  @ApiProperty({ nullable: true, description: 'Chave S3 do logo' }) logoKey!: string | null
+  @ApiProperty({ nullable: true, description: 'Chave S3 do banner' }) bannerKey!: string | null
   @ApiProperty({ type: String, format: 'date-time' }) createdAt!: Date
   @ApiProperty({ type: String, format: 'date-time' }) updatedAt!: Date
 }
@@ -26,6 +28,8 @@ export class TenantSnippetDto {
   @ApiProperty({ format: 'uuid' }) id!: string
   @ApiProperty() name!: string
   @ApiProperty() slug!: string
+  @ApiProperty({ nullable: true, description: 'Chave S3 do logo' }) logoKey!: string | null
+  @ApiProperty({ nullable: true, description: 'Chave S3 do banner' }) bannerKey!: string | null
 }
 
 /** Vaga no escopo do tenant. */
@@ -50,6 +54,7 @@ export class CandidateProfileResponseDto {
   @ApiProperty({ format: 'email' }) email!: string
   @ApiProperty({ nullable: true }) phone!: string | null
   @ApiProperty({ nullable: true }) resumeUrl!: string | null
+  @ApiProperty({ nullable: true, description: 'Chave S3 do avatar' }) avatarKey!: string | null
   @ApiProperty({ nullable: true, type: String, format: 'date-time' }) deletedAt!: Date | null
   @ApiProperty({ nullable: true, type: String, format: 'date-time' }) anonymizedAt!: Date | null
   @ApiProperty({ type: String, format: 'date-time' }) createdAt!: Date
@@ -126,4 +131,26 @@ export class ProvisionedUserDto {
     enum: ['SUPER_ADMIN', 'TENANT_ADMIN', 'RECRUITER', 'CANDIDATE'],
   })
   role!: string
+}
+
+/** Resposta de presign S3 (`StorageService`). */
+export class PresignedUrlResponseDto {
+  @ApiProperty({ description: 'URL para PUT ou GET conforme operação' }) url!: string
+  @ApiProperty({ description: 'Chave do objeto no bucket' }) key!: string
+  @ApiProperty({ type: String, format: 'date-time' }) expiresAt!: Date
+  @ApiProperty() expiresInSeconds!: number
+}
+
+class PublicBrandingSignedAssetDto {
+  @ApiProperty() url!: string
+  @ApiProperty({ type: String, format: 'date-time' }) expiresAt!: Date
+}
+
+/** Branding público da empresa (career site). */
+export class PublicTenantBrandingResponseDto {
+  @ApiProperty({ nullable: true, type: PublicBrandingSignedAssetDto })
+  logo!: PublicBrandingSignedAssetDto | null
+
+  @ApiProperty({ nullable: true, type: PublicBrandingSignedAssetDto })
+  banner!: PublicBrandingSignedAssetDto | null
 }
