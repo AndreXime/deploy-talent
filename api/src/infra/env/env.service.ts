@@ -152,4 +152,22 @@ export class EnvService {
     if (!value || value.trim().length === 0) return null
     return value
   }
+
+  /**
+   * Origens permitidas para CORS (vírgula). Em PROD, lista vazia = CORS desligado (defina explicitamente).
+   * Em DEV/TEST, lista vazia = `true` (qualquer origem).
+   */
+  get corsOrigins(): true | string[] {
+    const raw = this.config.get<string>('CORS_ORIGINS', { infer: true })
+    if (!raw || raw.trim() === '') {
+      if (this.envMode === 'PROD') {
+        return []
+      }
+      return true
+    }
+    return raw
+      .split(',')
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0)
+  }
 }
