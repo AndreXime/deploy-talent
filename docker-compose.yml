@@ -12,6 +12,23 @@ services:
     volumes:
       - deploy_talent_pgdata:/var/lib/postgresql/data
 
+  localstack:
+    image: localstack/localstack:4.14.0
+    restart: always
+    ports:
+      - "127.0.0.1:4566:4566"
+    environment:
+      SERVICES: s3,ses,lambda,iam,stsc,logs
+      LOG_LEVEL: trace
+      DOCKER_HOST: unix:///var/run/docker.sock
+    volumes:
+      - "localstack_data:/var/lib/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "./setup-localstack.sh:/etc/localstack/init/ready.d/provision.sh"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
 volumes:
   deploy_talent_pgdata:
+  localstack_data:
 
