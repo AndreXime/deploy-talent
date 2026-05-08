@@ -21,11 +21,7 @@ Na pasta `api/`:
 
 ```bash
 npm install
-```
-
-Defina as variáveis de ambiente (veja a tabela abaixo).
-
-```bash
+cp .env.example .env
 npm run prisma:generate
 npm run prisma:migrate
 npm run start:dev
