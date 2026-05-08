@@ -55,5 +55,63 @@ export class EnvService {
     }
     return value
   }
-}
 
+  get awsRegion(): string {
+    const value = this.config.get<string>('AWS_REGION', { infer: true })
+    if (!value || value.trim().length === 0) {
+      throw new Error('Missing AWS_REGION')
+    }
+    return value
+  }
+
+  get s3Bucket(): string {
+    const value = this.config.get<string>('S3_BUCKET', { infer: true })
+    if (!value || value.trim().length === 0) {
+      throw new Error('Missing S3_BUCKET')
+    }
+    return value
+  }
+
+  get s3Endpoint(): string | null {
+    const value = this.config.get<string>('S3_ENDPOINT', { infer: true })
+    if (!value || value.trim().length === 0) return null
+    return value
+  }
+
+  get s3ForcePathStyle(): boolean {
+    const value = this.config.get<string>('S3_FORCE_PATH_STYLE', { infer: true })
+    return value === 'true' || value === '1'
+  }
+
+  get s3AccessKeyId(): string | null {
+    const value = this.config.get<string>('S3_ACCESS_KEY_ID', { infer: true })
+    if (!value || value.trim().length === 0) return null
+    return value
+  }
+
+  get s3SecretAccessKey(): string | null {
+    const value = this.config.get<string>('S3_SECRET_ACCESS_KEY', { infer: true })
+    if (!value || value.trim().length === 0) return null
+    return value
+  }
+
+  get s3PresignTtlSeconds(): number {
+    const value = this.config.get<string>('S3_PRESIGN_TTL_SECONDS', { infer: true })
+    if (!value || value.trim().length === 0) return 900
+    const parsed = Number(value)
+    if (!Number.isInteger(parsed) || parsed < 60 || parsed > 3600) {
+      throw new Error(`Invalid S3_PRESIGN_TTL_SECONDS: "${value}" (expected integer 60..3600)`)
+    }
+    return parsed
+  }
+
+  get s3MaxUploadBytes(): number {
+    const value = this.config.get<string>('S3_MAX_UPLOAD_BYTES', { infer: true })
+    if (!value || value.trim().length === 0) return 10 * 1024 * 1024
+    const parsed = Number(value)
+    if (!Number.isInteger(parsed) || parsed < 1) {
+      throw new Error(`Invalid S3_MAX_UPLOAD_BYTES: "${value}"`)
+    }
+    return parsed
+  }
+}

@@ -5,9 +5,10 @@ import { ApplicationsModule } from './applications/applications.module'
 import { AuthModule } from './auth/auth.module'
 import { RolesGuard } from './auth/rbac/roles.guard'
 import { CandidatesModule } from './candidates/candidates.module'
-import { JobsModule } from './jobs/jobs.module'
 import { EnvModule } from './infra/env/env.module'
 import { PrismaModule } from './infra/prisma/prisma.module'
+import { StorageModule } from './infra/storage/storage.module'
+import { JobsModule } from './jobs/jobs.module'
 import { TenantGuard } from './tenant-context/tenant.guard'
 import { TenantContextMiddleware } from './tenant-context/tenant-context.middleware'
 import { TenantContextModule } from './tenant-context/tenant-context.module'
@@ -23,6 +24,7 @@ import { TenantsModule } from './tenants/tenants.module'
     JobsModule,
     CandidatesModule,
     ApplicationsModule,
+    StorageModule,
   ],
   controllers: [AppController],
   providers: [
