@@ -12,7 +12,7 @@ export class ListJobsUseCase {
 
   async execute() {
     const tenantId = this.tenantContext.getTenantId()
-    if (tenantId === null) throw new BadRequestException('Missing X-Tenant-ID header')
+    if (tenantId === null) throw new BadRequestException('Missing tenant context')
 
     return this.prisma.job.findMany({
       where: { tenantId },

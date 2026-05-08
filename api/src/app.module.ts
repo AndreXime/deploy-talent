@@ -1,5 +1,5 @@
-import { type MiddlewareConsumer, Module, type NestModule } from '@nestjs/common'
-import { APP_GUARD } from '@nestjs/core'
+import { Module } from '@nestjs/common'
+import { APP_INTERCEPTOR, APP_GUARD } from '@nestjs/core'
 import { AppController } from './app.controller'
 import { ApplicationsModule } from './applications/applications.module'
 import { AuthModule } from './auth/auth.module'
@@ -10,8 +10,7 @@ import { EnvModule } from './infra/env/env.module'
 import { PrismaModule } from './infra/prisma/prisma.module'
 import { StorageModule } from './infra/storage/storage.module'
 import { JobsModule } from './jobs/jobs.module'
-import { TenantGuard } from './tenant-context/tenant.guard'
-import { TenantContextMiddleware } from './tenant-context/tenant-context.middleware'
+import { TenantContextInterceptor } from './tenant-context/tenant-context.interceptor'
 import { TenantContextModule } from './tenant-context/tenant-context.module'
 import { TenantsModule } from './tenants/tenants.module'
 
@@ -31,8 +30,8 @@ import { TenantsModule } from './tenants/tenants.module'
   controllers: [AppController],
   providers: [
     {
-      provide: APP_GUARD,
-      useClass: TenantGuard,
+      provide: APP_INTERCEPTOR,
+      useClass: TenantContextInterceptor,
     },
     {
       provide: APP_GUARD,
@@ -40,8 +39,4 @@ import { TenantsModule } from './tenants/tenants.module'
     },
   ],
 })
-export class AppModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer.apply(TenantContextMiddleware).forRoutes('*')
-  }
-}
+export class AppModule {}

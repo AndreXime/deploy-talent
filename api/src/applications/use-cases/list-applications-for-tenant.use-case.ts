@@ -17,7 +17,7 @@ export class ListApplicationsForTenantUseCase {
       throw new ForbiddenException('Only recruiters can list applications')
     }
     const tenantId = this.tenantContext.getTenantId()
-    if (!tenantId) throw new BadRequestException('Missing X-Tenant-ID header')
+    if (!tenantId) throw new BadRequestException('Missing tenant context')
 
     return this.prisma.application.findMany({
       where: { tenantId },

@@ -30,11 +30,9 @@ import {
 } from '../infra/docs/dto/swagger-responses.dto'
 import { ApiJwtAuth, ApiJwtTenantB2b, ApiStandardErrors } from '../infra/docs/swagger-decorators'
 import { TenantOptional, TenantRequired } from '../tenant-context/tenant.decorators'
-import { ApplyDto } from './dto/apply.dto'
 import { CreateEvaluationDto } from './dto/create-evaluation.dto'
 import { MoveApplicationDto } from './dto/move-application.dto'
 import { SourceDto } from './dto/source.dto'
-import { ApplyToJobUseCase } from './use-cases/apply-to-job.use-case'
 import { CreateEvaluationUseCase } from './use-cases/create-evaluation.use-case'
 import { ListApplicationsForTenantUseCase } from './use-cases/list-applications-for-tenant.use-case'
 import { ListMyApplicationsUseCase } from './use-cases/list-my-applications.use-case'
@@ -56,29 +54,12 @@ function requireUser(req: RequestWithUser): JwtPayload {
 @UseGuards(JwtAuthGuard)
 export class ApplicationsController {
   constructor(
-    private readonly applyToJob: ApplyToJobUseCase,
     private readonly sourceCandidate: SourceCandidateUseCase,
     private readonly listApplicationsForTenant: ListApplicationsForTenantUseCase,
     private readonly listMyApplications: ListMyApplicationsUseCase,
     private readonly moveApplication: MoveApplicationUseCase,
     private readonly createEvaluationUseCase: CreateEvaluationUseCase,
   ) {}
-
-  @Post('apply')
-  @TenantRequired()
-  @Roles(UserRole.CANDIDATE)
-  @ApiJwtTenantB2b()
-  @ApiOperation({
-    summary: 'Candidatar-se a uma vaga publicada ou pausada',
-    description: '`CANDIDATE` + tenant da empresa na qual está se candidatando.',
-  })
-  @ApiBody({ type: ApplyDto })
-  @ApiCreatedResponse({ type: ApplicationResponseDto })
-  @ApiStandardErrors(true)
-  async apply(@Request() req: RequestWithUser, @Body() body: ApplyDto) {
-    const user = requireUser(req)
-    return this.applyToJob.execute({ userId: user.sub, role: user.role as UserRole }, body)
-  }
 
   @Post('sourced')
   @TenantRequired()

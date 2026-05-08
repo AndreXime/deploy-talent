@@ -9,11 +9,12 @@ export function buildOpenApiConfig() {
         '',
         '### Autenticação',
         '- **Bearer JWT**: obtido via `POST /auth/login`, `POST /auth/register/candidate` ou provisioning admin.',
-        '- **Tenant**: onde indicado nas rotas, envie `X-Tenant-ID` com o **UUID do registro `Tenant`** (não usar slug neste header).',
+        '- **Tenant (B2B)**: `RECRUITER`/`TENANT_ADMIN` — o tenant vem do **JWT** (sem header).',
+        '- **Candidato em rotas por empresa**: use o **UUID do tenant na URL** (ex.: candidatura a uma vaga).',
         '',
         '### Papéis (JWT `role`)',
         '- `SUPER_ADMIN`: gestão de tenants (plataforma).',
-        '- `TENANT_ADMIN`: configura empresa e convida `RECRUITER` (precisa tenant no header onde aplicável).',
+        '- `TENANT_ADMIN`: configura empresa e convida `RECRUITER` (tenant no JWT).',
         '- `RECRUITER`: vagas e pipeline no tenant atual.',
         '- `CANDIDATE`: perfil global e candidaturas.',
       ].join('\n'),
@@ -27,15 +28,6 @@ export function buildOpenApiConfig() {
         description: 'Cole aqui o `access_token` retornado pelo login/register.',
       },
       'bearer',
-    )
-    .addApiKey(
-      {
-        type: 'apiKey',
-        in: 'header',
-        name: 'X-Tenant-ID',
-        description: '`Tenant.id` (UUID) da empresa atual. Obrigatório nas rotas B2B marcadas nesta spec.',
-      },
-      'tenant',
     )
     .addTag(
       'Health',
@@ -51,11 +43,11 @@ export function buildOpenApiConfig() {
     )
     .addTag(
       'Jobs',
-      'Vagas do tenant atual. **`TENANT_ADMIN`/`RECRUITER` + Bearer + `X-Tenant-ID`**.',
+      'Vagas do tenant atual. **`TENANT_ADMIN`/`RECRUITER` + Bearer** (tenant no JWT).',
     )
     .addTag(
       'Candidates',
-      'Perfil B2C (one-profile). **`CANDIDATE` + Bearer**. `X-Tenant-ID` não é necessário nestes endpoints.',
+      'Perfil B2C (one-profile). **`CANDIDATE` + Bearer**. Rotas de perfil sem tenant na URL.',
     )
     .addTag(
       'Applications',

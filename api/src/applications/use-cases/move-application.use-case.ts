@@ -17,7 +17,7 @@ export class MoveApplicationUseCase {
       throw new ForbiddenException('Only recruiters can move applications')
     }
     const tenantId = this.tenantContext.getTenantId()
-    if (!tenantId) throw new BadRequestException('Missing X-Tenant-ID header')
+    if (!tenantId) throw new BadRequestException('Missing tenant context')
 
     const app = await this.prisma.application.findFirst({
       where: { id: applicationId, tenantId },

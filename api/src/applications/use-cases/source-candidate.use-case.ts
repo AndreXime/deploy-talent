@@ -19,7 +19,7 @@ export class SourceCandidateUseCase {
     }
 
     const tenantId = this.tenantContext.getTenantId()
-    if (!tenantId) throw new BadRequestException('Missing X-Tenant-ID header')
+    if (!tenantId) throw new BadRequestException('Missing tenant context')
 
     const job = await this.prisma.job.findFirst({
       where: { id: input.jobId, tenantId },

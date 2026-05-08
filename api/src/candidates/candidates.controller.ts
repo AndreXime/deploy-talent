@@ -15,17 +15,17 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger'
-import { UserRole } from '../../generated/prisma/client'
-import type { JwtPayload } from '../auth/jwt-payload'
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
-import { Roles } from '../auth/rbac/roles.decorator'
-import { CandidateProfileResponseDto } from '../infra/docs/dto/swagger-responses.dto'
-import { ApiJwtAuth, ApiStandardErrors } from '../infra/docs/swagger-decorators'
-import { TenantOptional } from '../tenant-context/tenant.decorators'
-import { UpdateCandidateProfileDto } from './dto/update-candidate-profile.dto'
-import { ForgetMeUseCase } from './use-cases/forget-me.use-case'
-import { GetMyProfileUseCase } from './use-cases/get-my-profile.use-case'
-import { UpdateMyProfileUseCase } from './use-cases/update-my-profile.use-case'
+import { UserRole } from '../../generated/prisma/client.js'
+import type { JwtPayload } from '../auth/jwt-payload.js'
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js'
+import { Roles } from '../auth/rbac/roles.decorator.js'
+import { CandidateProfileResponseDto } from '../infra/docs/dto/swagger-responses.dto.js'
+import { ApiJwtAuth, ApiStandardErrors } from '../infra/docs/swagger-decorators.js'
+import { TenantOptional } from '../tenant-context/tenant.decorators.js'
+import { UpdateCandidateProfileDto } from './dto/update-candidate-profile.dto.js'
+import { ForgetMeUseCase } from './use-cases/forget-me.use-case.js'
+import { GetMyProfileUseCase } from './use-cases/get-my-profile.use-case.js'
+import { UpdateMyProfileUseCase } from './use-cases/update-my-profile.use-case.js'
 
 interface RequestWithUser extends ExpressRequest {
   user?: JwtPayload
@@ -54,7 +54,7 @@ export class CandidatesController {
   @Get('me')
   @ApiOperation({
     summary: 'Perfil global do candidato',
-    description: '`X-Tenant-ID` não é necessário.',
+    description: 'Sem tenant na URL para estes endpoints.',
   })
   @ApiOkResponse({ type: CandidateProfileResponseDto })
   async me(@Request() req: RequestWithUser) {

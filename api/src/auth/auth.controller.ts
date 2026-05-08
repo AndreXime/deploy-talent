@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   HttpCode,
@@ -24,7 +23,6 @@ import { UserRole } from '../../generated/prisma/client'
 import { AccessTokenDto, ProvisionedUserDto } from '../infra/docs/dto/swagger-responses.dto'
 import { ApiJwtAuth, ApiJwtTenantB2b, ApiStandardErrors } from '../infra/docs/swagger-decorators'
 import { TenantOptional, TenantRequired } from '../tenant-context/tenant.decorators'
-import { TenantContextService } from '../tenant-context/tenant-context.service'
 import { CreateRecruiterDto } from './dto/create-recruiter.dto'
 import { CreateTenantAdminDto } from './dto/create-tenant-admin.dto'
 import { LoginDto } from './dto/login.dto'
@@ -50,7 +48,6 @@ export class AuthController {
     private readonly registerCandidateUseCase: RegisterCandidateUseCase,
     private readonly createTenantAdminUseCase: CreateTenantAdminUseCase,
     private readonly createRecruiterUseCase: CreateRecruiterUseCase,
-    private readonly tenantContext: TenantContextService,
   ) {}
 
   @UseGuards(LocalAuthGuard)
@@ -96,13 +93,11 @@ export class AuthController {
   @ApiJwtTenantB2b()
   @ApiOperation({
     summary: 'Convidar recrutador no tenant atual',
-    description: '`TENANT_ADMIN` + `X-Tenant-ID` do tenant que está convidando.',
+    description: '`TENANT_ADMIN`; tenant vem do JWT.',
   })
   @ApiCreatedResponse({ type: ProvisionedUserDto })
   @ApiStandardErrors(true)
   async createRecruiter(@Body() body: CreateRecruiterDto) {
-    const tenantId = this.tenantContext.getTenantId()
-    if (!tenantId) throw new BadRequestException('Missing X-Tenant-ID header')
-    return this.createRecruiterUseCase.execute({ tenantId, ...body })
+    return this.createRecruiterUseCase.execute(body)
   }
 }

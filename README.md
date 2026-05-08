@@ -63,17 +63,18 @@ npm run start:prod
 ## Autenticação e tenant
 
 - **JWT:** envie `Authorization: Bearer <access_token>`. O payload inclui `sub` (id do usuário), `role` e `tenantId` (pode ser `null`, ex.: candidato ou super admin).
-- **Header de tenant:** nas rotas que exigem contexto B2B, envie `X-Tenant-ID` com o **UUID** do registro `Tenant` (não o slug). O `TenantGuard` valida tenant ativo, não soft-deletado.
-- **Contexto assíncrono:** `TenantContextMiddleware` grava o tenant em `AsyncLocalStorage`; o cliente Prisma estende queries de `job`, `application`, `applicationHistory` e `evaluation` para injetar/limitar por `tenantId` quando o header está presente — camada extra de isolamento além das regras dos use cases.
+- **Tenant B2B (`RECRUITER` / `TENANT_ADMIN`):** o tenant vem do campo `tenantId` do **JWT** (não envie header). Um interceptor valida que o tenant existe e está ativo e grava o contexto em `AsyncLocalStorage`.
+- **Candidato em rotas “por empresa”:** use o **UUID do tenant na URL** (ex.: `POST /tenants/:tenantId/applications/apply`), não o header.
+- **Contexto assíncrono:** o cliente Prisma estende queries de `job`, `application`, `applicationHistory` e `evaluation` para injetar/limitar por `tenantId` quando o contexto está definido — camada extra de isolamento além das regras dos use cases.
 
 ## Papéis
 
 | Papel | Uso típico na API |
 |-------|-------------------|
 | `SUPER_ADMIN` | Criar/listar/suspender/ativar/soft-delete tenants; Criar `TENANT_ADMIN`. |
-| `TENANT_ADMIN` | Convidar `RECRUITER`; vagas e pipeline no tenant do header. |
-| `RECRUITER` | Mesmo escopo operacional de vagas/candidaturas do tenant (com o header). |
-| `CANDIDATE` | Registro/login; perfil `GET/PATCH/DELETE /candidates/me`; candidaturas e listagem `applications/me`; aplicar em vaga com `X-Tenant-ID` da empresa. |
+| `TENANT_ADMIN` | Convidar `RECRUITER`; vagas e pipeline no tenant do **JWT**. |
+| `RECRUITER` | Mesmo escopo operacional de vagas/candidaturas no tenant do **JWT**. |
+| `CANDIDATE` | Registro/login; perfil `GET/PATCH/DELETE /candidates/me`; candidaturas e listagem `applications/me`; candidatar com UUID do tenant na URL (`POST /tenants/:tenantId/applications/apply`). |
 
 ## Domínio implementado (visão rápida)
 

@@ -16,7 +16,7 @@ export class ApplyToJobUseCase {
     if (actor.role !== UserRole.CANDIDATE) throw new ForbiddenException('Only candidates can apply')
 
     const tenantId = this.tenantContext.getTenantId()
-    if (!tenantId) throw new BadRequestException('Missing X-Tenant-ID header')
+    if (!tenantId) throw new BadRequestException('Missing tenant context')
 
     const candidate = await this.prisma.candidate.findFirst({
       where: { userId: actor.userId, deletedAt: null },

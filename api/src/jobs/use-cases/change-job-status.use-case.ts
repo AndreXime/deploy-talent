@@ -18,7 +18,7 @@ export class ChangeJobStatusUseCase {
 
   async execute(jobId: string, next: JobStatus) {
     const tenantId = this.tenantContext.getTenantId()
-    if (tenantId === null) throw new BadRequestException('Missing X-Tenant-ID header')
+    if (tenantId === null) throw new BadRequestException('Missing tenant context')
 
     const job = await this.prisma.job.findFirst({
       where: { id: jobId, tenantId },

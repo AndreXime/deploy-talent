@@ -18,7 +18,7 @@ export class CreateEvaluationUseCase {
       throw new ForbiddenException('Only recruiters can evaluate')
     }
     const tenantId = this.tenantContext.getTenantId()
-    if (!tenantId) throw new BadRequestException('Missing X-Tenant-ID header')
+    if (!tenantId) throw new BadRequestException('Missing tenant context')
 
     const app = await this.prisma.application.findFirst({
       where: { id: input.applicationId, tenantId },

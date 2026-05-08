@@ -14,7 +14,7 @@ export class CreateJobUseCase {
   async execute(input: CreateJobDto) {
     const tenantId = this.tenantContext.getTenantId()
     if (tenantId === null) {
-      throw new BadRequestException('Missing X-Tenant-ID header')
+      throw new BadRequestException('Missing tenant context')
     }
 
     return this.prisma.job.create({

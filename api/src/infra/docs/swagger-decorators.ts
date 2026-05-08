@@ -5,7 +5,6 @@ import {
   ApiForbiddenResponse,
   ApiBearerAuth as ApiJwtBearer,
   ApiNotFoundResponse,
-  ApiSecurity,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger'
 
@@ -14,14 +13,9 @@ export function ApiJwtAuth() {
   return applyDecorators(ApiJwtBearer('bearer'))
 }
 
-/** Rotas tenant-scoped: enviar `X-Tenant-ID` = `Tenant.id` (UUID). */
-export function ApiTenantScoped() {
-  return applyDecorators(ApiSecurity('tenant'))
-}
-
-/** Bearer + tenant (B2B). */
+/** Bearer apenas; tenant B2B vem do JWT. */
 export function ApiJwtTenantB2b() {
-  return applyDecorators(ApiJwtBearer('bearer'), ApiSecurity('tenant'))
+  return applyDecorators(ApiJwtBearer('bearer'))
 }
 
 /** Erros comuns do filtro HTTP + RBAC / tenant guards. */
@@ -41,7 +35,10 @@ export function ApiStandardErrors(includeConflict = false) {
       },
     }),
     ApiUnauthorizedResponse({ description: 'Token ausente, inválido ou expirado' }),
-    ApiForbiddenResponse({ description: 'Papel insuficiente, tenant suspenso ou header `X-Tenant-ID` obrigatório/ausente' }),
+    ApiForbiddenResponse({
+      description:
+        'Papel insuficiente, tenant suspenso/inexistente ou contexto de tenant obrigatório/ausente',
+    }),
     ApiNotFoundResponse({ description: 'Registro solicitado não encontrado neste tenant' }),
   ]
 

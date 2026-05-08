@@ -1,5 +1,6 @@
 import { SetMetadata } from '@nestjs/common'
-import { IS_TENANT_REQUIRED } from './tenant.guard'
+
+export const IS_TENANT_REQUIRED = 'isTenantRequired'
 
 export function TenantRequired() {
   return SetMetadata(IS_TENANT_REQUIRED, true)
