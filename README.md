@@ -15,6 +15,26 @@ Código da API: [`api/`](api/). Regras de negócio detalhadas: [`api/requirement
 - **Documentação:** OpenAPI/Swagger
 - **Qualidade:** Biome (lint/format), Jest  
 
+## Funcionalidades do sistema
+
+Visão orientada ao que a API expõe hoje (detalhe de regras e estados: [`api/requirements.md`](api/requirements.md)).
+
+- **Multi-tenant (empresas):** Cada organização é um *tenant* com dados isolados por `tenant_id`. Um administrador da plataforma (`SUPER_ADMIN`) gere o ciclo de vida dos tenants; dentro da empresa, `TENANT_ADMIN` e `RECRUITER` trabalham só no contexto do tenant do JWT.
+
+- **Vagas e página de carreiras:** Criação e edição de vagas com ciclo `DRAFT` → `PUBLISHED` / `PAUSED` → `CLOSED`. Endpoints **públicos** listam e mostram vagas elegíveis por `tenantId` (site de emprego por empresa). Novas candidaturas só em vagas publicadas ou pausadas.
+
+- **Perfil único do candidato (*one-profile*):** O candidato tem um perfil global (nome, contactos, currículo, etc.); alterações refletem em todas as candidaturas ativas. Pode **anonimizar a conta** (pedido de “esquecimento”, estilo LGPD) com remoção de dados identificáveis do perfil.
+
+- **Candidaturas e pipeline:** O candidato candidata-se com o UUID do tenant na URL; vê as suas candidaturas e pode **desistir** (`WITHDRAWN`). Recrutadores fazem **sourcing** (`SOURCED`), movem o processo entre estados (`IN_PROGRESS`, `REJECTED`, `HIRED`, …) com **histórico de auditoria** (quem mudou, quando, estágios opcionais).
+
+- **Avaliações internas:** Notas de entrevista ou pareceres por candidatura (`Evaluation`), criadas e lidas apenas no lado da empresa — o candidato não acede a este conteúdo.
+
+- **E-mail transacional (SES):** Envio automático ao candidato na **submissão da candidatura**, ao ser marcado como **contratado** (`HIRED`) e ao ser **rejeitado** (`REJECTED`). Falhas de envio não impedem a operação principal (ficam registadas no log).
+
+- **Ficheiros e marca:** Upload para S3 via **URL pré-assinada** (avatar do candidato; logo e banner do tenant). Download autorizado também por URL pré-assinada, segundo o papel e o prefixo da chave. Há recurso público de **branding** do tenant quando aplicável.
+
+- **Segurança e operação:** Autenticação JWT com papéis (RBAC), CORS configurável por ambiente, Helmet em produção, **limite de pedidos** global (throttling) e **health check** para monitorização. Fora de `PROD`, a documentação interativa Swagger está disponível em `/docs`.
+
 ## Como rodar
 
 Na pasta `api/`:
