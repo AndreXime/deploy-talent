@@ -1,28 +1,30 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common'
-import type { JobStatus, PrismaClient } from '../../../generated/prisma/client'
+import { JobStatus, type PrismaClient } from '../../../generated/prisma/client'
 import { resolvePagination } from '../../common/dto/pagination-query.dto'
 import { PRISMA_CLIENT } from '../../infra/prisma/prisma.constants'
 import { TenantContextService } from '../../tenant-context/tenant-context.service'
 
-export interface ListJobsInput {
+export interface ListPublicJobsInput {
   page?: number
   limit?: number
-  status?: JobStatus
 }
 
 @Injectable()
-export class ListJobsUseCase {
+export class ListPublicJobsForTenantUseCase {
   constructor(
     @Inject(PRISMA_CLIENT) private readonly prisma: PrismaClient,
     private readonly tenantContext: TenantContextService,
   ) {}
 
-  async execute(input: ListJobsInput = {}) {
+  async execute(input: ListPublicJobsInput) {
     const tenantId = this.tenantContext.getTenantId()
     if (tenantId === null) throw new BadRequestException('Missing tenant context')
 
     const { page, limit, skip, take } = resolvePagination(input.page, input.limit)
-    const where = input.status !== undefined ? { status: input.status } : {}
+
+    const where = {
+      status: { in: [JobStatus.PUBLISHED, JobStatus.PAUSED] },
+    }
 
     const [items, total] = await Promise.all([
       this.prisma.job.findMany({

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, UseGuards } from '@nestjs/common'
+import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common'
 import {
   ApiBody,
   ApiCreatedResponse,
@@ -15,9 +15,11 @@ import { ApiJwtTenantB2b, ApiStandardErrors } from '../infra/docs/swagger-decora
 import { TenantRequired } from '../tenant-context/tenant.decorators'
 import { ChangeJobStatusDto } from './dto/change-job-status.dto'
 import { CreateJobDto } from './dto/create-job.dto'
+import { ListJobsQueryDto } from './dto/list-jobs-query.dto'
 import { UpdateJobDto } from './dto/update-job.dto'
 import { ChangeJobStatusUseCase } from './use-cases/change-job-status.use-case'
 import { CreateJobUseCase } from './use-cases/create-job.use-case'
+import { GetJobUseCase } from './use-cases/get-job.use-case'
 import { ListJobsUseCase } from './use-cases/list-jobs.use-case'
 import { UpdateJobUseCase } from './use-cases/update-job.use-case'
 
@@ -32,6 +34,7 @@ export class JobsController {
   constructor(
     private readonly createJob: CreateJobUseCase,
     private readonly listJobs: ListJobsUseCase,
+    private readonly getJob: GetJobUseCase,
     private readonly updateJob: UpdateJobUseCase,
     private readonly changeJobStatus: ChangeJobStatusUseCase,
   ) {}
@@ -45,10 +48,18 @@ export class JobsController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Listar vagas do tenant atual' })
-  @ApiOkResponse({ type: JobResponseDto, isArray: true })
-  async list() {
-    return this.listJobs.execute()
+  @ApiOperation({ summary: 'Listar vagas do tenant atual (paginação e filtro por status)' })
+  @ApiOkResponse({ description: '`items`, `total`, `page`, `limit`' })
+  async list(@Query() query: ListJobsQueryDto) {
+    return this.listJobs.execute({ page: query.page, limit: query.limit, status: query.status })
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Obter vaga por id (tenant do JWT)' })
+  @ApiParam({ name: 'id', format: 'uuid' })
+  @ApiOkResponse({ type: JobResponseDto })
+  async getOne(@Param('id') id: string) {
+    return this.getJob.execute(id)
   }
 
   @Patch(':id')
