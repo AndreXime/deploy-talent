@@ -1,10 +1,12 @@
 import { Module } from '@nestjs/common'
-import { APP_INTERCEPTOR, APP_GUARD } from '@nestjs/core'
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core'
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler'
 import { AppController } from './app.controller'
 import { ApplicationsModule } from './applications/applications.module'
 import { AuthModule } from './auth/auth.module'
 import { RolesGuard } from './auth/rbac/roles.guard'
 import { CandidatesModule } from './candidates/candidates.module'
+import { HealthModule } from './health/health.module'
 import { EmailModule } from './infra/email/email.module'
 import { EnvModule } from './infra/env/env.module'
 import { PrismaModule } from './infra/prisma/prisma.module'
@@ -17,6 +19,14 @@ import { TenantsModule } from './tenants/tenants.module'
 @Module({
   imports: [
     EnvModule,
+    ThrottlerModule.forRoot({
+      throttlers: [
+        {
+          ttl: 60_000,
+          limit: 120,
+        },
+      ],
+    }),
     TenantContextModule,
     PrismaModule,
     AuthModule,
@@ -26,12 +36,17 @@ import { TenantsModule } from './tenants/tenants.module'
     ApplicationsModule,
     StorageModule,
     EmailModule,
+    HealthModule,
   ],
   controllers: [AppController],
   providers: [
     {
       provide: APP_INTERCEPTOR,
       useClass: TenantContextInterceptor,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
     },
     {
       provide: APP_GUARD,
