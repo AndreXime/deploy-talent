@@ -5,6 +5,7 @@ import { ApplicationsModule } from './applications/applications.module'
 import { AuthModule } from './auth/auth.module'
 import { RolesGuard } from './auth/rbac/roles.guard'
 import { CandidatesModule } from './candidates/candidates.module'
+import { EmailModule } from './infra/email/email.module'
 import { EnvModule } from './infra/env/env.module'
 import { PrismaModule } from './infra/prisma/prisma.module'
 import { StorageModule } from './infra/storage/storage.module'
@@ -25,6 +26,7 @@ import { TenantsModule } from './tenants/tenants.module'
     CandidatesModule,
     ApplicationsModule,
     StorageModule,
+    EmailModule,
   ],
   controllers: [AppController],
   providers: [

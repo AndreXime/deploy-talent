@@ -114,4 +114,42 @@ export class EnvService {
     }
     return parsed
   }
+
+  get emailFrom(): string {
+    const value = this.config.get<string>('EMAIL_FROM', { infer: true })
+    if (!value || value.trim().length === 0) {
+      throw new Error('Missing EMAIL_FROM')
+    }
+    return value
+  }
+
+  get emailReplyTo(): string | null {
+    const value = this.config.get<string>('EMAIL_REPLY_TO', { infer: true })
+    if (!value || value.trim().length === 0) return null
+    return value
+  }
+
+  get emailEndpoint(): string | null {
+    const value = this.config.get<string>('EMAIL_ENDPOINT', { infer: true })
+    if (!value || value.trim().length === 0) return null
+    return value
+  }
+
+  get emailAccessKeyId(): string | null {
+    const value = this.config.get<string>('EMAIL_ACCESS_KEY_ID', { infer: true })
+    if (!value || value.trim().length === 0) return null
+    return value
+  }
+
+  get emailSecretAccessKey(): string | null {
+    const value = this.config.get<string>('EMAIL_SECRET_ACCESS_KEY', { infer: true })
+    if (!value || value.trim().length === 0) return null
+    return value
+  }
+
+  get emailConfigurationSet(): string | null {
+    const value = this.config.get<string>('EMAIL_CONFIGURATION_SET', { infer: true })
+    if (!value || value.trim().length === 0) return null
+    return value
+  }
 }
