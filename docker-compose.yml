@@ -1,0 +1,17 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: deploy-talent-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: deploy_talent
+      POSTGRES_USER: deploy_talent
+      POSTGRES_PASSWORD: deploy_talent
+    ports:
+      - "5432:5432"
+    volumes:
+      - deploy_talent_pgdata:/var/lib/postgresql/data
+
+volumes:
+  deploy_talent_pgdata:
+
