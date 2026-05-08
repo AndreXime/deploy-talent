@@ -1,9 +1,16 @@
 import { ForbiddenException, NotFoundException } from '@nestjs/common'
 import { JobStatus, type PrismaClient, UserRole } from '../../../generated/prisma/client'
+import { CandidateApplicationEmailNotifier } from '../candidate-application-email.notifier'
 import { TenantContextService } from '../../tenant-context/tenant-context.service'
 import { ApplyToJobUseCase } from './apply-to-job.use-case'
 
 describe('ApplyToJobUseCase', () => {
+  const candidateEmails = {
+    notifyApplicationSubmitted: jest.fn(),
+    notifyHired: jest.fn(),
+    notifyRejected: jest.fn(),
+  } as unknown as CandidateApplicationEmailNotifier
+
   it('rejects non-candidate actor', async () => {
     const prisma = {
       candidate: { findFirst: jest.fn() },
@@ -15,6 +22,7 @@ describe('ApplyToJobUseCase', () => {
     const useCase = new ApplyToJobUseCase(
       prisma as unknown as PrismaClient,
       tenantContext as unknown as TenantContextService,
+      candidateEmails,
     )
 
     await expect(
@@ -35,6 +43,7 @@ describe('ApplyToJobUseCase', () => {
     const useCase = new ApplyToJobUseCase(
       prisma as unknown as PrismaClient,
       tenantContext as unknown as TenantContextService,
+      candidateEmails,
     )
 
     await expect(
@@ -53,6 +62,7 @@ describe('ApplyToJobUseCase', () => {
     const useCase = new ApplyToJobUseCase(
       prisma as unknown as PrismaClient,
       tenantContext as unknown as TenantContextService,
+      candidateEmails,
     )
 
     await expect(

@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common'
+import { CandidateApplicationEmailNotifier } from './candidate-application-email.notifier'
 import { ApplicationsController } from './applications.controller'
 import { TenantCandidateApplicationsController } from './tenant-candidate-applications.controller'
 import { ApplyToJobUseCase } from './use-cases/apply-to-job.use-case'
@@ -17,6 +18,7 @@ import { WithdrawMyApplicationUseCase } from './use-cases/withdraw-my-applicatio
 @Module({
   controllers: [ApplicationsController, TenantCandidateApplicationsController],
   providers: [
+    CandidateApplicationEmailNotifier,
     ApplyToJobUseCase,
     SourceCandidateUseCase,
     ListApplicationsForTenantUseCase,

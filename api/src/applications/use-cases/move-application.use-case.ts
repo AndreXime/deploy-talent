@@ -1,5 +1,6 @@
 import { BadRequestException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common'
 import { ApplicationStatus, type PrismaClient, UserRole } from '../../../generated/prisma/client'
+import { CandidateApplicationEmailNotifier } from '../candidate-application-email.notifier'
 import { PRISMA_CLIENT } from '../../infra/prisma/prisma.constants'
 import { TenantContextService } from '../../tenant-context/tenant-context.service'
 import type { MoveApplicationDto } from '../dto/move-application.dto'
@@ -10,6 +11,7 @@ export class MoveApplicationUseCase {
   constructor(
     @Inject(PRISMA_CLIENT) private readonly prisma: PrismaClient,
     private readonly tenantContext: TenantContextService,
+    private readonly candidateEmails: CandidateApplicationEmailNotifier,
   ) {}
 
   async execute(actor: Actor, applicationId: string, input: MoveApplicationDto) {
@@ -21,6 +23,11 @@ export class MoveApplicationUseCase {
 
     const app = await this.prisma.application.findFirst({
       where: { id: applicationId, tenantId },
+      include: {
+        candidate: { select: { name: true, email: true } },
+        job: { select: { title: true } },
+        tenant: { select: { name: true } },
+      },
     })
     if (!app) throw new NotFoundException('Application not found')
 
@@ -47,6 +54,20 @@ export class MoveApplicationUseCase {
         toStage: input.stage ?? null,
       },
     })
+
+    if (app.status !== input.status) {
+      const ctx = {
+        recipientEmail: app.candidate.email,
+        candidateName: app.candidate.name,
+        jobTitle: app.job.title,
+        companyName: app.tenant.name,
+      }
+      if (input.status === ApplicationStatus.HIRED) {
+        await this.candidateEmails.notifyHired(ctx)
+      } else if (input.status === ApplicationStatus.REJECTED) {
+        await this.candidateEmails.notifyRejected(ctx)
+      }
+    }
 
     return updated
   }
