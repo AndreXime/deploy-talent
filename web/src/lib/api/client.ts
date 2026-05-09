@@ -79,7 +79,8 @@ export async function apiRequest<T>(path: string, options: ApiRequestOptions = {
     body: json !== undefined ? JSON.stringify(json) : undefined,
   })
 
-  if (res.status === 401) {
+  // 401 sem token diz respeito ao recurso (ex.: rota protegida), não à sessão local.
+  if (res.status === 401 && token) {
     dispatchUnauthorized()
   }
 
