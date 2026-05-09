@@ -12,23 +12,44 @@ services:
     volumes:
       - deploy_talent_pgdata:/var/lib/postgresql/data
 
-  localstack:
-    image: localstack/localstack:4.14.0
-    restart: always
+  minio:
+    image: minio/minio:latest
+    container_name: deploy-talent-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
     ports:
-      - "127.0.0.1:4566:4566"
+      - "127.0.0.1:9000:9000"
+      - "127.0.0.1:9001:9001"
     environment:
-      SERVICES: s3,ses,lambda,iam,stsc,logs
-      LOG_LEVEL: trace
-      DOCKER_HOST: unix:///var/run/docker.sock
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
     volumes:
-      - "localstack_data:/var/lib/localstack"
-      - "/var/run/docker.sock:/var/run/docker.sock"
-      - "./setup-localstack.sh:/etc/localstack/init/ready.d/provision.sh"
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - deploy_talent_minio:/data
+
+  minio-setup:
+    image: minio/mc:latest
+    container_name: deploy-talent-minio-setup
+    depends_on:
+      - minio
+    volumes:
+      - ./docker/minio-cors.xml:/config/cors.xml:ro
+      - ./docker/setup-minio.sh:/setup-minio.sh:ro
+    environment:
+      MINIO_HOST: minio
+      MINIO_PORT: "9000"
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    entrypoint: ["/bin/sh", "/setup-minio.sh"]
+    restart: "no"
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: deploy-talent-mailpit
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:1025:1025"
+      - "127.0.0.1:8025:8025"
 
 volumes:
   deploy_talent_pgdata:
-  localstack_data:
-
+  deploy_talent_minio:

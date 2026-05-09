@@ -1,7 +1,7 @@
-import { SESv2Client, SendEmailCommand } from '@aws-sdk/client-sesv2'
 import { Injectable, Logger } from '@nestjs/common'
+import nodemailer from 'nodemailer'
 import { EnvService } from '../env/env.service'
-import { EMAIL_CHARSET, normalizeRecipients } from './email.constants'
+import { normalizeRecipients } from './email.constants'
 
 export interface SendEmailInput {
   to: string | string[]
@@ -21,18 +21,16 @@ export interface SentEmail {
 @Injectable()
 export class EmailService {
   private readonly logger = new Logger(EmailService.name)
-  private readonly client: SESv2Client
+  private readonly transporter
 
   constructor(private readonly env: EnvService) {
-    this.client = new SESv2Client({
-      region: this.env.awsRegion,
-      endpoint: this.env.emailEndpoint ?? undefined,
-      credentials:
-        this.env.emailAccessKeyId !== null && this.env.emailSecretAccessKey !== null
-          ? {
-              accessKeyId: this.env.emailAccessKeyId,
-              secretAccessKey: this.env.emailSecretAccessKey,
-            }
+    this.transporter = nodemailer.createTransport({
+      host: this.env.smtpHost,
+      port: this.env.smtpPort,
+      secure: this.env.smtpSecure,
+      auth:
+        this.env.smtpUser !== null && this.env.smtpPassword !== null
+          ? { user: this.env.smtpUser, pass: this.env.smtpPassword }
           : undefined,
     })
   }
@@ -42,38 +40,32 @@ export class EmailService {
       throw new Error('Email body must include html or text content')
     }
 
-    const to = normalizeRecipients(input.to)
-    if (to.length === 0) throw new Error('Email must have at least one "to" recipient')
+    const toRaw = normalizeRecipients(input.to)
+    if (toRaw.length === 0) throw new Error('Email must have at least one "to" recipient')
 
-    const replyTo = normalizeRecipients(input.replyTo ?? this.env.emailReplyTo ?? undefined)
-
-    const command = new SendEmailCommand({
-      FromEmailAddress: input.from ?? this.env.emailFrom,
-      Destination: {
-        ToAddresses: to,
-        CcAddresses: normalizeRecipients(input.cc),
-        BccAddresses: normalizeRecipients(input.bcc),
-      },
-      ReplyToAddresses: replyTo.length > 0 ? replyTo : undefined,
-      ConfigurationSetName: this.env.emailConfigurationSet ?? undefined,
-      Content: {
-        Simple: {
-          Subject: { Data: input.subject, Charset: EMAIL_CHARSET },
-          Body: {
-            Html: input.html ? { Data: input.html, Charset: EMAIL_CHARSET } : undefined,
-            Text: input.text ? { Data: input.text, Charset: EMAIL_CHARSET } : undefined,
-          },
-        },
-      },
-    })
+    const to = toRaw.join(', ')
+    const cc = normalizeRecipients(input.cc)
+    const bcc = normalizeRecipients(input.bcc)
+    const replyToRaw = normalizeRecipients(input.replyTo ?? this.env.emailReplyTo ?? undefined)
+    const replyTo = replyToRaw.length > 0 ? replyToRaw.join(', ') : undefined
 
     try {
-      const response = await this.client.send(command)
-      const messageId = response.MessageId ?? ''
-      this.logger.log(`Email sent to ${to.join(', ')} (messageId=${messageId})`)
+      const info = await this.transporter.sendMail({
+        from: input.from ?? this.env.emailFrom,
+        to,
+        cc: cc.length > 0 ? cc.join(', ') : undefined,
+        bcc: bcc.length > 0 ? bcc.join(', ') : undefined,
+        replyTo,
+        subject: input.subject,
+        text: input.text,
+        html: input.html,
+      })
+      const messageId =
+        typeof info.messageId === 'string' ? info.messageId : String(info.messageId ?? '')
+      this.logger.log(`Email sent to ${to} (messageId=${messageId})`)
       return { messageId }
     } catch (err) {
-      this.logger.error(`Failed to send email to ${to.join(', ')}`, err as Error)
+      this.logger.error(`Failed to send email to ${to}`, err as Error)
       throw err
     }
   }

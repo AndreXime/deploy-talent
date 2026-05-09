@@ -11,7 +11,7 @@ Código da API: [`api/`](api/). Regras de negócio detalhadas: [`api/requirement
 - **ORM:** Prisma
 - **Banco:** PostgreSQL  
 - **Auth:** Passport , RBAC por papel no token  
-- **Integrações (infra):** AWS SDK v3 — S3 (URLs pré-assinadas) e SES v2 (e-mail);
+- **Integrações (infra):** AWS SDK v3 — S3 (URLs pré-assinadas); e-mail via **SMTP**;
 - **Documentação:** OpenAPI/Swagger
 - **Qualidade:** Biome (lint/format), Jest  
 
@@ -29,13 +29,15 @@ Visão orientada ao que a API expõe hoje (detalhe de regras e estados: [`api/re
 
 - **Avaliações internas:** Notas de entrevista ou pareceres por candidatura (`Evaluation`), criadas e lidas apenas no lado da empresa — o candidato não acede a este conteúdo.
 
-- **E-mail transacional (SES):** Envio automático ao candidato na **submissão da candidatura**, ao ser marcado como **contratado** (`HIRED`) e ao ser **rejeitado** (`REJECTED`). Falhas de envio não impedem a operação principal (ficam registadas no log).
+- **E-mail transacional (SMTP):** Envio automático ao candidato na **submissão da candidatura**, ao ser marcado como **contratado** (`HIRED`) e ao ser **rejeitado** (`REJECTED`). Falhas de envio não impedem a operação principal (ficam registadas no log).
 
 - **Ficheiros e marca:** Upload para S3 via **URL pré-assinada** (avatar do candidato; logo e banner do tenant). Download autorizado também por URL pré-assinada, segundo o papel e o prefixo da chave. Há recurso público de **branding** do tenant quando aplicável.
 
 - **Segurança e operação:** Autenticação JWT com papéis (RBAC), CORS configurável por ambiente, Helmet em produção, **limite de pedidos** global (throttling) e **health check** para monitorização. Fora de `PROD`, a documentação interativa Swagger está disponível em `/docs`.
 
 ## Como rodar
+
+Infra local opcional (`PostgreSQL`, **MinIO** compatível com S3, **Mailpit** para SMTP/UI): na raiz do repositório, `docker compose up -d`. O serviço **`minio`** é o servidor; o **`minio-setup`** (imagem `minio/mc`, [`docker/setup-minio.sh`](docker/setup-minio.sh)) corre uma vez e cria o bucket `files` e o CORS. Para ver e-mails: `http://127.0.0.1:8025`; consola MinIO: `http://127.0.0.1:9001`.
 
 Na pasta `api/`:
 
@@ -63,18 +65,19 @@ npm run start:prod
 | `DATABASE_URL` | Sim | Connection string PostgreSQL (Prisma). |
 | `JWT_SECRET` | Sim | Segredo de assinatura do JWT. |
 | `JWT_EXPIRES_IN` | Sim | Expiração do token (formato aceito pelo Nest JWT, ex.: `7d`). |
-| `AWS_REGION` | Sim | Região usada pelos clientes S3 e SES. |
+| `AWS_REGION` | Sim | Região do cliente S3 (também usada quando o SDK gera URLs assinadas). |
 | `S3_BUCKET` | Sim | Bucket para armazenamento. |
-| `EMAIL_FROM` | Sim | Remetente padrão (SES). |
-| `S3_ENDPOINT` | Não | Endpoint customizado (ex.: LocalStack, MinIO). |
+| `EMAIL_FROM` | Sim | Remetente padrão (SMTP). |
+| `S3_ENDPOINT` | Não | Endpoint S3-compatível customizado (ex.: MinIO). |
 | `S3_FORCE_PATH_STYLE` | Não | `true`/`1` para path-style. |
 | `S3_ACCESS_KEY_ID` / `S3_SECRET_ACCESS_KEY` | Não | Credenciais explícitas; se omitidas, usa cadeia padrão do SDK (ex.: IAM na AWS). |
 | `S3_PRESIGN_TTL_SECONDS` | Não | TTL das URLs pré-assinadas (60–3600; padrão 900). |
 | `S3_MAX_UPLOAD_BYTES` | Não | Limite referencial de upload (padrão 10 MiB). |
 | `EMAIL_REPLY_TO` | Não | Reply-To opcional. |
-| `EMAIL_ENDPOINT` | Não | Endpoint SES alternativo (ex.: local). |
-| `EMAIL_ACCESS_KEY_ID` / `EMAIL_SECRET_ACCESS_KEY` | Não | Credenciais dedicadas ao SES; opcional como no S3. |
-| `EMAIL_CONFIGURATION_SET` | Não | Configuration set do SES. |
+| `SMTP_HOST` | Sim | Hostname do servidor SMTP. |
+| `SMTP_PORT` | Sim | Porta SMTP (int 1–65535; ex.: 1025 Mailpit, 587 SES SMTP STARTTLS). |
+| `SMTP_SECURE` | Não | `true`/`1` para TLS implícito (ex.: porta 465). |
+| `SMTP_USER` / `SMTP_PASSWORD` | Não | Autenticação SMTP; omitidos quando o servidor não exige login (Mailpit por defeito). |
 
 ## Autenticação e tenant
 

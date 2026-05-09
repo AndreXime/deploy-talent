@@ -129,26 +129,39 @@ export class EnvService {
     return value
   }
 
-  get emailEndpoint(): string | null {
-    const value = this.config.get<string>('EMAIL_ENDPOINT', { infer: true })
+  get smtpHost(): string {
+    const value = this.config.get<string>('SMTP_HOST', { infer: true })
+    if (!value || value.trim().length === 0) {
+      throw new Error('Missing SMTP_HOST')
+    }
+    return value
+  }
+
+  get smtpPort(): number {
+    const value = this.config.get<string>('SMTP_PORT', { infer: true })
+    if (!value || value.trim().length === 0) {
+      throw new Error('Missing SMTP_PORT')
+    }
+    const parsed = Number(value)
+    if (!Number.isInteger(parsed) || parsed < 1 || parsed > 65_535) {
+      throw new Error(`Invalid SMTP_PORT: "${value}"`)
+    }
+    return parsed
+  }
+
+  get smtpSecure(): boolean {
+    const value = this.config.get<string>('SMTP_SECURE', { infer: true })
+    return value === 'true' || value === '1'
+  }
+
+  get smtpUser(): string | null {
+    const value = this.config.get<string>('SMTP_USER', { infer: true })
     if (!value || value.trim().length === 0) return null
     return value
   }
 
-  get emailAccessKeyId(): string | null {
-    const value = this.config.get<string>('EMAIL_ACCESS_KEY_ID', { infer: true })
-    if (!value || value.trim().length === 0) return null
-    return value
-  }
-
-  get emailSecretAccessKey(): string | null {
-    const value = this.config.get<string>('EMAIL_SECRET_ACCESS_KEY', { infer: true })
-    if (!value || value.trim().length === 0) return null
-    return value
-  }
-
-  get emailConfigurationSet(): string | null {
-    const value = this.config.get<string>('EMAIL_CONFIGURATION_SET', { infer: true })
+  get smtpPassword(): string | null {
+    const value = this.config.get<string>('SMTP_PASSWORD', { infer: true })
     if (!value || value.trim().length === 0) return null
     return value
   }
