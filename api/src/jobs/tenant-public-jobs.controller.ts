@@ -1,8 +1,8 @@
 import { Controller, Get, Param, Query } from '@nestjs/common'
 import { ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger'
+import { Public } from '../auth/public.decorator'
 import { JobResponseDto } from '../infra/docs/dto/swagger-responses.dto'
 import { ApiStandardErrors } from '../infra/docs/swagger-decorators'
-import { Public } from '../auth/public.decorator'
 import { TenantOptional } from '../tenant-context/tenant.decorators'
 import { PublicJobListQueryDto } from './dto/public-job-list-query.dto'
 import { GetPublicJobUseCase } from './use-cases/get-public-job.use-case'
@@ -22,11 +22,19 @@ export class TenantPublicJobsController {
   @Get()
   @ApiOperation({
     summary: 'Listar vagas abertas (PUBLISHED ou PAUSED)',
-    description: 'Público; `tenantId` na URL. Paginação opcional (`page`, `limit`).',
+    description:
+      'Público; `tenantId` na URL. Paginação (`page`, `limit`) e filtros opcionais: texto (`q`), `modality`, `location`, `seniority`.',
   })
   @ApiOkResponse({ description: 'Lista paginada de vagas' })
   async list(@Query() query: PublicJobListQueryDto) {
-    return this.listPublicJobs.execute({ page: query.page, limit: query.limit })
+    return this.listPublicJobs.execute({
+      page: query.page,
+      limit: query.limit,
+      q: query.q,
+      modality: query.modality,
+      location: query.location,
+      seniority: query.seniority,
+    })
   }
 
   @Get(':jobId')

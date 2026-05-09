@@ -1,8 +1,8 @@
-import { IsOptional, IsString, MaxLength } from 'class-validator'
+import { IsOptional, IsString, IsUUID, MaxLength } from 'class-validator'
 import { PaginationQueryDto } from '../../common/dto/pagination-query.dto'
 
-/** Career site: vagas publicáveis do tenant atual; filtros opcionais. */
-export class PublicJobListQueryDto extends PaginationQueryDto {
+/** Explorar vagas em toda a plataforma (tenant ativo); filtros opcionais. */
+export class MarketplaceJobListQueryDto extends PaginationQueryDto {
   @IsOptional()
   @IsString()
   @MaxLength(280)
@@ -22,4 +22,8 @@ export class PublicJobListQueryDto extends PaginationQueryDto {
   @IsString()
   @MaxLength(120)
   seniority?: string
+
+  @IsOptional()
+  @IsUUID()
+  tenantId?: string
 }

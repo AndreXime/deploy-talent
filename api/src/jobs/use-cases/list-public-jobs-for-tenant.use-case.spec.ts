@@ -32,7 +32,9 @@ describe('ListPublicJobsForTenantUseCase', () => {
 
     expect(prisma.job.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { status: { in: ['PUBLISHED', 'PAUSED'] } },
+        where: expect.objectContaining({
+          AND: expect.arrayContaining([{ status: { in: ['PUBLISHED', 'PAUSED'] } }]),
+        }),
       }),
     )
   })
