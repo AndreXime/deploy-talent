@@ -1,13 +1,15 @@
 'use client'
 
-import { ClipboardList, UserRound } from 'lucide-react'
+import { Bookmark, ClipboardList, Compass, UserRound } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/providers/auth-provider'
 
 const links = [
+  { href: '/vagas', label: 'Explorar', icon: Compass },
   { href: '/candidato', label: 'Candidaturas', icon: ClipboardList },
+  { href: '/candidato/guardadas', label: 'Guardadas', icon: Bookmark },
   { href: '/candidato/perfil', label: 'Perfil', icon: UserRound },
 ] as const
 
@@ -22,7 +24,9 @@ export function CandidateNav() {
         const active =
           href === '/candidato'
             ? pathname === '/candidato' || pathname.startsWith('/candidato/candidaturas')
-            : pathname.startsWith(href)
+            : href === '/vagas'
+              ? pathname === '/vagas' || pathname.startsWith('/vagas/')
+              : pathname.startsWith(href)
         return (
           <Button
             key={href}

@@ -4,11 +4,15 @@ import { ArrowRight, Building2, UserCircle } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import { toast } from 'sonner'
 import { PublicHeader } from '@/components/public-header'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { ApiRequestError } from '@/lib/api/client'
+import { getTenantBySlug } from '@/lib/api/tenants-api'
+import { isTenantSlug } from '@/lib/is-tenant-slug'
 import { isUuid } from '@/lib/is-uuid'
 import { homePathForRole } from '@/lib/routes'
 import { useAuth } from '@/providers/auth-provider'
@@ -17,6 +21,7 @@ export default function HomePage() {
   const { claims, token } = useAuth()
   const router = useRouter()
   const [tenantInput, setTenantInput] = useState('')
+  const [resolving, setResolving] = useState(false)
 
   useEffect(() => {
     if (token && claims?.role) {
@@ -71,14 +76,14 @@ export default function HomePage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-sm text-muted-foreground">
-                Use o identificador que a empresa partilhou consigo para abrir as oportunidades
-                abertas.
+                Introduza o <strong>slug</strong> (ex.: <code className="text-xs">acme-corp</code>)
+                ou o UUID que a empresa partilhou.
               </p>
               <div className="space-y-2">
-                <Label htmlFor="tenant-ref">Referência da empresa</Label>
+                <Label htmlFor="tenant-ref">Slug ou UUID</Label>
                 <Input
                   id="tenant-ref"
-                  placeholder="Ex.: formato UUID fornecido pela empresa"
+                  placeholder="Ex.: acme-corp ou 3fa85f64-5717-4562-b3fc-2c963f66afa6"
                   value={tenantInput}
                   onChange={(e) => setTenantInput(e.target.value.trim())}
                   spellCheck={false}
@@ -88,14 +93,42 @@ export default function HomePage() {
               <Button
                 className="w-full"
                 type="submit"
-                onClick={() => {
+                disabled={resolving}
+                onClick={async () => {
                   const t = tenantInput.trim()
-                  if (!isUuid(t)) return
-                  router.push(`/carreiras/${t}`)
+                  if (!t) return
+                  if (isUuid(t)) {
+                    router.push(`/carreiras/${t}`)
+                    return
+                  }
+                  if (!isTenantSlug(t)) {
+                    toast.error('Use um slug (letras minúsculas e hífens) ou um UUID válido.')
+                    return
+                  }
+                  setResolving(true)
+                  try {
+                    const tenant = await getTenantBySlug(t)
+                    router.push(`/carreiras/${tenant.id}`)
+                  } catch (err) {
+                    if (err instanceof ApiRequestError) toast.error(err.message)
+                    else toast.error('Não foi possível encontrar a empresa.')
+                  } finally {
+                    setResolving(false)
+                  }
                 }}
               >
-                Ver vagas
+                {resolving ? 'A resolver…' : 'Ver vagas'}
               </Button>
+              <p className="text-xs text-muted-foreground">
+                Também pode{' '}
+                <Link
+                  href="/vagas"
+                  className="font-medium text-primary underline-offset-4 hover:underline"
+                >
+                  explorar todas as vagas
+                </Link>
+                .
+              </p>
             </CardContent>
           </Card>
         </section>

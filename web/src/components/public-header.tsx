@@ -22,6 +22,9 @@ export function PublicHeader() {
           Deploy Talent
         </Link>
         <nav className="flex shrink-0 items-center gap-2">
+          <Button variant="ghost" size="sm" asChild>
+            <Link href="/vagas">Explorar vagas</Link>
+          </Button>
           {!token ? (
             <>
               <Button variant="ghost" asChild>

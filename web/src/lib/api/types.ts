@@ -52,6 +52,19 @@ export interface JobResponse {
   updatedAt: string
 }
 
+/** Linha de GET /jobs/public — vaga + empresa. */
+export interface PublicJobWithTenantRow {
+  job: JobResponse
+  tenant: TenantSnippet
+}
+
+/** Uma vaga guardada (GET /candidates/me/saved-jobs, POST idempotente). */
+export interface CandidateSavedJobRow {
+  savedAt: string
+  job: JobResponse
+  tenant: TenantSnippet
+}
+
 export interface CandidateProfileResponse {
   id: string
   userId: string

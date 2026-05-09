@@ -3,23 +3,57 @@
 import { useQuery } from '@tanstack/react-query'
 import { Briefcase, ChevronRight, MapPin, MonitorSmartphone } from 'lucide-react'
 import Link from 'next/link'
-import { useParams } from 'next/navigation'
+import { useParams, usePathname, useRouter, useSearchParams } from 'next/navigation'
+import { Suspense, useEffect, useState } from 'react'
 import { PublicHeader } from '@/components/public-header'
 import { JobStatusBadge } from '@/components/status-badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
 import { listPublicJobsForTenant } from '@/lib/api/jobs-api'
 import { getPublicBranding } from '@/lib/api/tenants-api'
 import { careersHeadline, getApiBaseUrl } from '@/lib/env'
 import { isUuid } from '@/lib/is-uuid'
 
-export default function CareerListPage() {
-  const params = useParams<{ tenantId: string }>()
-  const tenantId = params?.tenantId?.trim() ?? ''
-  const valid = isUuid(tenantId)
+function pickString(v: string | null): string | undefined {
+  const t = v?.trim()
+  return t ? t : undefined
+}
+
+function CareerListInner({ tenantId, valid }: { tenantId: string; valid: boolean }) {
+  const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
   const noApi = !getApiBaseUrl()
+
+  const q = pickString(searchParams.get('q'))
+  const modality = pickString(searchParams.get('modality'))
+  const location = pickString(searchParams.get('location'))
+  const seniority = pickString(searchParams.get('seniority'))
+
+  const [draftQ, setDraftQ] = useState(searchParams.get('q') ?? '')
+  const [draftModality, setDraftModality] = useState(searchParams.get('modality') ?? '')
+  const [draftLocation, setDraftLocation] = useState(searchParams.get('location') ?? '')
+  const [draftSeniority, setDraftSeniority] = useState(searchParams.get('seniority') ?? '')
+
+  useEffect(() => {
+    setDraftQ(searchParams.get('q') ?? '')
+    setDraftModality(searchParams.get('modality') ?? '')
+    setDraftLocation(searchParams.get('location') ?? '')
+    setDraftSeniority(searchParams.get('seniority') ?? '')
+  }, [searchParams])
+
+  function applyFilters() {
+    const p = new URLSearchParams()
+    if (draftQ.trim()) p.set('q', draftQ.trim())
+    if (draftModality.trim()) p.set('modality', draftModality.trim())
+    if (draftLocation.trim()) p.set('location', draftLocation.trim())
+    if (draftSeniority.trim()) p.set('seniority', draftSeniority.trim())
+    router.replace(`${pathname}?${p.toString()}`)
+  }
 
   const brandingQ = useQuery({
     enabled: valid && !noApi,
@@ -29,16 +63,23 @@ export default function CareerListPage() {
 
   const jobsQ = useQuery({
     enabled: valid && !noApi,
-    queryKey: ['public-jobs', tenantId],
-    queryFn: () => listPublicJobsForTenant(tenantId, { page: 1, limit: 50 }),
+    queryKey: ['public-jobs', tenantId, q, modality, location, seniority],
+    queryFn: () =>
+      listPublicJobsForTenant(tenantId, {
+        page: 1,
+        limit: 50,
+        q,
+        modality,
+        location,
+        seniority,
+      }),
   })
 
   const headline = careersHeadline()
 
   return (
-    <div className="flex min-h-full flex-col">
-      <PublicHeader />
-      {(brandingQ.data?.banner?.url ?? brandingQ.data?.logo?.url) && (
+    <>
+      {(brandingQ.data?.banner?.url ?? brandingQ.data?.logo?.url) ? (
         <div className="relative h-44 w-full overflow-hidden border-b md:h-56 lg:h-72">
           {brandingQ.data.banner?.url ? (
             <img src={brandingQ.data.banner.url} alt="" className="h-full w-full object-cover" />
@@ -49,17 +90,17 @@ export default function CareerListPage() {
           ) : null}
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background/90 to-transparent" />
         </div>
-      )}
+      ) : null}
       <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-8 px-4 py-10 lg:px-6">
         <div className="space-y-2">
           <div className="flex items-center gap-3">
-            {brandingQ.data?.logo?.url && !brandingQ.data?.banner?.url && (
+            {brandingQ.data?.logo?.url && !brandingQ.data?.banner?.url ? (
               <img
                 src={brandingQ.data.logo.url}
                 alt=""
                 className="size-12 rounded-md border bg-card object-contain p-1"
               />
-            )}
+            ) : null}
             <h1 className="text-2xl font-semibold tracking-tight lg:text-3xl">{headline}</h1>
           </div>
           <p className="text-sm text-muted-foreground">
@@ -67,51 +108,98 @@ export default function CareerListPage() {
           </p>
         </div>
 
-        {noApi && (
+        {noApi ? (
           <Alert variant="destructive">
             <AlertDescription>
               Defina <code>NEXT_PUBLIC_API_BASE_URL</code> para carregar as vagas.
             </AlertDescription>
           </Alert>
-        )}
+        ) : null}
 
-        {!valid && (
+        {!valid ? (
           <Alert variant="destructive">
             <AlertDescription>
               A referência da empresa não é válida. Verifique o link que recebeu.
             </AlertDescription>
           </Alert>
-        )}
+        ) : null}
 
-        {valid && jobsQ.isLoading && (
+        {valid ? (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Filtrar vagas</CardTitle>
+              <CardDescription>Opcional — aplica-se à lista abaixo.</CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2 sm:col-span-2">
+                <Label htmlFor="cf-q">Palavras-chave</Label>
+                <Input
+                  id="cf-q"
+                  value={draftQ}
+                  onChange={(e) => setDraftQ(e.target.value)}
+                  placeholder="Título ou descripção"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="cf-mod">Modalidade</Label>
+                <Input
+                  id="cf-mod"
+                  value={draftModality}
+                  onChange={(e) => setDraftModality(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="cf-loc">Local</Label>
+                <Input
+                  id="cf-loc"
+                  value={draftLocation}
+                  onChange={(e) => setDraftLocation(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="cf-sen">Senioridade</Label>
+                <Input
+                  id="cf-sen"
+                  value={draftSeniority}
+                  onChange={(e) => setDraftSeniority(e.target.value)}
+                />
+              </div>
+              <div className="flex items-end sm:col-span-2">
+                <Button type="button" className="w-full sm:w-auto" onClick={applyFilters}>
+                  Aplicar filtros
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        ) : null}
+
+        {valid && jobsQ.isLoading ? (
           <div className="space-y-3">
             <Skeleton className="h-24 w-full" />
             <Skeleton className="h-24 w-full" />
             <Skeleton className="h-24 w-full" />
           </div>
-        )}
+        ) : null}
 
-        {valid && jobsQ.isError && (
+        {valid && jobsQ.isError ? (
           <Alert variant="destructive">
             <AlertDescription>
               Não foi possível carregar as vagas. Tente novamente mais tarde.
             </AlertDescription>
           </Alert>
-        )}
+        ) : null}
 
-        {valid && jobsQ.data && jobsQ.data.items.length === 0 && (
+        {valid && jobsQ.data && jobsQ.data.items.length === 0 ? (
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
                 <Briefcase className="size-5 text-muted-foreground" aria-hidden />
-                Sem vagas neste momento
+                Sem vagas que correspondam
               </CardTitle>
-              <CardDescription>
-                Volte mais tarde ou contacte a empresa para novas oportunidades.
-              </CardDescription>
+              <CardDescription>Alargue os filtros ou volte mais tarde.</CardDescription>
             </CardHeader>
           </Card>
-        )}
+        ) : null}
 
         <ul className="flex flex-col gap-3">
           {jobsQ.data?.items.map((job) => (
@@ -146,6 +234,31 @@ export default function CareerListPage() {
           ))}
         </ul>
       </main>
+    </>
+  )
+}
+
+function CareerListFallback() {
+  return (
+    <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-8 px-4 py-10 lg:px-6">
+      <Skeleton className="h-10 w-48" />
+      <Skeleton className="h-48 w-full" />
+      <Skeleton className="h-24 w-full" />
+    </main>
+  )
+}
+
+export default function CareerListPage() {
+  const params = useParams<{ tenantId: string }>()
+  const tenantId = params?.tenantId?.trim() ?? ''
+  const valid = isUuid(tenantId)
+
+  return (
+    <div className="flex min-h-full flex-col">
+      <PublicHeader />
+      <Suspense fallback={<CareerListFallback />}>
+        <CareerListInner tenantId={tenantId} valid={valid} />
+      </Suspense>
     </div>
   )
 }

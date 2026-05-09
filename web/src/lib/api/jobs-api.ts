@@ -1,5 +1,20 @@
 import { apiRequest } from '@/lib/api/client'
-import type { ApiJobStatus, JobResponse, Paginated } from '@/lib/api/types'
+import type { ApiJobStatus, JobResponse, Paginated, PublicJobWithTenantRow } from '@/lib/api/types'
+
+export type PublicJobListFilters = {
+  page?: number
+  limit?: number
+  q?: string
+  modality?: string
+  location?: string
+  seniority?: string
+}
+
+export type MarketplaceJobListQuery = PublicJobListFilters & {
+  tenantId?: string
+}
+
+export type PaginatedPublicExplore = Paginated<PublicJobWithTenantRow>
 
 export function listTenantJobs(
   token: string,
@@ -57,14 +72,19 @@ export function changeJobStatus(token: string, id: string, status: ApiJobStatus)
   })
 }
 
-/** Público — sem token */
-export function listPublicJobsForTenant(
-  tenantId: string,
-  query?: { page?: number; limit?: number },
-) {
+/** Público — sem token (career site; filtros q, modality, location, seniority). */
+export function listPublicJobsForTenant(tenantId: string, query?: PublicJobListFilters) {
   return apiRequest<Paginated<JobResponse>>(`/tenants/${tenantId}/jobs`, {
     method: 'GET',
-    query: query as Record<string, number | undefined>,
+    query: query as Record<string, string | number | undefined>,
+  })
+}
+
+/** Explorar vagas em toda a plataforma (GET /jobs/public). */
+export function listMarketplaceJobs(query?: MarketplaceJobListQuery) {
+  return apiRequest<PaginatedPublicExplore>('/jobs/public', {
+    method: 'GET',
+    query: query as Record<string, string | number | undefined>,
   })
 }
 

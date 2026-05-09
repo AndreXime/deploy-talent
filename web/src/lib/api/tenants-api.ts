@@ -1,5 +1,13 @@
 import { apiRequest } from '@/lib/api/client'
-import type { PublicTenantBrandingResponse, TenantResponse } from '@/lib/api/types'
+import type { PublicTenantBrandingResponse, TenantResponse, TenantSnippet } from '@/lib/api/types'
+
+/** Público — resolve slug → dados mínimos (id para rotas /carreiras/:tenantId). */
+export function getTenantBySlug(slug: string) {
+  const s = slug.trim()
+  return apiRequest<TenantSnippet>(`/tenants/public/by-slug/${encodeURIComponent(s)}`, {
+    method: 'GET',
+  })
+}
 
 export function getPublicBranding(tenantId: string) {
   return apiRequest<PublicTenantBrandingResponse>(`/tenants/${tenantId}/branding`, {

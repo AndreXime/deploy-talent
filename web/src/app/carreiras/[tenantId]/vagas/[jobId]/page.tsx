@@ -1,7 +1,7 @@
 'use client'
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, MapPin, MonitorSmartphone, User } from 'lucide-react'
+import { ArrowLeft, Bookmark, MapPin, MonitorSmartphone, User } from 'lucide-react'
 import Link from 'next/link'
 import { useParams, usePathname, useRouter } from 'next/navigation'
 import { toast } from 'sonner'
@@ -12,11 +12,13 @@ import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
 import { applyToJob } from '@/lib/api/applications-api'
+import { listMySavedJobs, saveJobBookmark, unsaveJob } from '@/lib/api/candidates-api'
 import { ApiRequestError } from '@/lib/api/client'
 import { getPublicJob } from '@/lib/api/jobs-api'
 import { getPublicBranding } from '@/lib/api/tenants-api'
 import { getApiBaseUrl } from '@/lib/env'
 import { isUuid } from '@/lib/is-uuid'
+import { requireSessionToken } from '@/lib/require-session-token'
 import { useAuth } from '@/providers/auth-provider'
 
 export default function PublicJobDetailPage() {
@@ -42,6 +44,45 @@ export default function PublicJobDetailPage() {
     enabled: validTenant && validJob && !noApi,
     queryKey: ['public-job', tenantId, jobId],
     queryFn: () => getPublicJob(tenantId, jobId),
+  })
+
+  const isCandidate = claims?.role === 'CANDIDATE'
+
+  const savedIdsQ = useQuery({
+    enabled: Boolean(token) && isCandidate && !noApi && validJob,
+    queryKey: ['my-saved-job-ids', token],
+    queryFn: async () => {
+      const res = await listMySavedJobs(requireSessionToken(token), { page: 1, limit: 100 })
+      return new Set(res.items.map((row) => row.job.id))
+    },
+  })
+
+  const isSaved = validJob && jobId ? Boolean(savedIdsQ.data?.has(jobId)) : false
+
+  const saveMut = useMutation({
+    mutationFn: () => saveJobBookmark(requireSessionToken(token), jobId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['my-saved-job-ids', token] })
+      queryClient.invalidateQueries({ queryKey: ['my-saved-jobs', token] })
+      toast.success('Vaga guardada na sua lista.')
+    },
+    onError: (err: unknown) => {
+      if (err instanceof ApiRequestError) toast.error(err.message)
+      else toast.error('Não foi possível guardar.')
+    },
+  })
+
+  const unsaveMut = useMutation({
+    mutationFn: () => unsaveJob(requireSessionToken(token), jobId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['my-saved-job-ids', token] })
+      queryClient.invalidateQueries({ queryKey: ['my-saved-jobs', token] })
+      toast.success('Removida das vagas guardadas.')
+    },
+    onError: (err: unknown) => {
+      if (err instanceof ApiRequestError) toast.error(err.message)
+      else toast.error('Não foi possível remover.')
+    },
   })
 
   const applyMut = useMutation({
@@ -159,6 +200,37 @@ export default function PublicJobDetailPage() {
             </section>
 
             <div className="flex flex-col gap-3 rounded-lg border bg-card p-4">
+              {token && isCandidate && job ? (
+                <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+                  {isSaved || job.status === 'PUBLISHED' || job.status === 'PAUSED' ? (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="gap-2"
+                      disabled={
+                        saveMut.isPending ||
+                        unsaveMut.isPending ||
+                        savedIdsQ.isLoading ||
+                        (!isSaved && job.status !== 'PUBLISHED' && job.status !== 'PAUSED')
+                      }
+                      onClick={() => {
+                        if (isSaved) unsaveMut.mutate()
+                        else saveMut.mutate()
+                      }}
+                    >
+                      <Bookmark className="size-4" aria-hidden />
+                      {savedIdsQ.isLoading
+                        ? 'A verificar…'
+                        : isSaved
+                          ? 'Remover dos guardados'
+                          : 'Guardar vaga'}
+                    </Button>
+                  ) : null}
+                  <Button variant="ghost" size="sm" className="sm:ml-auto" asChild>
+                    <Link href="/candidato/guardadas">Ver todas as guardadas</Link>
+                  </Button>
+                </div>
+              ) : null}
               {!canApply ? (
                 <p className="text-sm text-muted-foreground">
                   Esta posição já não aceita novas candidaturas.
