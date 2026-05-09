@@ -46,6 +46,19 @@ export class JobResponseDto {
   @ApiProperty({ type: String, format: 'date-time' }) updatedAt!: Date
 }
 
+/** Linha do `GET /jobs/public`: vaga + empresa. */
+export class PublicExploreJobRowDto {
+  @ApiProperty({ type: JobResponseDto }) job!: JobResponseDto
+  @ApiProperty({ type: TenantSnippetDto }) tenant!: TenantSnippetDto
+}
+
+/** Vaga guardada (`GET /candidates/me/saved-jobs`). */
+export class CandidateSavedJobRowDto {
+  @ApiProperty({ type: String, format: 'date-time' }) savedAt!: Date
+  @ApiProperty({ type: JobResponseDto }) job!: JobResponseDto
+  @ApiProperty({ type: TenantSnippetDto }) tenant!: TenantSnippetDto
+}
+
 /** Perfil global do candidato (`GET/PATCH/DELETE candidates/me`). */
 export class CandidateProfileResponseDto {
   @ApiProperty({ format: 'uuid' }) id!: string
