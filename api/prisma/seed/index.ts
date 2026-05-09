@@ -3,17 +3,24 @@ import { PrismaPg } from '@prisma/adapter-pg'
 import * as bcrypt from 'bcrypt'
 import { Pool } from 'pg'
 import { ApplicationStatus, JobStatus, PrismaClient, UserRole } from '../../generated/prisma/client'
-import { clearSeedData,shuffleInPlace,seedEmail,SEED_PASSWORD } from './utils'
+import { buildSeedJobDescription } from './lorem'
+import { buildSeedJobTitle, SEED_TENANT_NAMES } from './names'
 import type {
   MockApplicationExport,
   MockCandidateExport,
-  MockDataFile,
   MockJobRef,
   MockTenantExport,
   MockUserRef,
   TenantSeed,
-} from './mock-data.types'
-import { writeMockDataFile } from './write-file'
+} from './types'
+import {
+  buildInterleavedTenantInsertionOrder,
+  clearSeedData,
+  SEED_PASSWORD,
+  seedEmail,
+  shuffleInPlace,
+  writeMockDataFile,
+} from './utils'
 
 async function main(): Promise<void> {
   const databaseUrl = process.env.DATABASE_URL
@@ -45,15 +52,26 @@ async function main(): Promise<void> {
     const seniorities = ['Júnior', 'Pleno', 'Sênior', 'Especialista']
 
     const tenants: TenantSeed[] = []
+    const tenantRows: {
+      index: number
+      slug: string
+      tenant: { id: string; name: string }
+      admin: { id: string; email: string; role: string }
+      recruiters: MockUserRef[]
+      jobsExport: MockJobRef[]
+      jobIds: string[]
+    }[] = []
 
     for (let i = 1; i <= 5; i += 1) {
       const slug = `seed-emp-${i}`
+      const tenantName = SEED_TENANT_NAMES[i - 1]
       const tenant = await prisma.tenant.create({
         data: {
-          name: `Empresa Seed ${i}`,
+          name: tenantName,
           slug,
           isActive: true,
         },
+        select: { id: true, name: true },
       })
 
       const admin = await prisma.user.create({
@@ -80,61 +98,78 @@ async function main(): Promise<void> {
         recruiters.push({ id: rec.id, email: rec.email, role: rec.role })
       }
 
-      const jobsExport: MockJobRef[] = []
-      const jobIds: string[] = []
-      for (let j = 1; j <= 10; j += 1) {
-        const modality = modalities[(i + j) % modalities.length]
-        const location = locations[(i + j) % locations.length]
-        const seniority = seniorities[(i + j) % seniorities.length]
-        const title = `Vaga ${j} — ${tenant.name}`
-        const job = await prisma.job.create({
-          data: {
-            tenantId: tenant.id,
-            title,
-            description: `Descrição da vaga ${j} na ${tenant.name}. Stack moderna, time colaborativo.`,
-            modality,
-            location,
-            seniority,
-            status: JobStatus.PUBLISHED,
-          },
-          select: {
-            id: true,
-            title: true,
-            tenantId: true,
-            modality: true,
-            location: true,
-            seniority: true,
-            status: true,
-          },
-        })
-        jobIds.push(job.id)
-        jobsExport.push({
-          id: job.id,
-          title: job.title,
-          tenantId: job.tenantId,
-          modality: job.modality,
-          location: job.location,
-          seniority: job.seniority,
-          status: job.status,
-        })
-      }
-
-      const tenantExport: MockTenantExport = {
+      tenantRows.push({
         index: i,
-        id: tenant.id,
-        name: tenant.name,
         slug,
-        tenantAdmin: { id: admin.id, email: admin.email, role: admin.role },
+        tenant,
+        admin,
         recruiters,
-        jobs: jobsExport,
-      }
+        jobsExport: [],
+        jobIds: [],
+      })
+    }
 
+    const jobsPerTenant = 10
+    const insertionOrder = buildInterleavedTenantInsertionOrder(5, jobsPerTenant)
+    const jobOrdinalPerTenant = [0, 0, 0, 0, 0]
+
+    for (const tenantIndex of insertionOrder) {
+      const row = tenantRows[tenantIndex - 1]
+      const i = row.index
+      jobOrdinalPerTenant[tenantIndex - 1] += 1
+      const j = jobOrdinalPerTenant[tenantIndex - 1]
+      const modality = modalities[(i + j) % modalities.length]
+      const location = locations[(i + j) % locations.length]
+      const seniority = seniorities[(i + j) % seniorities.length]
+      const title = buildSeedJobTitle(i, j)
+      const job = await prisma.job.create({
+        data: {
+          tenantId: row.tenant.id,
+          title,
+          description: buildSeedJobDescription(row.tenant.name, title),
+          modality,
+          location,
+          seniority,
+          status: JobStatus.PUBLISHED,
+        },
+        select: {
+          id: true,
+          title: true,
+          tenantId: true,
+          modality: true,
+          location: true,
+          seniority: true,
+          status: true,
+        },
+      })
+      row.jobIds.push(job.id)
+      row.jobsExport.push({
+        id: job.id,
+        title: job.title,
+        tenantId: job.tenantId,
+        modality: job.modality,
+        location: job.location,
+        seniority: job.seniority,
+        status: job.status,
+      })
+    }
+
+    for (const row of tenantRows) {
+      const tenantExport: MockTenantExport = {
+        index: row.index,
+        id: row.tenant.id,
+        name: row.tenant.name,
+        slug: row.slug,
+        tenantAdmin: { id: row.admin.id, email: row.admin.email, role: row.admin.role },
+        recruiters: row.recruiters,
+        jobs: row.jobsExport,
+      }
       tenants.push({
-        tenantId: tenant.id,
-        slug,
-        name: tenant.name,
-        index: i,
-        jobIds,
+        tenantId: row.tenant.id,
+        slug: row.slug,
+        name: row.tenant.name,
+        index: row.index,
+        jobIds: row.jobIds,
         export: tenantExport,
       })
     }
@@ -231,7 +266,7 @@ async function main(): Promise<void> {
       })
     }
 
-    const mockData: MockDataFile = {
+    const mockData = {
       generatedAt: new Date().toISOString(),
       password: SEED_PASSWORD,
       superAdmin: {
@@ -259,7 +294,7 @@ async function main(): Promise<void> {
       ...Array.from({ length: 5 }, (_, i) => {
         const n = i + 1
         return [
-          `  Empresa ${n}:`,
+          `  ${SEED_TENANT_NAMES[i]} (seed-emp-${n}):`,
           `    admin: ${seedEmail(`emp${n}-admin`)}`,
           ...Array.from(
             { length: 5 },

@@ -40,15 +40,6 @@ export interface MockApplicationExport {
   status: string
 }
 
-export interface MockDataFile {
-  generatedAt: string
-  password: string
-  superAdmin: MockUserRef
-  tenants: MockTenantExport[]
-  candidates: MockCandidateExport[]
-  applications: MockApplicationExport[]
-}
-
 export interface TenantSeed {
   tenantId: string
   slug: string
