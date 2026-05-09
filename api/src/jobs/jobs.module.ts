@@ -12,7 +12,8 @@ import { ListPublicJobsForTenantUseCase } from './use-cases/list-public-jobs-for
 import { UpdateJobUseCase } from './use-cases/update-job.use-case'
 
 @Module({
-  controllers: [JobsController, TenantPublicJobsController, MarketplaceJobsController],
+  // Marketplace antes de JobsController: evita que GET jobs/:id consuma `/jobs/public`.
+  controllers: [MarketplaceJobsController, JobsController, TenantPublicJobsController],
   providers: [
     CreateJobUseCase,
     ListJobsUseCase,
