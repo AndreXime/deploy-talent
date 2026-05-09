@@ -4,6 +4,7 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler'
 import { AppController } from './app.controller'
 import { ApplicationsModule } from './applications/applications.module'
 import { AuthModule } from './auth/auth.module'
+import { JwtAuthGuard } from './auth/guards/jwt-auth.guard'
 import { RolesGuard } from './auth/rbac/roles.guard'
 import { CandidatesModule } from './candidates/candidates.module'
 import { HealthModule } from './health/health.module'
@@ -49,6 +50,10 @@ import { TenantsModule } from './tenants/tenants.module'
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
     },
     {
       provide: APP_GUARD,

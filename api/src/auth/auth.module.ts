@@ -12,6 +12,7 @@ import { LoginUseCase } from './use-cases/login.use-case'
 import { RegisterCandidateUseCase } from './use-cases/register-candidate.use-case'
 import { UpdateB2BAvatarUseCase } from './use-cases/update-b2b-avatar.use-case'
 import { ValidateLocalUserUseCase } from './use-cases/validate-local-user.use-case'
+import { JwtAuthGuard } from './guards/jwt-auth.guard'
 
 @Module({
   imports: [
@@ -38,6 +39,8 @@ import { ValidateLocalUserUseCase } from './use-cases/validate-local-user.use-ca
     ValidateLocalUserUseCase,
     LocalStrategy,
     JwtStrategy,
+    JwtAuthGuard,
   ],
+  exports: [JwtAuthGuard],
 })
 export class AuthModule {}

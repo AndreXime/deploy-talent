@@ -2,11 +2,13 @@ import { Controller, Get, Param, Query } from '@nestjs/common'
 import { ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger'
 import { JobResponseDto } from '../infra/docs/dto/swagger-responses.dto'
 import { ApiStandardErrors } from '../infra/docs/swagger-decorators'
+import { Public } from '../auth/public.decorator'
 import { TenantOptional } from '../tenant-context/tenant.decorators'
 import { PublicJobListQueryDto } from './dto/public-job-list-query.dto'
 import { GetPublicJobUseCase } from './use-cases/get-public-job.use-case'
 import { ListPublicJobsForTenantUseCase } from './use-cases/list-public-jobs-for-tenant.use-case'
 
+@Public()
 @Controller('tenants/:tenantId/jobs')
 @ApiTags('Jobs (career site)')
 @ApiStandardErrors(true)

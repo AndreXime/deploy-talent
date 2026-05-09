@@ -33,6 +33,7 @@ import { RegisterCandidateDto } from './dto/register-candidate.dto'
 import { UpdateB2BAvatarDto } from './dto/update-b2b-avatar.dto'
 import { JwtAuthGuard } from './guards/jwt-auth.guard'
 import { LocalAuthGuard } from './guards/local-auth.guard'
+import { Public } from './public.decorator'
 import { Roles } from './rbac/roles.decorator'
 import { CreateRecruiterUseCase } from './use-cases/create-recruiter.use-case'
 import { CreateTenantAdminUseCase } from './use-cases/create-tenant-admin.use-case'
@@ -60,6 +61,7 @@ export class AuthController {
     private readonly updateB2BAvatar: UpdateB2BAvatarUseCase,
   ) {}
 
+  @Public()
   @UseGuards(LocalAuthGuard)
   @HttpCode(HttpStatus.OK)
   @Post('login')
@@ -71,6 +73,7 @@ export class AuthController {
     return this.loginUseCase.execute(req.user)
   }
 
+  @Public()
   @Post('register/candidate')
   @ApiOperation({ summary: 'Cadastro de candidato (one-profile) + JWT' })
   @ApiCreatedResponse({
