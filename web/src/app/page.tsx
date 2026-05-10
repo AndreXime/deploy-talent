@@ -77,16 +77,6 @@ export default function HomePage() {
                   <Link href="/entrar">Anunciar vaga técnica</Link>
                 </Button>
               </div>
-              <p className="mt-6 text-sm text-muted-foreground">
-                Candidatos:{' '}
-                <Link
-                  href="/registo"
-                  className="font-medium text-foreground underline-offset-4 hover:underline"
-                >
-                  criar perfil
-                </Link>{' '}
-                para candidaturas com um pipeline consistente.
-              </p>
             </div>
             <aside
               aria-label="Critérios de curadoria"
