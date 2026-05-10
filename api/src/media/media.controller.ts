@@ -34,9 +34,9 @@ export class MediaController {
 
   @Post('presign-upload')
   @ApiOperation({
-    summary: 'URL pré-assinada para upload (avatar, logo ou banner)',
+    summary: 'URL pré-assinada para upload (avatar, currículo, logo ou banner)',
     description:
-      'Após o PUT no S3, grave a `key` devolvida no perfil (`PATCH candidates/me`, `PATCH auth/me/avatar`, `PATCH tenants/current/branding`).',
+      'Currículo: `purpose` `CANDIDATE_RESUME`, `contentType` PDF/DOC/DOCX e `fileName` com o nome do ficheiro. Após o PUT no S3, grave a `key` no perfil (`PATCH candidates/me`, etc.).',
   })
   @ApiBody({ type: PresignProfileUploadDto })
   @ApiCreatedResponse({ type: PresignedUrlResponseDto })

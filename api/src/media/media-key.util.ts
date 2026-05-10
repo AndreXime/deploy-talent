@@ -1,6 +1,15 @@
 import { BadRequestException } from '@nestjs/common'
+import { parseStorageKey } from '../infra/storage/storage.constants'
 
 export const PROFILE_IMAGE_CONTENT_TYPES = ['image/jpeg', 'image/png', 'image/webp'] as const
+
+export const RESUME_DOCUMENT_CONTENT_TYPES = [
+  'application/pdf',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+] as const
+
+export type ResumeDocumentContentType = (typeof RESUME_DOCUMENT_CONTENT_TYPES)[number]
 
 export type ProfileImageContentType = (typeof PROFILE_IMAGE_CONTENT_TYPES)[number]
 
@@ -20,6 +29,31 @@ export function fileExtensionForContentType(contentType: ProfileImageContentType
       return 'png'
     case 'image/webp':
       return 'webp'
+    default: {
+      const _exhaustive: never = contentType
+      return _exhaustive
+    }
+  }
+}
+
+export function assertResumeDocumentContentType(
+  value: string,
+): asserts value is ResumeDocumentContentType {
+  if (!RESUME_DOCUMENT_CONTENT_TYPES.includes(value as ResumeDocumentContentType)) {
+    throw new BadRequestException(
+      `contentType must be one of: ${RESUME_DOCUMENT_CONTENT_TYPES.join(', ')}`,
+    )
+  }
+}
+
+export function fileExtensionForResumeContentType(contentType: ResumeDocumentContentType): string {
+  switch (contentType) {
+    case 'application/pdf':
+      return 'pdf'
+    case 'application/msword':
+      return 'doc'
+    case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+      return 'docx'
     default: {
       const _exhaustive: never = contentType
       return _exhaustive
@@ -106,5 +140,21 @@ export function assertKeyMatchesCandidateAvatar(
   const parsed = parseCandidateAvatarKey(key)
   if (parsed !== userId) {
     throw new BadRequestException('Invalid media key for this candidate')
+  }
+}
+
+export function assertKeyMatchesCandidateResume(
+  key: string | null | undefined,
+  userId: string,
+): void {
+  if (key === null || key === undefined || key === '') return
+  const parsed = parseStorageKey(key)
+  if (
+    !parsed ||
+    parsed.scope !== 'CANDIDATE' ||
+    parsed.namespace !== 'resumes' ||
+    parsed.ownerId !== userId
+  ) {
+    throw new BadRequestException('Invalid resume key for this candidate')
   }
 }

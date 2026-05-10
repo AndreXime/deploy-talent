@@ -10,7 +10,7 @@ export function getMyProfile(token: string) {
 
 export function patchMyProfile(
   token: string,
-  body: Partial<Pick<CandidateProfileResponse, 'name' | 'phone' | 'resumeUrl' | 'avatarKey'>>,
+  body: Partial<Pick<CandidateProfileResponse, 'name' | 'phone' | 'resumeKey' | 'avatarKey'>>,
 ) {
   return apiRequest<CandidateProfileResponse>('/candidates/me', {
     method: 'PATCH',

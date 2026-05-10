@@ -31,10 +31,27 @@ import { getApiBaseUrl } from '@/lib/env'
 import { requireSessionToken } from '@/lib/require-session-token'
 import { useAuth } from '@/providers/auth-provider'
 
-const IMAGE_ACCEPT = ['image/jpeg', 'image/png', 'image/webp']
+const IMAGE_ACCEPT = ['image/jpeg', 'image/png', 'image/webp'] as const
+
+const RESUME_TYPES = [
+  'application/pdf',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+] as const
 
 function mimeForFile(file: File): string {
-  return IMAGE_ACCEPT.includes(file.type) ? file.type : 'image/jpeg'
+  return IMAGE_ACCEPT.includes(file.type as (typeof IMAGE_ACCEPT)[number]) ? file.type : 'image/jpeg'
+}
+
+function resumeContentType(file: File): string {
+  if (RESUME_TYPES.includes(file.type as (typeof RESUME_TYPES)[number])) return file.type
+  const n = file.name.toLowerCase()
+  if (n.endsWith('.pdf')) return 'application/pdf'
+  if (n.endsWith('.docx')) {
+    return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+  }
+  if (n.endsWith('.doc')) return 'application/msword'
+  throw new Error('Currículo: use PDF, DOC ou DOCX.')
 }
 
 export default function CandidateProfilePage() {
@@ -45,7 +62,6 @@ export default function CandidateProfilePage() {
 
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
-  const [resumeUrl, setResumeUrl] = useState('')
 
   const profileQ = useQuery({
     enabled: !!token && !noApi,
@@ -58,11 +74,10 @@ export default function CandidateProfilePage() {
     if (!p) return
     setName(p.name)
     setPhone(p.phone ?? '')
-    setResumeUrl(p.resumeUrl ?? '')
   }, [profileQ.data])
 
   const patchMut = useMutation({
-    mutationFn: (body: { name?: string; phone?: string; resumeUrl?: string; avatarKey?: string }) =>
+    mutationFn: (body: { name?: string; phone?: string; resumeKey?: string; avatarKey?: string }) =>
       patchMyProfile(requireSessionToken(token), body),
     onSuccess: (data) => {
       queryClient.setQueryData(['my-profile', token], data)
@@ -112,6 +127,32 @@ export default function CandidateProfilePage() {
     await patchMut.mutateAsync({ avatarKey: '' })
   }
 
+  async function onResumePick(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file || !token) return
+
+    try {
+      const ctype = resumeContentType(file)
+      const presigned = await presignUpload(token, {
+        purpose: 'CANDIDATE_RESUME',
+        contentType: ctype,
+        fileName: file.name,
+      })
+      await uploadFileToPresignedUrl(presigned.url, file, ctype)
+      await patchMut.mutateAsync({ resumeKey: presigned.key })
+    } catch (err: unknown) {
+      if (err instanceof ApiRequestError) toast.error(err.message)
+      else if (err instanceof Error) toast.error(err.message)
+      else toast.error('Não foi possível enviar o currículo.')
+    }
+  }
+
+  async function removeResume() {
+    if (!token) return
+    await patchMut.mutateAsync({ resumeKey: '' })
+  }
+
   function saveProfile(ev: React.FormEvent) {
     ev.preventDefault()
     const body: Record<string, string> = {}
@@ -126,9 +167,6 @@ export default function CandidateProfilePage() {
         }
         if (nextPhone.length >= 5) body.phone = nextPhone
       }
-      const nextResume = resumeUrl.trim()
-      const prev = profileQ.data.resumeUrl ?? ''
-      if (nextResume !== prev) body.resumeUrl = nextResume
     }
     if (Object.keys(body).length === 0) {
       toast.message('Sem alterações para guardar.')
@@ -213,15 +251,21 @@ export default function CandidateProfilePage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="resume">URL do curriculum (documento público ou partilha)</Label>
-                <Input
-                  id="resume"
-                  type="url"
-                  value={resumeUrl}
-                  onChange={(e) => setResumeUrl(e.target.value)}
-                  placeholder="https://…"
-                  maxLength={500}
-                />
+                <Label htmlFor="resume">Currículo (PDF, DOC ou DOCX)</Label>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Input
+                    id="resume"
+                    type="file"
+                    accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                    className="max-w-xs cursor-pointer"
+                    onChange={onResumePick}
+                  />
+                  {profileQ.data.resumeKey ? (
+                    <Button type="button" variant="ghost" size="sm" onClick={removeResume}>
+                      Remover currículo
+                    </Button>
+                  ) : null}
+                </div>
               </div>
             </CardContent>
             <CardFooter className="flex flex-wrap gap-2">

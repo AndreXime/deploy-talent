@@ -84,7 +84,7 @@ export interface CandidateProfileResponse {
   name: string
   email: string
   phone: string | null
-  resumeUrl: string | null
+  resumeKey: string | null
   avatarKey: string | null
   deletedAt: string | null
   anonymizedAt: string | null

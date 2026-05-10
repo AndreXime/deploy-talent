@@ -1,4 +1,4 @@
-import { IsOptional, IsString, IsUrl, MaxLength, MinLength } from 'class-validator'
+import { IsOptional, IsString, MaxLength, MinLength } from 'class-validator'
 
 export class UpdateCandidateProfileDto {
   @IsOptional()
@@ -19,7 +19,7 @@ export class UpdateCandidateProfileDto {
   avatarKey?: string
 
   @IsOptional()
-  @IsUrl()
-  @MaxLength(500)
-  resumeUrl?: string
+  @IsString()
+  @MaxLength(1024)
+  resumeKey?: string
 }

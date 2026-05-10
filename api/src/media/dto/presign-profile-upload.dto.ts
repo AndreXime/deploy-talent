@@ -1,5 +1,4 @@
-import { IsEnum, IsIn, IsNotEmpty, IsString } from 'class-validator'
-import type { ProfileImageContentType } from '../media-key.util'
+import { IsEnum, IsNotEmpty, IsString, MaxLength, ValidateIf } from 'class-validator'
 import { ProfileMediaUploadPurpose } from './profile-media-upload-purpose'
 
 export class PresignProfileUploadDto {
@@ -8,8 +7,13 @@ export class PresignProfileUploadDto {
 
   @IsString()
   @IsNotEmpty()
-  @IsIn(['image/jpeg', 'image/png', 'image/webp'])
-  contentType!: ProfileImageContentType
+  contentType!: string
+
+  @ValidateIf((o) => o.purpose === ProfileMediaUploadPurpose.CANDIDATE_RESUME)
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(200)
+  fileName?: string
 }
 
 export { ProfileMediaUploadPurpose } from './profile-media-upload-purpose'

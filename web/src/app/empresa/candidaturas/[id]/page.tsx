@@ -28,6 +28,7 @@ import {
   moveApplication,
 } from '@/lib/api/applications-api'
 import { ApiRequestError } from '@/lib/api/client'
+import { presignDownload } from '@/lib/api/media-api'
 import type { ApiApplicationStatus } from '@/lib/api/types'
 import { applicationStatusLabel } from '@/lib/domain-labels'
 import { getApiBaseUrl } from '@/lib/env'
@@ -154,17 +155,30 @@ export default function TenantApplicationDetailPage() {
                   {row.candidate.phone}
                 </p>
               )}
-              {row.candidate.resumeUrl && (
+              {row.candidate.resumeKey && (
                 <p>
                   <span className="text-muted-foreground">Currículo: </span>
-                  <a
-                    href={row.candidate.resumeUrl}
-                    className="font-medium text-primary underline-offset-4 hover:underline"
-                    target="_blank"
-                    rel="noreferrer"
+                  <Button
+                    type="button"
+                    variant="link"
+                    className="h-auto min-h-0 p-0 font-medium text-primary underline-offset-4"
+                    onClick={async () => {
+                      const resumeKey = row.candidate.resumeKey
+                      if (!token || !resumeKey) return
+                      try {
+                        const { url } = await presignDownload(
+                          requireSessionToken(token),
+                          resumeKey,
+                        )
+                        window.open(url, '_blank', 'noopener,noreferrer')
+                      } catch (err: unknown) {
+                        if (err instanceof ApiRequestError) toast.error(err.message)
+                        else toast.error('Não foi possível abrir o currículo.')
+                      }
+                    }}
                   >
-                    Abrir ligação
-                  </a>
+                    Abrir ficheiro
+                  </Button>
                 </p>
               )}
             </CardContent>

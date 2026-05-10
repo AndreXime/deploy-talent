@@ -3,6 +3,7 @@ import type { PrismaClient } from '../../../generated/prisma/client'
 import { UserRole } from '../../../generated/prisma/client'
 import type { JwtPayload } from '../../auth/jwt-payload'
 import { PRISMA_CLIENT } from '../../infra/prisma/prisma.constants'
+import { parseStorageKey } from '../../infra/storage/storage.constants'
 import { StorageService } from '../../infra/storage/storage.service'
 import {
   parseCandidateAvatarKey,
@@ -66,6 +67,33 @@ export class PresignAssetDownloadUseCase {
           where: {
             tenantId: tenantIdJwt,
             candidate: { userId: candidateUserId, deletedAt: null },
+          },
+          select: { id: true },
+        })
+        if (!link) {
+          throw new ForbiddenException('Not allowed to download this asset')
+        }
+        return this.storage.presignDownload({ key })
+      }
+      throw new ForbiddenException('Not allowed to download this asset')
+    }
+
+    const resumeParsed = parseStorageKey(key)
+    if (
+      resumeParsed &&
+      resumeParsed.scope === 'CANDIDATE' &&
+      resumeParsed.namespace === 'resumes'
+    ) {
+      const resumeOwnerUserId = resumeParsed.ownerId
+      if (role === UserRole.CANDIDATE && user.sub === resumeOwnerUserId) {
+        return this.storage.presignDownload({ key })
+      }
+      if (role === UserRole.TENANT_ADMIN || role === UserRole.RECRUITER) {
+        if (!tenantIdJwt) throw new BadRequestException('Missing tenant context')
+        const link = await this.prisma.application.findFirst({
+          where: {
+            tenantId: tenantIdJwt,
+            candidate: { userId: resumeOwnerUserId, deletedAt: null },
           },
           select: { id: true },
         })

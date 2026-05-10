@@ -76,7 +76,7 @@ export class CandidatesController {
   @ApiOperation({
     summary: 'Atualizar perfil',
     description:
-      'Nome, telefone, currículo (URL) e `avatarKey` (chave S3 após `POST /media/presign-upload` com `CANDIDATE_AVATAR`). String vazia em `avatarKey` remove a foto.',
+      'Nome, telefone, `resumeKey` e `avatarKey` (chaves S3 após `POST /media/presign-upload` com `CANDIDATE_RESUME` ou `CANDIDATE_AVATAR`). String vazia remove o ficheiro.',
   })
   @ApiBody({ type: UpdateCandidateProfileDto })
   @ApiOkResponse({ type: CandidateProfileResponseDto })

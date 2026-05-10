@@ -66,7 +66,7 @@ export class CandidateProfileResponseDto {
   @ApiProperty() name!: string
   @ApiProperty({ format: 'email' }) email!: string
   @ApiProperty({ nullable: true }) phone!: string | null
-  @ApiProperty({ nullable: true }) resumeUrl!: string | null
+  @ApiProperty({ nullable: true }) resumeKey!: string | null
   @ApiProperty({ nullable: true, description: 'Chave S3 do avatar' }) avatarKey!: string | null
   @ApiProperty({ nullable: true, type: String, format: 'date-time' }) deletedAt!: Date | null
   @ApiProperty({ nullable: true, type: String, format: 'date-time' }) anonymizedAt!: Date | null

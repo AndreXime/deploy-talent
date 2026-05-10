@@ -13,7 +13,7 @@ export class ForgetMeUseCase {
   async execute(userId: string) {
     const profile = await this.prisma.candidate.findFirst({
       where: { userId, deletedAt: null },
-      select: { id: true, email: true, avatarKey: true },
+      select: { id: true, email: true, avatarKey: true, resumeKey: true },
     })
     if (!profile) throw new NotFoundException('Candidate profile not found')
 
@@ -25,6 +25,9 @@ export class ForgetMeUseCase {
     if (profile.avatarKey) {
       void this.storage.deleteObject(profile.avatarKey).catch(() => undefined)
     }
+    if (profile.resumeKey) {
+      void this.storage.deleteObject(profile.resumeKey).catch(() => undefined)
+    }
 
     return this.prisma.candidate.update({
       where: { id: profile.id },
@@ -32,7 +35,7 @@ export class ForgetMeUseCase {
         name: 'Deleted Candidate',
         email: anonymizedEmail,
         phone: null,
-        resumeUrl: null,
+        resumeKey: null,
         avatarKey: null,
         anonymizedAt: new Date(),
         deletedAt: new Date(),
