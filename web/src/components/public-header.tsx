@@ -1,6 +1,15 @@
 'use client'
 
-import { Briefcase } from 'lucide-react'
+import {
+  Briefcase,
+  Building2,
+  Compass,
+  LayoutDashboard,
+  LogIn,
+  LogOut,
+  ShieldCheck,
+  UserPlus,
+} from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
@@ -22,43 +31,63 @@ export function PublicHeader() {
           Deploy Talent
         </Link>
         <nav className="flex shrink-0 items-center gap-2">
-          <Button variant="ghost" size="sm" asChild>
-            <Link href="/vagas">Explorar vagas</Link>
+          <Button variant="ghost" size="sm" className="gap-2" asChild>
+            <Link href="/vagas">
+              <Compass className="size-4" aria-hidden />
+              Explorar vagas
+            </Link>
           </Button>
           {!token ? (
             <>
-              <Button variant="ghost" asChild>
-                <Link href="/entrar">Entrar</Link>
+              <Button variant="ghost" className="gap-2" asChild>
+                <Link href="/entrar">
+                  <LogIn className="size-4" aria-hidden />
+                  Entrar
+                </Link>
               </Button>
-              <Button asChild>
-                <Link href="/registo">Criar conta</Link>
+              <Button className="gap-2" asChild>
+                <Link href="/registo">
+                  <UserPlus className="size-4" aria-hidden />
+                  Criar conta
+                </Link>
               </Button>
             </>
           ) : (
             <>
               {claims?.role === 'CANDIDATE' && (
-                <Button variant="outline" size="sm" asChild>
-                  <Link href={homePathForRole('CANDIDATE')}>A minha área</Link>
+                <Button variant="outline" size="sm" className="gap-2" asChild>
+                  <Link href={homePathForRole('CANDIDATE')}>
+                    <LayoutDashboard className="size-4" aria-hidden />
+                    A minha área
+                  </Link>
                 </Button>
               )}
               {(claims?.role === 'TENANT_ADMIN' || claims?.role === 'RECRUITER') && (
-                <Button variant="outline" size="sm" asChild>
-                  <Link href={homePathForRole(claims.role)}>Empresa</Link>
+                <Button variant="outline" size="sm" className="gap-2" asChild>
+                  <Link href={homePathForRole(claims.role)}>
+                    <Building2 className="size-4" aria-hidden />
+                    Empresa
+                  </Link>
                 </Button>
               )}
               {claims?.role === 'SUPER_ADMIN' && (
-                <Button variant="outline" size="sm" asChild>
-                  <Link href="/plataforma/empresas">Plataforma</Link>
+                <Button variant="outline" size="sm" className="gap-2" asChild>
+                  <Link href="/plataforma/empresas">
+                    <ShieldCheck className="size-4" aria-hidden />
+                    Plataforma
+                  </Link>
                 </Button>
               )}
               <Button
                 variant="ghost"
                 size="sm"
+                className="gap-2"
                 onClick={() => {
                   signOut()
                   router.replace('/')
                 }}
               >
+                <LogOut className="size-4" aria-hidden />
                 Sair
               </Button>
             </>

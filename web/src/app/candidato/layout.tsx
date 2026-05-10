@@ -43,7 +43,7 @@ export default function CandidateLayout({ children }: Readonly<{ children: React
   return (
     <div className="flex min-h-full flex-col">
       <CandidateNav />
-      <div className="flex flex-1 flex-col">{children}</div>
+      <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col">{children}</div>
     </div>
   )
 }
