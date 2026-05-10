@@ -1,5 +1,11 @@
 import { apiRequest } from '@/lib/api/client'
-import type { ApiJobStatus, JobResponse, Paginated, PublicJobWithTenantRow } from '@/lib/api/types'
+import type {
+  ApiJobStatus,
+  JobResponse,
+  MarketplaceJobFilterOptions,
+  Paginated,
+  PublicJobWithTenantRow,
+} from '@/lib/api/types'
 
 export type PublicJobListFilters = {
   page?: number
@@ -85,6 +91,13 @@ export function listMarketplaceJobs(query?: MarketplaceJobListQuery) {
   return apiRequest<PaginatedPublicExplore>('/jobs/public', {
     method: 'GET',
     query: query as Record<string, string | number | undefined>,
+  })
+}
+
+/** Facetas para filtros do explorar (GET /jobs/public/filters). */
+export function getMarketplaceJobFilterOptions() {
+  return apiRequest<MarketplaceJobFilterOptions>('/jobs/public/filters', {
+    method: 'GET',
   })
 }
 

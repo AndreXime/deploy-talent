@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Briefcase, ChevronRight, MapPin, MonitorSmartphone } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { useCallback, useEffect, useState } from 'react'
+import { type ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 import { PublicHeader } from '@/components/public-header'
 import { JobStatusBadge } from '@/components/status-badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -12,14 +12,153 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
-import { listMarketplaceJobs } from '@/lib/api/jobs-api'
+import { getMarketplaceJobFilterOptions, listMarketplaceJobs } from '@/lib/api/jobs-api'
+import type { MarketplaceTenantFilterOption } from '@/lib/api/types'
 import { getApiBaseUrl } from '@/lib/env'
 import { isUuid } from '@/lib/is-uuid'
 
 function pickString(v: string | null): string | undefined {
   const t = v?.trim()
   return t ? t : undefined
+}
+
+/** Valor sentinela interno do Select; não usar como modalidade/local na base de dados. */
+const MARKETPLACE_FILTER_ANY = '__dt_marketplace_any__'
+
+function mergeDraftStringOption(options: readonly string[], draft: string): string[] {
+  const t = draft.trim()
+  if (!t) return [...options]
+  const exists = options.some((o) => o.localeCompare(t, undefined, { sensitivity: 'accent' }) === 0)
+  if (exists) return [...options]
+  return [t, ...options]
+}
+
+function mergeDraftTenantOption(
+  tenants: readonly MarketplaceTenantFilterOption[],
+  draftId: string,
+): MarketplaceTenantFilterOption[] {
+  const t = draftId.trim()
+  if (!t || tenants.some((x) => x.id === t)) return [...tenants]
+  return [{ id: t, name: 'Empresa (não listada)' }, ...tenants]
+}
+
+interface MarketplaceStringFacetSelectProps {
+  id: string
+  label: string
+  value: string
+  onChange: (next: string) => void
+  options: readonly string[]
+  /** Texto no gatilho e na opção “nenhum filtro” (Base UI `items` evita mostrar o valor cru). */
+  chooseLabel: string
+  disabled?: boolean
+}
+
+function MarketplaceStringFacetSelect({
+  id,
+  label,
+  value,
+  onChange,
+  options,
+  chooseLabel,
+  disabled,
+}: MarketplaceStringFacetSelectProps) {
+  const selectValue = value.trim() ? value : MARKETPLACE_FILTER_ANY
+  const items = useMemo(() => {
+    const rec: Record<string, ReactNode> = {
+      [MARKETPLACE_FILTER_ANY]: chooseLabel,
+    }
+    for (const opt of options) {
+      rec[opt] = opt
+    }
+    return rec
+  }, [chooseLabel, options])
+
+  return (
+    <div className="space-y-2">
+      <Label htmlFor={id}>{label}</Label>
+      <Select
+        value={selectValue}
+        items={items}
+        onValueChange={(v) => onChange(v == null || v === MARKETPLACE_FILTER_ANY ? '' : v)}
+        disabled={disabled}
+      >
+        <SelectTrigger id={id} size="default" className="w-full min-w-0">
+          <SelectValue placeholder={chooseLabel} />
+        </SelectTrigger>
+        <SelectContent alignItemWithTrigger={false}>
+          <SelectItem value={MARKETPLACE_FILTER_ANY}>{chooseLabel}</SelectItem>
+          {options.map((opt) => (
+            <SelectItem key={opt} value={opt}>
+              {opt}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  )
+}
+
+interface MarketplaceTenantFacetSelectProps {
+  id: string
+  label: string
+  value: string
+  onChange: (next: string) => void
+  tenants: readonly MarketplaceTenantFilterOption[]
+  chooseLabel: string
+  disabled?: boolean
+}
+
+function MarketplaceTenantFacetSelect({
+  id,
+  label,
+  value,
+  onChange,
+  tenants,
+  chooseLabel,
+  disabled,
+}: MarketplaceTenantFacetSelectProps) {
+  const selectValue = value.trim() ? value : MARKETPLACE_FILTER_ANY
+  const items = useMemo(() => {
+    const rec: Record<string, ReactNode> = {
+      [MARKETPLACE_FILTER_ANY]: chooseLabel,
+    }
+    for (const t of tenants) {
+      rec[t.id] = t.name
+    }
+    return rec
+  }, [chooseLabel, tenants])
+
+  return (
+    <div className="space-y-2">
+      <Label htmlFor={id}>{label}</Label>
+      <Select
+        value={selectValue}
+        items={items}
+        onValueChange={(v) => onChange(v == null || v === MARKETPLACE_FILTER_ANY ? '' : v)}
+        disabled={disabled}
+      >
+        <SelectTrigger id={id} size="default" className="w-full min-w-0">
+          <SelectValue placeholder={chooseLabel} />
+        </SelectTrigger>
+        <SelectContent alignItemWithTrigger={false}>
+          <SelectItem value={MARKETPLACE_FILTER_ANY}>{chooseLabel}</SelectItem>
+          {tenants.map((t) => (
+            <SelectItem key={t.id} value={t.id}>
+              {t.name}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  )
 }
 
 export function ExploreJobsClient() {
@@ -60,6 +199,32 @@ export function ExploreJobsClient() {
     p.set('page', '1')
     router.replace(`${pathname}?${p.toString()}`)
   }, [draftLocation, draftModality, draftQ, draftSeniority, draftTenantId, pathname, router])
+
+  const filtersQ = useQuery({
+    enabled: !noApi,
+    queryKey: ['marketplace-job-filters'],
+    queryFn: getMarketplaceJobFilterOptions,
+    staleTime: 5 * 60_000,
+  })
+
+  const modalityOptions = useMemo(
+    () => mergeDraftStringOption(filtersQ.data?.modalities ?? [], draftModality),
+    [draftModality, filtersQ.data?.modalities],
+  )
+  const locationOptions = useMemo(
+    () => mergeDraftStringOption(filtersQ.data?.locations ?? [], draftLocation),
+    [draftLocation, filtersQ.data?.locations],
+  )
+  const seniorityOptions = useMemo(
+    () => mergeDraftStringOption(filtersQ.data?.seniorities ?? [], draftSeniority),
+    [draftSeniority, filtersQ.data?.seniorities],
+  )
+  const tenantOptions = useMemo(
+    () => mergeDraftTenantOption(filtersQ.data?.tenants ?? [], draftTenantId),
+    [draftTenantId, filtersQ.data?.tenants],
+  )
+
+  const facetSelectDisabled = filtersQ.isLoading
 
   const jobsQ = useQuery({
     enabled: !noApi && tenantIdValid,
@@ -106,13 +271,16 @@ export function ExploreJobsClient() {
         <Card>
           <CardHeader>
             <CardTitle className="text-base">Filtros</CardTitle>
-            <CardDescription>
-              Texto livre e campos opcionais; modalidade e senioridade em texto.
-            </CardDescription>
+            {filtersQ.isError ? (
+              <CardDescription className="text-destructive">
+                Não foi possível carregar as listas de filtro; pode usar palavras-chave e tentar de
+                novo.
+              </CardDescription>
+            ) : null}
           </CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2 sm:col-span-2">
-              <Label htmlFor="ex-q">Palavras-chave (título ou descripção)</Label>
+              <Label htmlFor="ex-q">Palavras-chave</Label>
               <Input
                 id="ex-q"
                 value={draftQ}
@@ -120,43 +288,42 @@ export function ExploreJobsClient() {
                 placeholder="Ex.: React, gestão de produto…"
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="ex-mod">Modalidade</Label>
-              <Input
-                id="ex-mod"
-                value={draftModality}
-                onChange={(e) => setDraftModality(e.target.value)}
-                placeholder="Ex.: remoto"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="ex-loc">Local</Label>
-              <Input
-                id="ex-loc"
-                value={draftLocation}
-                onChange={(e) => setDraftLocation(e.target.value)}
-                placeholder="Ex.: Lisboa"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="ex-sen">Senioridade</Label>
-              <Input
-                id="ex-sen"
-                value={draftSeniority}
-                onChange={(e) => setDraftSeniority(e.target.value)}
-                placeholder="Ex.: Mid"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="ex-tid">ID da empresa (opcional)</Label>
-              <Input
-                id="ex-tid"
-                value={draftTenantId}
-                onChange={(e) => setDraftTenantId(e.target.value)}
-                placeholder="UUID do tenant"
-                spellCheck={false}
-              />
-            </div>
+            <MarketplaceStringFacetSelect
+              id="ex-mod"
+              label="Modalidade"
+              value={draftModality}
+              onChange={setDraftModality}
+              options={modalityOptions}
+              chooseLabel="Escolha a modalidade"
+              disabled={facetSelectDisabled}
+            />
+            <MarketplaceStringFacetSelect
+              id="ex-loc"
+              label="Local"
+              value={draftLocation}
+              onChange={setDraftLocation}
+              options={locationOptions}
+              chooseLabel="Escolha o local"
+              disabled={facetSelectDisabled}
+            />
+            <MarketplaceStringFacetSelect
+              id="ex-sen"
+              label="Senioridade"
+              value={draftSeniority}
+              onChange={setDraftSeniority}
+              options={seniorityOptions}
+              chooseLabel="Escolha a senioridade"
+              disabled={facetSelectDisabled}
+            />
+            <MarketplaceTenantFacetSelect
+              id="ex-tid"
+              label="Empresa"
+              value={draftTenantId}
+              onChange={setDraftTenantId}
+              tenants={tenantOptions}
+              chooseLabel="Escolha a empresa"
+              disabled={facetSelectDisabled}
+            />
             <div className="flex items-end sm:col-span-2">
               <Button type="button" className="w-full sm:w-auto" onClick={applyFilters}>
                 Aplicar filtros
@@ -168,7 +335,7 @@ export function ExploreJobsClient() {
         {!tenantIdValid && tenantId ? (
           <Alert variant="destructive">
             <AlertDescription>
-              O ID da empresa não é um UUID válido; remova-o ou corrija o filtro.
+              A empresa seleccionada não é um UUID válido; limpe o filtro ou corrija o URL.
             </AlertDescription>
           </Alert>
         ) : null}

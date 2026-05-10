@@ -58,6 +58,19 @@ export interface PublicJobWithTenantRow {
   tenant: TenantSnippet
 }
 
+export interface MarketplaceTenantFilterOption {
+  id: string
+  name: string
+}
+
+/** GET /jobs/public/filters — facetas alinhadas ao listado do marketplace. */
+export interface MarketplaceJobFilterOptions {
+  modalities: string[]
+  locations: string[]
+  seniorities: string[]
+  tenants: MarketplaceTenantFilterOption[]
+}
+
 /** Uma vaga guardada (GET /candidates/me/saved-jobs, POST idempotente). */
 export interface CandidateSavedJobRow {
   savedAt: string
