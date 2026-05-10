@@ -40,6 +40,6 @@ function buildLoremIpsumBulk(wordCount: number): string {
 
 export function buildSeedJobDescription(tenantName: string, title: string): string {
   const intro = `Vaga na ${tenantName}: ${title}. Stack moderna, time colaborativo.\n\n`
-  const wordCount = 4000 + Math.floor(Math.random() * 2001)
+  const wordCount = 300
   return intro + buildLoremIpsumBulk(wordCount)
 }
