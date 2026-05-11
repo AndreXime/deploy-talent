@@ -79,29 +79,34 @@ function CareerListInner({ tenantId, valid }: { tenantId: string; valid: boolean
 
   return (
     <>
-      {(brandingQ.data?.banner?.url ?? brandingQ.data?.logo?.url) ? (
+      {brandingQ.data?.banner?.url ? (
         <div className="relative h-44 w-full overflow-hidden border-b md:h-56 lg:h-72">
-          {brandingQ.data.banner?.url ? (
-            <img src={brandingQ.data.banner.url} alt="" className="h-full w-full object-cover" />
-          ) : brandingQ.data.logo?.url ? (
-            <div className="flex h-full items-center justify-center bg-muted">
-              <img src={brandingQ.data.logo.url} alt="" className="max-h-24 object-contain" />
-            </div>
-          ) : null}
+          <img src={brandingQ.data.banner.url} alt="" className="h-full w-full object-cover" />
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background/90 to-transparent" />
         </div>
       ) : null}
       <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-8 px-4 py-10 lg:px-6">
         <div className="space-y-2">
           <div className="flex items-center gap-3">
-            {brandingQ.data?.logo?.url && !brandingQ.data?.banner?.url ? (
+            {brandingQ.data?.logo?.url ? (
               <img
                 src={brandingQ.data.logo.url}
                 alt=""
-                className="size-12 rounded-md border bg-card object-contain p-1"
+                className="size-14 rounded-md border bg-card object-contain p-1"
               />
             ) : null}
-            <h1 className="text-2xl font-semibold tracking-tight lg:text-3xl">{headline}</h1>
+            <div className="flex min-w-0 flex-col">
+              <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                {headline}
+              </span>
+              {brandingQ.data?.name ? (
+                <h1 className="truncate text-2xl font-semibold tracking-tight lg:text-3xl">
+                  {brandingQ.data.name}
+                </h1>
+              ) : (
+                <Skeleton className="mt-1 h-8 w-48" />
+              )}
+            </div>
           </div>
           <p className="text-sm text-muted-foreground">
             Encontre oportunidades abertas e candidate-se com o seu perfil.

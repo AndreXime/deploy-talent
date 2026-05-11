@@ -119,17 +119,11 @@ export default function PublicJobDetailPage() {
   return (
     <div className="flex min-h-full flex-col">
       <PublicHeader />
-      {(brandingQ.data?.banner?.url ?? brandingQ.data?.logo?.url) && (
-        <div className="relative h-32 w-full overflow-hidden border-b sm:h-40">
-          {brandingQ.data.banner?.url ? (
-            <img src={brandingQ.data.banner.url} alt="" className="h-full w-full object-cover" />
-          ) : brandingQ.data?.logo?.url ? (
-            <div className="flex h-full items-center justify-center bg-muted">
-              <img src={brandingQ.data.logo.url} alt="" className="max-h-16 object-contain" />
-            </div>
-          ) : null}
+      {brandingQ.data?.banner?.url ? (
+        <div className="relative h-40 w-full overflow-hidden border-b sm:h-52 lg:h-64">
+          <img src={brandingQ.data.banner.url} alt="" className="h-full w-full object-cover" />
         </div>
-      )}
+      ) : null}
       <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 px-4 py-8 lg:px-6">
         <Button variant="ghost" size="sm" className="-ml-3 w-fit gap-1" asChild>
           <Link href={`/carreiras/${tenantId}`}>
@@ -170,19 +164,32 @@ export default function PublicJobDetailPage() {
         {job && (
           <>
             <header className="space-y-3">
-              <div className="flex flex-wrap items-center gap-2">
-                <h1 className="text-2xl font-semibold tracking-tight">{job.title}</h1>
-                <JobStatusBadge status={job.status} audience="public" />
-              </div>
-              <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-                <span className="inline-flex items-center gap-1">
-                  <MonitorSmartphone className="size-4 shrink-0" aria-hidden />
-                  {job.modality}
-                </span>
-                <span className="inline-flex items-center gap-1">
-                  <MapPin className="size-4 shrink-0" aria-hidden />
-                  {job.location}
-                </span>
+              <div className="flex items-start gap-4">
+                {brandingQ.data?.logo?.url ? (
+                  <Link
+                    href={`/carreiras/${tenantId}`}
+                    className="shrink-0 rounded-md border bg-card p-1.5 transition hover:bg-accent"
+                    aria-label="Ver página da empresa"
+                  >
+                    <img src={brandingQ.data.logo.url} alt="" className="size-14 object-contain" />
+                  </Link>
+                ) : null}
+                <div className="flex min-w-0 flex-1 flex-col gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h1 className="text-2xl font-semibold tracking-tight">{job.title}</h1>
+                    <JobStatusBadge status={job.status} audience="public" />
+                  </div>
+                  <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+                    <span className="inline-flex items-center gap-1">
+                      <MonitorSmartphone className="size-4 shrink-0" aria-hidden />
+                      {job.modality}
+                    </span>
+                    <span className="inline-flex items-center gap-1">
+                      <MapPin className="size-4 shrink-0" aria-hidden />
+                      {job.location}
+                    </span>
+                  </div>
+                </div>
               </div>
               <Separator />
             </header>

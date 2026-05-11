@@ -149,6 +149,7 @@ export interface PublicBrandingAsset {
 }
 
 export interface PublicTenantBrandingResponse {
+  name: string
   logo: PublicBrandingAsset | null
   banner: PublicBrandingAsset | null
 }

@@ -33,6 +33,9 @@
       "recommended": true,
       "style": {
         "useImportType": "off"
+      },
+      "performance": {
+        "noImgElement": "off"
       }
     }
   },
@@ -44,16 +47,6 @@
     }
   },
   "overrides": [
-    {
-      "includes": ["**/app/carreiras/**/*.tsx"],
-      "linter": {
-        "rules": {
-          "performance": {
-            "noImgElement": "off"
-          }
-        }
-      }
-    },
     {
       "includes": ["**/components/ui/label.tsx"],
       "linter": {
