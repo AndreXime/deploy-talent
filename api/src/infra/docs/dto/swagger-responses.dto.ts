@@ -167,8 +167,10 @@ class PublicBrandingSignedAssetDto {
   @ApiProperty({ type: String, format: 'date-time' }) expiresAt!: Date
 }
 
-/** Branding público da empresa (career site). */
+/** Identidade pública da empresa (career site): nome + logo + banner. */
 export class PublicTenantBrandingResponseDto {
+  @ApiProperty() name!: string
+
   @ApiProperty({ nullable: true, type: PublicBrandingSignedAssetDto })
   logo!: PublicBrandingSignedAssetDto | null
 

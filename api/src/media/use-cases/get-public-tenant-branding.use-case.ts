@@ -4,6 +4,7 @@ import { PRISMA_CLIENT } from '../../infra/prisma/prisma.constants'
 import { StorageService } from '../../infra/storage/storage.service'
 
 export interface PublicTenantBrandingResult {
+  name: string
   logo: { url: string; expiresAt: Date } | null
   banner: { url: string; expiresAt: Date } | null
 }
@@ -18,7 +19,7 @@ export class GetPublicTenantBrandingUseCase {
   async execute(tenantId: string): Promise<PublicTenantBrandingResult> {
     const tenant = await this.prisma.tenant.findFirst({
       where: { id: tenantId, deletedAt: null, isActive: true },
-      select: { logoKey: true, bannerKey: true },
+      select: { name: true, logoKey: true, bannerKey: true },
     })
     if (!tenant) throw new NotFoundException('Tenant not found')
 
@@ -34,6 +35,7 @@ export class GetPublicTenantBrandingUseCase {
     ])
 
     return {
+      name: tenant.name,
       logo: logo ? { url: logo.url, expiresAt: logo.expiresAt } : null,
       banner: banner ? { url: banner.url, expiresAt: banner.expiresAt } : null,
     }
