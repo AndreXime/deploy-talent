@@ -1,5 +1,6 @@
 import { ForbiddenException } from '@nestjs/common'
-import type { PrismaClient } from '../../generated/prisma/client'
+import type { PrismaClient } from '../../../generated/prisma/client'
+import { CandidateProfileReadService } from '../candidate-profile-read.service'
 import { ForgetMeUseCase } from './forget-me.use-case'
 
 describe('ForgetMeUseCase', () => {
@@ -11,7 +12,12 @@ describe('ForgetMeUseCase', () => {
       },
     }
     const storage = { deleteObject: jest.fn(async () => undefined) }
-    const useCase = new ForgetMeUseCase(prisma as unknown as PrismaClient, storage as never)
+    const candidateRead = { toApiRead: jest.fn() }
+    const useCase = new ForgetMeUseCase(
+      prisma as unknown as PrismaClient,
+      storage as never,
+      candidateRead as unknown as CandidateProfileReadService,
+    )
 
     await expect(useCase.execute('u1')).rejects.toBeInstanceOf(ForbiddenException)
   })
