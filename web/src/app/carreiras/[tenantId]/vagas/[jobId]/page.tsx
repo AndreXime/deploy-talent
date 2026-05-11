@@ -1,7 +1,7 @@
 'use client'
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, Bookmark, MapPin, MonitorSmartphone, User } from 'lucide-react'
+import { ArrowLeft, Bookmark, Building2, MapPin, MonitorSmartphone, User } from 'lucide-react'
 import Link from 'next/link'
 import { useParams, usePathname, useRouter } from 'next/navigation'
 import { toast } from 'sonner'
@@ -125,12 +125,21 @@ export default function PublicJobDetailPage() {
         </div>
       ) : null}
       <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 px-4 py-8 lg:px-6">
-        <Button variant="ghost" size="sm" className="-ml-3 w-fit gap-1" asChild>
-          <Link href={`/carreiras/${tenantId}`}>
-            <ArrowLeft className="size-4" aria-hidden />
-            Voltar às vagas
-          </Link>
-        </Button>
+        <div className="-ml-3 flex flex-wrap items-center gap-1">
+          <Button variant="ghost" size="sm" className="gap-1" asChild>
+            <Link href="/vagas">
+              <ArrowLeft className="size-4" aria-hidden />
+              Todas as vagas
+            </Link>
+          </Button>
+          <span className="text-sm text-muted-foreground">·</span>
+          <Button variant="ghost" size="sm" className="gap-1" asChild>
+            <Link href={`/carreiras/${tenantId}`}>
+              <Building2 className="size-4" aria-hidden />
+              {brandingQ.data?.name ? `Vagas de ${brandingQ.data.name}` : 'Vagas da empresa'}
+            </Link>
+          </Button>
+        </div>
 
         {noApi && (
           <Alert variant="destructive">
