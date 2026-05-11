@@ -112,7 +112,7 @@ export function HomeFeaturedJobs() {
                   <CardHeader className="pb-2">
                     <div className="flex flex-wrap items-start justify-between gap-2">
                       <CardTitle className="pr-2 text-base leading-snug">{job.title}</CardTitle>
-                      <JobStatusBadge status={job.status} />
+                      <JobStatusBadge status={job.status} audience="public" />
                     </div>
                     <Link
                       href={`/carreiras/${tenant.id}`}

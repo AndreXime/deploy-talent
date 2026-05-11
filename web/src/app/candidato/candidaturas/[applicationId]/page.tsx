@@ -120,7 +120,7 @@ export default function CandidateApplicationDetailPage() {
               </span>
               <div className="flex flex-wrap items-center gap-2 pt-2">
                 <span className="text-muted-foreground">Estado da vaga:</span>
-                <JobStatusBadge status={row.job.status} />
+                <JobStatusBadge status={row.job.status} audience="public" />
               </div>
             </CardContent>
           </Card>

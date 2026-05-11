@@ -1,8 +1,17 @@
 import { Badge } from '@/components/ui/badge'
 import type { ApiApplicationStatus, ApiJobStatus } from '@/lib/api/types'
-import { applicationStatusLabel, jobStatusLabel } from '@/lib/domain-labels'
+import {
+  applicationStatusLabel,
+  jobStatusLabel,
+  jobStatusPublicLabel,
+} from '@/lib/domain-labels'
 
-export function JobStatusBadge({ status }: Readonly<{ status: ApiJobStatus }>) {
+export type JobBadgeAudience = 'b2b' | 'public'
+
+export function JobStatusBadge({
+  status,
+  audience = 'b2b',
+}: Readonly<{ status: ApiJobStatus; audience?: JobBadgeAudience }>) {
   const outline =
     status === 'CLOSED'
       ? 'border-transparent bg-muted text-muted-foreground'
@@ -12,7 +21,8 @@ export function JobStatusBadge({ status }: Readonly<{ status: ApiJobStatus }>) {
           ? 'border-transparent bg-amber-500/90 text-white'
           : 'border-transparent bg-secondary text-secondary-foreground'
 
-  return <Badge className={outline}>{jobStatusLabel(status)}</Badge>
+  const label = audience === 'public' ? jobStatusPublicLabel(status) : jobStatusLabel(status)
+  return <Badge className={outline}>{label}</Badge>
 }
 
 export function ApplicationStatusBadge({ status }: Readonly<{ status: ApiApplicationStatus }>) {

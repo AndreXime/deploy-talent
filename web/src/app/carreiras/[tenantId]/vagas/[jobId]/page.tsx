@@ -172,7 +172,7 @@ export default function PublicJobDetailPage() {
             <header className="space-y-3">
               <div className="flex flex-wrap items-center gap-2">
                 <h1 className="text-2xl font-semibold tracking-tight">{job.title}</h1>
-                <JobStatusBadge status={job.status} />
+                <JobStatusBadge status={job.status} audience="public" />
               </div>
               <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
                 <span className="inline-flex items-center gap-1">

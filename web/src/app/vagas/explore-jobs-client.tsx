@@ -381,7 +381,7 @@ export function ExploreJobsClient() {
                     </Link>
                     <div className="flex flex-wrap items-center gap-2">
                       <h2 className="text-lg font-medium">{job.title}</h2>
-                      <JobStatusBadge status={job.status} />
+                      <JobStatusBadge status={job.status} audience="public" />
                     </div>
                     <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
                       <span className="inline-flex items-center gap-1">
