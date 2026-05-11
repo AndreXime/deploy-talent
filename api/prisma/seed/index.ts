@@ -5,6 +5,7 @@ import { Pool } from 'pg'
 import { ApplicationStatus, JobStatus, PrismaClient, UserRole } from '../../generated/prisma/client'
 import { buildSeedJobDescription } from './lorem'
 import { buildSeedJobTitle, SEED_TENANT_NAMES } from './names'
+import { ensureSeedPlaceholdersUploaded, SEED_PLACEHOLDER_KEYS } from './storage'
 import type {
   MockApplicationExport,
   MockCandidateExport,
@@ -34,6 +35,7 @@ async function main(): Promise<void> {
 
   try {
     await clearSeedData(prisma)
+    await ensureSeedPlaceholdersUploaded()
 
     const passwordHash = await bcrypt.hash(SEED_PASSWORD, 10)
 
@@ -70,6 +72,8 @@ async function main(): Promise<void> {
           name: tenantName,
           slug,
           isActive: true,
+          logoKey: SEED_PLACEHOLDER_KEYS.tenantLogo,
+          bannerKey: SEED_PLACEHOLDER_KEYS.tenantBanner,
         },
         select: { id: true, name: true },
       })
@@ -197,6 +201,7 @@ async function main(): Promise<void> {
           name: `Candidato Seed ${c}`,
           email: user.email,
           phone: `+55119999${String(1000 + c).slice(-4)}`,
+          avatarKey: SEED_PLACEHOLDER_KEYS.candidateAvatar,
         },
         select: { id: true, userId: true, email: true, name: true, phone: true },
       })
