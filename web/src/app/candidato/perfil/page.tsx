@@ -1,7 +1,7 @@
 'use client'
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -72,6 +72,10 @@ export default function CandidateProfilePage() {
 
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
+  const [uploadingAvatar, setUploadingAvatar] = useState(false)
+  const [uploadingResume, setUploadingResume] = useState(false)
+  const avatarInputRef = useRef<HTMLInputElement>(null)
+  const resumeInputRef = useRef<HTMLInputElement>(null)
 
   const profileQ = useQuery({
     enabled: !!token && !noApi,
@@ -118,6 +122,7 @@ export default function CandidateProfilePage() {
     e.target.value = ''
     if (!file || !token) return
 
+    setUploadingAvatar(true)
     try {
       const ctype = mimeForFile(file)
       const presigned = await presignUpload(token, {
@@ -129,6 +134,8 @@ export default function CandidateProfilePage() {
     } catch (err: unknown) {
       if (err instanceof ApiRequestError) toast.error(err.message)
       else toast.error('Não foi possível enviar o ficheiro.')
+    } finally {
+      setUploadingAvatar(false)
     }
   }
 
@@ -142,6 +149,7 @@ export default function CandidateProfilePage() {
     e.target.value = ''
     if (!file || !token) return
 
+    setUploadingResume(true)
     try {
       const ctype = resumeContentType(file)
       const presigned = await presignUpload(token, {
@@ -155,6 +163,8 @@ export default function CandidateProfilePage() {
       if (err instanceof ApiRequestError) toast.error(err.message)
       else if (err instanceof Error) toast.error(err.message)
       else toast.error('Não foi possível enviar o currículo.')
+    } finally {
+      setUploadingResume(false)
     }
   }
 
@@ -224,7 +234,7 @@ export default function CandidateProfilePage() {
           <form onSubmit={saveProfile}>
             <CardContent className="flex flex-col gap-4">
               <div className="space-y-3">
-                <Label htmlFor="avatar">Foto de perfil</Label>
+                <Label>Foto de perfil</Label>
                 <div className="flex flex-col items-center gap-4 lg:flex-row lg:items-center">
                   <Avatar className="size-32">
                     <AvatarImage
@@ -235,19 +245,40 @@ export default function CandidateProfilePage() {
                       {nameInitials(profileQ.data.name)}
                     </AvatarFallback>
                   </Avatar>
+                  <input
+                    ref={avatarInputRef}
+                    type="file"
+                    accept={IMAGE_ACCEPT.join(',')}
+                    className="hidden"
+                    onChange={onAvatarPick}
+                  />
                   <div className="flex flex-col items-center gap-2 lg:items-start">
-                    <Input
-                      id="avatar"
-                      type="file"
-                      accept={IMAGE_ACCEPT.join(',')}
-                      className="max-w-xs cursor-pointer"
-                      onChange={onAvatarPick}
-                    />
-                    {profileQ.data.avatarUrl ? (
-                      <Button type="button" variant="ghost" size="sm" onClick={removeAvatar}>
-                        Remover foto
+                    <div className="flex flex-wrap items-center justify-center gap-2 lg:justify-start">
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        disabled={uploadingAvatar}
+                        onClick={() => avatarInputRef.current?.click()}
+                      >
+                        {uploadingAvatar
+                          ? 'A enviar…'
+                          : profileQ.data.avatarUrl
+                            ? 'Trocar foto'
+                            : 'Enviar foto'}
                       </Button>
-                    ) : null}
+                      {profileQ.data.avatarUrl ? (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          disabled={uploadingAvatar}
+                          onClick={removeAvatar}
+                        >
+                          Remover foto
+                        </Button>
+                      ) : null}
+                    </div>
+                    <p className="text-xs text-muted-foreground">JPG, PNG ou WEBP — até 10 MB</p>
                   </div>
                 </div>
               </div>
@@ -272,20 +303,48 @@ export default function CandidateProfilePage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="resume">Currículo (PDF, DOC ou DOCX)</Label>
-                <div className="flex flex-wrap items-center gap-2">
-                  <Input
-                    id="resume"
-                    type="file"
-                    accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                    className="max-w-xs cursor-pointer"
-                    onChange={onResumePick}
-                  />
-                  {profileQ.data.resumeUrl ? (
-                    <Button type="button" variant="ghost" size="sm" onClick={removeResume}>
-                      Remover currículo
+                <Label>Currículo</Label>
+                <input
+                  ref={resumeInputRef}
+                  type="file"
+                  accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                  className="hidden"
+                  onChange={onResumePick}
+                />
+                <div className="flex flex-col gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    {profileQ.data.resumeUrl ? (
+                      <Button asChild variant="outline">
+                        <a href={profileQ.data.resumeUrl} target="_blank" rel="noreferrer">
+                          Ver currículo
+                        </a>
+                      </Button>
+                    ) : null}
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      disabled={uploadingResume}
+                      onClick={() => resumeInputRef.current?.click()}
+                    >
+                      {uploadingResume
+                        ? 'A enviar…'
+                        : profileQ.data.resumeUrl
+                          ? 'Trocar currículo'
+                          : 'Enviar currículo'}
                     </Button>
-                  ) : null}
+                    {profileQ.data.resumeUrl ? (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        disabled={uploadingResume}
+                        onClick={removeResume}
+                      >
+                        Remover currículo
+                      </Button>
+                    ) : null}
+                  </div>
+                  <p className="text-xs text-muted-foreground">PDF, DOC ou DOCX — até 10 MB</p>
                 </div>
               </div>
             </CardContent>
