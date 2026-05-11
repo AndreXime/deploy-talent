@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -42,6 +43,14 @@ const RESUME_TYPES = [
 
 function mimeForFile(file: File): string {
   return IMAGE_ACCEPT.includes(file.type as (typeof IMAGE_ACCEPT)[number]) ? file.type : 'image/jpeg'
+}
+
+function nameInitials(fullName: string): string {
+  const parts = fullName.trim().split(/\s+/).filter(Boolean)
+  if (parts.length === 0) return '?'
+  const first = parts[0][0] ?? ''
+  const last = parts.length > 1 ? (parts[parts.length - 1][0] ?? '') : ''
+  return (first + last).toUpperCase()
 }
 
 function resumeContentType(file: File): string {
@@ -214,21 +223,32 @@ export default function CandidateProfilePage() {
           </CardHeader>
           <form onSubmit={saveProfile}>
             <CardContent className="flex flex-col gap-4">
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <Label htmlFor="avatar">Foto de perfil</Label>
-                <div className="flex flex-wrap items-center gap-2">
-                  <Input
-                    id="avatar"
-                    type="file"
-                    accept={IMAGE_ACCEPT.join(',')}
-                    className="max-w-xs cursor-pointer"
-                    onChange={onAvatarPick}
-                  />
-                  {profileQ.data.avatarUrl ? (
-                    <Button type="button" variant="ghost" size="sm" onClick={removeAvatar}>
-                      Remover foto
-                    </Button>
-                  ) : null}
+                <div className="flex flex-col items-center gap-4 lg:flex-row lg:items-center">
+                  <Avatar className="size-32">
+                    <AvatarImage
+                      src={profileQ.data.avatarUrl ?? undefined}
+                      alt={profileQ.data.name}
+                    />
+                    <AvatarFallback className="text-2xl">
+                      {nameInitials(profileQ.data.name)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex flex-col items-center gap-2 lg:items-start">
+                    <Input
+                      id="avatar"
+                      type="file"
+                      accept={IMAGE_ACCEPT.join(',')}
+                      className="max-w-xs cursor-pointer"
+                      onChange={onAvatarPick}
+                    />
+                    {profileQ.data.avatarUrl ? (
+                      <Button type="button" variant="ghost" size="sm" onClick={removeAvatar}>
+                        Remover foto
+                      </Button>
+                    ) : null}
+                  </div>
                 </div>
               </div>
               <div className="space-y-2">
