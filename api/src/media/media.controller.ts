@@ -11,9 +11,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
 import { PresignedUrlResponseDto } from '../infra/docs/dto/swagger-responses.dto'
 import { ApiJwtAuth, ApiStandardErrors } from '../infra/docs/swagger-decorators'
 import { TenantOptional } from '../tenant-context/tenant.decorators'
-import { PresignAssetDownloadDto } from './dto/presign-asset-download.dto'
 import { PresignProfileUploadDto } from './dto/presign-profile-upload.dto'
-import { PresignAssetDownloadUseCase } from './use-cases/presign-asset-download.use-case'
 import { PresignProfileUploadUseCase } from './use-cases/presign-profile-upload.use-case'
 
 interface RequestWithJwt extends ExpressRequest {
@@ -27,32 +25,17 @@ interface RequestWithJwt extends ExpressRequest {
 @ApiStandardErrors(true)
 @TenantOptional()
 export class MediaController {
-  constructor(
-    private readonly presignProfileUpload: PresignProfileUploadUseCase,
-    private readonly presignAssetDownload: PresignAssetDownloadUseCase,
-  ) {}
+  constructor(private readonly presignProfileUpload: PresignProfileUploadUseCase) {}
 
   @Post('presign-upload')
   @ApiOperation({
     summary: 'URL pré-assinada para upload (avatar, currículo, logo ou banner)',
     description:
-      'Currículo: `purpose` `CANDIDATE_RESUME`, `contentType` PDF/DOC/DOCX e `fileName` com o nome do ficheiro. Após o PUT no S3, grave a `key` no perfil (`PATCH candidates/me`, etc.).',
+      'Currículo: `purpose` `CANDIDATE_RESUME`, `contentType` PDF/DOC/DOCX e `fileName`. Após o PUT no S3, envie a `key` no `PATCH /candidates/me`. As leituras (`GET` perfil, candidaturas B2B) devolvem `resumeUrl` / `avatarUrl` já assinadas.',
   })
   @ApiBody({ type: PresignProfileUploadDto })
   @ApiCreatedResponse({ type: PresignedUrlResponseDto })
   async presignUpload(@Request() req: RequestWithJwt, @Body() body: PresignProfileUploadDto) {
     return this.presignProfileUpload.execute(req.user, body)
-  }
-
-  @Post('presign-download')
-  @ApiOperation({
-    summary: 'URL pré-assinada para leitura de um objeto autorizado',
-    description:
-      'Permite baixar/visualizar mídia cujo prefixo da `key` corresponde ao seu papel (próprio avatar, branding do tenant ou candidato ligado ao tenant).',
-  })
-  @ApiBody({ type: PresignAssetDownloadDto })
-  @ApiCreatedResponse({ type: PresignedUrlResponseDto })
-  async presignDownload(@Request() req: RequestWithJwt, @Body() body: PresignAssetDownloadDto) {
-    return this.presignAssetDownload.execute(req.user, body.key)
   }
 }

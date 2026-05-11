@@ -25,6 +25,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
 import { forgetMe, getMyProfile, patchMyProfile } from '@/lib/api/candidates-api'
+import type { PatchCandidateProfileBody } from '@/lib/api/types'
 import { ApiRequestError } from '@/lib/api/client'
 import { presignUpload, uploadFileToPresignedUrl } from '@/lib/api/media-api'
 import { getApiBaseUrl } from '@/lib/env'
@@ -77,7 +78,7 @@ export default function CandidateProfilePage() {
   }, [profileQ.data])
 
   const patchMut = useMutation({
-    mutationFn: (body: { name?: string; phone?: string; resumeKey?: string; avatarKey?: string }) =>
+    mutationFn: (body: PatchCandidateProfileBody) =>
       patchMyProfile(requireSessionToken(token), body),
     onSuccess: (data) => {
       queryClient.setQueryData(['my-profile', token], data)
@@ -223,7 +224,7 @@ export default function CandidateProfilePage() {
                     className="max-w-xs cursor-pointer"
                     onChange={onAvatarPick}
                   />
-                  {profileQ.data.avatarKey ? (
+                  {profileQ.data.avatarUrl ? (
                     <Button type="button" variant="ghost" size="sm" onClick={removeAvatar}>
                       Remover foto
                     </Button>
@@ -260,7 +261,7 @@ export default function CandidateProfilePage() {
                     className="max-w-xs cursor-pointer"
                     onChange={onResumePick}
                   />
-                  {profileQ.data.resumeKey ? (
+                  {profileQ.data.resumeUrl ? (
                     <Button type="button" variant="ghost" size="sm" onClick={removeResume}>
                       Remover currículo
                     </Button>

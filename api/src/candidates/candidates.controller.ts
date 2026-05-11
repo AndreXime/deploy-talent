@@ -65,7 +65,8 @@ export class CandidatesController {
   @Get('me')
   @ApiOperation({
     summary: 'Perfil global do candidato',
-    description: 'Sem tenant na URL para estes endpoints.',
+    description:
+      'Sem tenant na URL. Em leitura, `resumeUrl` e `avatarUrl` são GET assinadas (substituem as chaves S3). Para atualizar arquivo, envie `resumeKey` / `avatarKey` após o presign de upload.',
   })
   @ApiOkResponse({ type: CandidateProfileResponseDto })
   async me(@Request() req: RequestWithUser) {

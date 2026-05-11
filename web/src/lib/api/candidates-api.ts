@@ -1,5 +1,10 @@
 import { apiRequest } from '@/lib/api/client'
-import type { CandidateProfileResponse, CandidateSavedJobRow, Paginated } from '@/lib/api/types'
+import type {
+  CandidateProfileResponse,
+  CandidateSavedJobRow,
+  Paginated,
+  PatchCandidateProfileBody,
+} from '@/lib/api/types'
 
 export function getMyProfile(token: string) {
   return apiRequest<CandidateProfileResponse>('/candidates/me', {
@@ -10,7 +15,7 @@ export function getMyProfile(token: string) {
 
 export function patchMyProfile(
   token: string,
-  body: Partial<Pick<CandidateProfileResponse, 'name' | 'phone' | 'resumeKey' | 'avatarKey'>>,
+  body: PatchCandidateProfileBody,
 ) {
   return apiRequest<CandidateProfileResponse>('/candidates/me', {
     method: 'PATCH',

@@ -6,6 +6,7 @@ import {
   assertKeyMatchesCandidateAvatar,
   assertKeyMatchesCandidateResume,
 } from '../../media/media-key.util'
+import { CandidateProfileReadService } from '../candidate-profile-read.service'
 import type { UpdateCandidateProfileDto } from '../dto/update-candidate-profile.dto'
 
 @Injectable()
@@ -13,6 +14,7 @@ export class UpdateMyProfileUseCase {
   constructor(
     @Inject(PRISMA_CLIENT) private readonly prisma: PrismaClient,
     private readonly storage: StorageService,
+    private readonly candidateRead: CandidateProfileReadService,
   ) {}
 
   async execute(userId: string, input: UpdateCandidateProfileDto) {
@@ -53,10 +55,11 @@ export class UpdateMyProfileUseCase {
       data.avatarKey = input.avatarKey.trim() === '' ? null : input.avatarKey.trim()
     }
 
-    return this.prisma.candidate.update({
+    const updated = await this.prisma.candidate.update({
       where: { id: profile.id },
       data,
     })
+    return this.candidateRead.toApiRead(updated)
   }
 }
 

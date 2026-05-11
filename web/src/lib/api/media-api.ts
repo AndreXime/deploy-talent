@@ -19,14 +19,6 @@ export function presignUpload(
   })
 }
 
-export function presignDownload(token: string, key: string) {
-  return apiRequest<PresignedUrlResponse>('/media/presign-download', {
-    method: 'POST',
-    token,
-    json: { key },
-  })
-}
-
 export async function uploadFileToPresignedUrl(
   uploadUrl: string,
   file: Blob,

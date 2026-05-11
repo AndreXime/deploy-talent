@@ -2,12 +2,14 @@ import { ForbiddenException, Inject, Injectable, NotFoundException } from '@nest
 import type { PrismaClient } from '../../../generated/prisma/client'
 import { PRISMA_CLIENT } from '../../infra/prisma/prisma.constants'
 import { StorageService } from '../../infra/storage/storage.service'
+import { CandidateProfileReadService } from '../candidate-profile-read.service'
 
 @Injectable()
 export class ForgetMeUseCase {
   constructor(
     @Inject(PRISMA_CLIENT) private readonly prisma: PrismaClient,
     private readonly storage: StorageService,
+    private readonly candidateRead: CandidateProfileReadService,
   ) {}
 
   async execute(userId: string) {
@@ -29,7 +31,7 @@ export class ForgetMeUseCase {
       void this.storage.deleteObject(profile.resumeKey).catch(() => undefined)
     }
 
-    return this.prisma.candidate.update({
+    const updated = await this.prisma.candidate.update({
       where: { id: profile.id },
       data: {
         name: 'Deleted Candidate',
@@ -41,6 +43,7 @@ export class ForgetMeUseCase {
         deletedAt: new Date(),
       },
     })
+    return this.candidateRead.toApiRead(updated)
   }
 }
 

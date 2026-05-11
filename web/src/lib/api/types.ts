@@ -84,13 +84,23 @@ export interface CandidateProfileResponse {
   name: string
   email: string
   phone: string | null
-  resumeKey: string | null
-  avatarKey: string | null
+  /** URL GET pré-assinada (expira); ausente se não houver currículo. */
+  resumeUrl: string | null
+  /** URL GET pré-assinada (expira); ausente se não houver avatar. */
+  avatarUrl: string | null
   deletedAt: string | null
   anonymizedAt: string | null
   createdAt: string
   updatedAt: string
 }
+
+/** Campos aceites em `PATCH /candidates/me` (continuam a ser chaves S3 após upload). */
+export type PatchCandidateProfileBody = Partial<{
+  name: string
+  phone: string
+  resumeKey: string
+  avatarKey: string
+}>
 
 export interface ApplicationResponse {
   id: string

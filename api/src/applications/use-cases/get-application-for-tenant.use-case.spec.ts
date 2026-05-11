@@ -1,7 +1,10 @@
 import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common'
 import { type PrismaClient, UserRole } from '../../../generated/prisma/client'
+import { CandidateProfileReadService } from '../../candidates/candidate-profile-read.service'
 import { TenantContextService } from '../../tenant-context/tenant-context.service'
 import { GetApplicationForTenantUseCase } from './get-application-for-tenant.use-case'
+
+const candidateReadNoop = { toApiRead: jest.fn() } as unknown as CandidateProfileReadService
 
 describe('GetApplicationForTenantUseCase', () => {
   it('rejects candidate actor', async () => {
@@ -10,6 +13,7 @@ describe('GetApplicationForTenantUseCase', () => {
     const useCase = new GetApplicationForTenantUseCase(
       prisma as unknown as PrismaClient,
       tenantContext as unknown as TenantContextService,
+      candidateReadNoop,
     )
 
     await expect(
@@ -23,6 +27,7 @@ describe('GetApplicationForTenantUseCase', () => {
     const useCase = new GetApplicationForTenantUseCase(
       prisma as unknown as PrismaClient,
       tenantContext as unknown as TenantContextService,
+      candidateReadNoop,
     )
 
     await expect(
@@ -36,6 +41,7 @@ describe('GetApplicationForTenantUseCase', () => {
     const useCase = new GetApplicationForTenantUseCase(
       prisma as unknown as PrismaClient,
       tenantContext as unknown as TenantContextService,
+      candidateReadNoop,
     )
 
     await expect(

@@ -3,6 +3,7 @@ import type { ApplicationStatus, PrismaClient } from '../../../generated/prisma/
 import { UserRole } from '../../../generated/prisma/client'
 import { resolvePagination } from '../../common/dto/pagination-query.dto'
 import { PRISMA_CLIENT } from '../../infra/prisma/prisma.constants'
+import { CandidateProfileReadService } from '../../candidates/candidate-profile-read.service'
 import { TenantContextService } from '../../tenant-context/tenant-context.service'
 import type { Actor } from './application.actor'
 
@@ -17,6 +18,7 @@ export class ListApplicationsForTenantUseCase {
   constructor(
     @Inject(PRISMA_CLIENT) private readonly prisma: PrismaClient,
     private readonly tenantContext: TenantContextService,
+    private readonly candidateRead: CandidateProfileReadService,
   ) {}
 
   async execute(actor: Actor, input: ListApplicationsForTenantInput = {}) {
@@ -29,7 +31,7 @@ export class ListApplicationsForTenantUseCase {
     const { page, limit, skip, take } = resolvePagination(input.page, input.limit)
     const where = input.status !== undefined ? { status: input.status } : {}
 
-    const [items, total] = await Promise.all([
+    const [rows, total] = await Promise.all([
       this.prisma.application.findMany({
         where,
         include: { candidate: true, job: true },
@@ -39,6 +41,13 @@ export class ListApplicationsForTenantUseCase {
       }),
       this.prisma.application.count({ where }),
     ])
+
+    const items = await Promise.all(
+      rows.map(async (row) => ({
+        ...row,
+        candidate: await this.candidateRead.toApiRead(row.candidate),
+      })),
+    )
 
     return { items, total, page, limit }
   }

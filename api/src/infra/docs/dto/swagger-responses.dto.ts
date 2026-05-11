@@ -66,8 +66,16 @@ export class CandidateProfileResponseDto {
   @ApiProperty() name!: string
   @ApiProperty({ format: 'email' }) email!: string
   @ApiProperty({ nullable: true }) phone!: string | null
-  @ApiProperty({ nullable: true }) resumeKey!: string | null
-  @ApiProperty({ nullable: true, description: 'Chave S3 do avatar' }) avatarKey!: string | null
+  @ApiProperty({
+    nullable: true,
+    description: 'URL GET assinada (S3) do currículo; ausente quando não há documento.',
+  })
+  resumeUrl!: string | null
+  @ApiProperty({
+    nullable: true,
+    description: 'URL GET assinada (S3) do avatar; ausente quando não há foto.',
+  })
+  avatarUrl!: string | null
   @ApiProperty({ nullable: true, type: String, format: 'date-time' }) deletedAt!: Date | null
   @ApiProperty({ nullable: true, type: String, format: 'date-time' }) anonymizedAt!: Date | null
   @ApiProperty({ type: String, format: 'date-time' }) createdAt!: Date

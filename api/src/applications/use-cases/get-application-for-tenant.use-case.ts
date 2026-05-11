@@ -8,6 +8,7 @@ import {
 import type { PrismaClient } from '../../../generated/prisma/client'
 import { UserRole } from '../../../generated/prisma/client'
 import { PRISMA_CLIENT } from '../../infra/prisma/prisma.constants'
+import { CandidateProfileReadService } from '../../candidates/candidate-profile-read.service'
 import { TenantContextService } from '../../tenant-context/tenant-context.service'
 import type { Actor } from './application.actor'
 
@@ -16,6 +17,7 @@ export class GetApplicationForTenantUseCase {
   constructor(
     @Inject(PRISMA_CLIENT) private readonly prisma: PrismaClient,
     private readonly tenantContext: TenantContextService,
+    private readonly candidateRead: CandidateProfileReadService,
   ) {}
 
   async execute(actor: Actor, applicationId: string) {
@@ -34,6 +36,9 @@ export class GetApplicationForTenantUseCase {
       },
     })
     if (!app) throw new NotFoundException('Application not found')
-    return app
+    return {
+      ...app,
+      candidate: await this.candidateRead.toApiRead(app.candidate),
+    }
   }
 }
