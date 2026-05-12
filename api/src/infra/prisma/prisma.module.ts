@@ -3,6 +3,7 @@ import { PrismaPg } from '@prisma/adapter-pg'
 import { PrismaClient } from '../../../generated/prisma/client'
 import { EnvService } from '../env/env.service'
 import { TenantContextService } from '../../tenant-context/tenant-context.service'
+import { PrismaConnectionService } from './prisma-connection.service'
 import { PRISMA_CLIENT } from './prisma.constants'
 import { tenantPrismaExtension } from './tenant-prisma.extension'
 
@@ -20,6 +21,7 @@ import { tenantPrismaExtension } from './tenant-prisma.extension'
         return prisma as unknown as PrismaClient
       },
     },
+    PrismaConnectionService,
   ],
   exports: [PRISMA_CLIENT],
 })

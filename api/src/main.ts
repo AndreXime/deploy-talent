@@ -14,6 +14,8 @@ async function bootstrap() {
   })
   const env = app.get(EnvService)
 
+  app.enableShutdownHooks()
+
   if (env.envMode === 'DEV') {
     app.use(requestLoggerMiddleware)
   }
@@ -46,4 +48,9 @@ async function bootstrap() {
 
   await app.listen(env.port)
 }
-bootstrap()
+
+bootstrap().catch((err: unknown) => {
+  const reason = err instanceof Error ? err.stack ?? err.message : String(err)
+  console.error('[bootstrap] arranque falhou:', reason)
+  process.exit(1)
+})
