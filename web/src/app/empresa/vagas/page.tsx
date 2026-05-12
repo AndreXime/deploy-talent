@@ -7,13 +7,22 @@ import { useState } from 'react'
 import { JobStatusBadge } from '@/components/status-badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import { listTenantJobs } from '@/lib/api/jobs-api'
 import type { ApiJobStatus } from '@/lib/api/types'
 import { jobStatusLabel } from '@/lib/domain-labels'
 import { requireSessionToken } from '@/lib/require-session-token'
 import { useAuth } from '@/providers/auth-provider'
+
+const JOB_STATUS_OPTIONS: ApiJobStatus[] = ['DRAFT', 'PUBLISHED', 'PAUSED', 'CLOSED']
 
 export default function TenantJobsPage() {
   const { token } = useAuth()
@@ -29,6 +38,8 @@ export default function TenantJobsPage() {
         status: status === 'ALL' ? undefined : status,
       }),
   })
+
+  const rows = q.data?.items ?? []
 
   return (
     <main className="flex flex-1 flex-col gap-6 p-4 lg:p-8">
@@ -47,36 +58,24 @@ export default function TenantJobsPage() {
         </Button>
       </div>
 
-      <Card className="max-w-xs shadow-none">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium">Filtrar por estado</CardTitle>
-        </CardHeader>
-        <CardContent className="pt-0">
-          <label className="sr-only" htmlFor="job-status-filter">
-            Estado
-          </label>
-          <select
-            id="job-status-filter"
-            value={status}
-            onChange={(e) => setStatus(e.target.value as ApiJobStatus | 'ALL')}
-            className="flex h-10 w-full max-w-[220px] rounded-lg border border-input bg-transparent px-3 text-sm outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            <option value="ALL">Todas</option>
-            {(['DRAFT', 'PUBLISHED', 'PAUSED', 'CLOSED'] as ApiJobStatus[]).map((s) => (
-              <option key={s} value={s}>
-                {jobStatusLabel(s)}
-              </option>
-            ))}
-          </select>
-        </CardContent>
-      </Card>
-
-      {q.isLoading && (
-        <div className="space-y-3">
-          <Skeleton className="h-28 w-full" />
-          <Skeleton className="h-28 w-full" />
-        </div>
-      )}
+      <div className="flex flex-col gap-2">
+        <label className="text-sm font-medium" htmlFor="job_status_filter">
+          Filtrar por estado
+        </label>
+        <select
+          id="job_status_filter"
+          value={status}
+          onChange={(e) => setStatus(e.target.value as ApiJobStatus | 'ALL')}
+          className="flex h-10 w-full max-w-[220px] rounded-lg border border-input bg-transparent px-3 text-sm outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <option value="ALL">Todas</option>
+          {JOB_STATUS_OPTIONS.map((s) => (
+            <option key={s} value={s}>
+              {jobStatusLabel(s)}
+            </option>
+          ))}
+        </select>
+      </div>
 
       {q.isError && (
         <Alert variant="destructive">
@@ -84,39 +83,80 @@ export default function TenantJobsPage() {
         </Alert>
       )}
 
-      {!q.data || q.data.items.length === 0 ? null : (
-        <ul className="flex flex-col gap-4">
-          {q.data.items.map((job) => (
-            <li key={job.id}>
-              <Card className="shadow-sm transition-shadow hover:shadow-md">
-                <CardContent className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="space-y-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <h2 className="text-lg font-medium">{job.title}</h2>
-                      <JobStatusBadge status={job.status} />
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      {job.modality} · {job.location}
-                    </p>
-                  </div>
-                  <Button variant="outline" size="sm" className="shrink-0 gap-1" asChild>
-                    <Link href={`/empresa/vagas/${job.id}`}>
-                      Gerir
-                      <ChevronRight className="size-4" aria-hidden />
-                    </Link>
-                  </Button>
-                </CardContent>
-              </Card>
-            </li>
-          ))}
-        </ul>
-      )}
-
-      {q.data && q.data.items.length === 0 && (
-        <p className="text-sm text-muted-foreground">
-          Sem vagas com este critério. Crie uma nova posição quando estiver preparado.
-        </p>
-      )}
+      <div className="rounded-lg border bg-card">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Título</TableHead>
+              <TableHead>Modalidade</TableHead>
+              <TableHead>Localização</TableHead>
+              <TableHead>Senioridade</TableHead>
+              <TableHead>Estado</TableHead>
+              <TableHead className="text-end">Acções</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {q.isLoading ? (
+              <JobsLoadingRows />
+            ) : rows.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={6} className="py-10 text-center text-sm text-muted-foreground">
+                  Sem vagas com este critério. Crie uma nova posição quando estiver preparado.
+                </TableCell>
+              </TableRow>
+            ) : (
+              rows.map((job) => (
+                <TableRow key={job.id}>
+                  <TableCell className="font-medium">{job.title}</TableCell>
+                  <TableCell className="text-muted-foreground">{job.modality}</TableCell>
+                  <TableCell className="text-muted-foreground">{job.location}</TableCell>
+                  <TableCell className="text-muted-foreground">{job.seniority}</TableCell>
+                  <TableCell>
+                    <JobStatusBadge status={job.status} />
+                  </TableCell>
+                  <TableCell className="text-end">
+                    <Button variant="outline" size="sm" className="gap-1" asChild>
+                      <Link href={`/empresa/vagas/${job.id}`}>
+                        Gerir
+                        <ChevronRight className="size-4" aria-hidden />
+                      </Link>
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
     </main>
+  )
+}
+
+function JobsLoadingRows() {
+  return (
+    <>
+      {[0, 1, 2].map((i) => (
+        <TableRow key={i}>
+          <TableCell>
+            <Skeleton className="h-4 w-48" />
+          </TableCell>
+          <TableCell>
+            <Skeleton className="h-4 w-20" />
+          </TableCell>
+          <TableCell>
+            <Skeleton className="h-4 w-28" />
+          </TableCell>
+          <TableCell>
+            <Skeleton className="h-4 w-24" />
+          </TableCell>
+          <TableCell>
+            <Skeleton className="h-5 w-20 rounded-full" />
+          </TableCell>
+          <TableCell className="text-end">
+            <Skeleton className="ml-auto h-8 w-20" />
+          </TableCell>
+        </TableRow>
+      ))}
+    </>
   )
 }
