@@ -11,5 +11,7 @@ until mc alias set local "http://${HOST}:${PORT}" "$USER" "$PASS" >/dev/null 2>&
 done
 
 mc mb "local/files" --ignore-existing
-mc cors set "local/files" /config/cors.xml
-echo "--- [MinIO: bucket e CORS configurados] ---"
+# CORS é best-effort: versões recentes do mc removeram este comando. Não falhamos
+# o setup por causa disso — o bucket é o essencial.
+mc cors set "local/files" /config/cors.xml || echo "[MinIO: cors set skipped]"
+echo "--- [MinIO: bucket configurado] ---"

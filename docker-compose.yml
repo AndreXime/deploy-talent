@@ -11,6 +11,11 @@ services:
       - "5432:5432"
     volumes:
       - deploy_talent_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U deploy_talent -d deploy_talent"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
 
   minio:
     image: minio/minio:latest
@@ -25,12 +30,20 @@ services:
       MINIO_ROOT_PASSWORD: minioadmin
     volumes:
       - deploy_talent_minio:/data
+    healthcheck:
+      test:
+        ["CMD-SHELL", "mc alias set local http://localhost:9000 minioadmin minioadmin >/dev/null 2>&1 && mc ready local >/dev/null 2>&1"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
 
   minio-setup:
     image: minio/mc:latest
     container_name: deploy-talent-minio-setup
+    restart: "no"
     depends_on:
-      - minio
+      minio:
+        condition: service_healthy
     volumes:
       - ./docker/minio-cors.xml:/config/cors.xml:ro
       - ./docker/setup-minio.sh:/setup-minio.sh:ro
@@ -40,7 +53,6 @@ services:
       MINIO_ROOT_USER: minioadmin
       MINIO_ROOT_PASSWORD: minioadmin
     entrypoint: ["/bin/sh", "/setup-minio.sh"]
-    restart: "no"
 
   mailpit:
     image: axllent/mailpit:latest
@@ -49,6 +61,53 @@ services:
     ports:
       - "127.0.0.1:1025:1025"
       - "127.0.0.1:8025:8025"
+
+
+  api:
+    profiles: ["app"]
+    build:
+      context: ./api
+    image: deploy-talent-api:local
+    container_name: deploy-talent-api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio-setup:
+        condition: service_completed_successfully
+    environment:
+      ENV_MODE: DEV
+      PORT: "3000"
+      DATABASE_URL: postgresql://deploy_talent:deploy_talent@postgres:5432/deploy_talent?schema=public
+      JWT_SECRET: change-me
+      JWT_EXPIRES_IN: 15m
+      AWS_REGION: us-east-1
+      S3_BUCKET: files
+      S3_ENDPOINT: http://minio:9000
+      S3_FORCE_PATH_STYLE: "true"
+      S3_ACCESS_KEY_ID: minioadmin
+      S3_SECRET_ACCESS_KEY: minioadmin
+      EMAIL_FROM: noreply@localhost
+      SMTP_HOST: mailpit
+      SMTP_PORT: "1025"
+      SMTP_SECURE: "false"
+      CORS_ORIGINS: http://localhost:3001
+    ports:
+      - "3000:3000"
+
+  web:
+    profiles: ["app"]
+    build:
+      context: ./web
+      args:
+        NEXT_PUBLIC_API_BASE_URL: http://localhost:3000
+    image: deploy-talent-web:local
+    container_name: deploy-talent-web
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "3001:3000"
 
 volumes:
   deploy_talent_pgdata:
