@@ -1,5 +1,10 @@
 import { apiRequest } from '@/lib/api/client'
-import type { PublicTenantBrandingResponse, TenantResponse, TenantSnippet } from '@/lib/api/types'
+import type {
+  PublicTenantBrandingResponse,
+  TenantRecruiterItem,
+  TenantResponse,
+  TenantSnippet,
+} from '@/lib/api/types'
 
 /** Público — resolve slug → dados mínimos (id para rotas /carreiras/:tenantId). */
 export function getTenantBySlug(slug: string) {
@@ -17,6 +22,20 @@ export function getPublicBranding(tenantId: string) {
 
 export function getCurrentTenant(token: string) {
   return apiRequest<TenantResponse>('/tenants/current', { method: 'GET', token })
+}
+
+export function getCurrentTenantRecruiters(token: string) {
+  return apiRequest<TenantRecruiterItem[]>('/tenants/current/recruiters', {
+    method: 'GET',
+    token,
+  })
+}
+
+export function removeCurrentTenantRecruiter(token: string, userId: string) {
+  return apiRequest<void>(`/tenants/current/recruiters/${encodeURIComponent(userId)}`, {
+    method: 'DELETE',
+    token,
+  })
 }
 
 export function patchCurrentBranding(

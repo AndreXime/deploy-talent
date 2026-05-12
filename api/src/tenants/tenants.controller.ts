@@ -1,9 +1,13 @@
 import {
   Body,
   Controller,
+  Delete,
   ForbiddenException,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
+  ParseUUIDPipe,
   Patch,
   Post,
   Request,
@@ -12,6 +16,7 @@ import {
 import {
   ApiBody,
   ApiCreatedResponse,
+  ApiNoContentResponse,
   ApiOkResponse,
   ApiOperation,
   ApiParam,
@@ -23,7 +28,7 @@ import type { Actor } from '../applications/use-cases/application.actor'
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
 import type { JwtPayload } from '../auth/jwt-payload'
 import { Roles } from '../auth/rbac/roles.decorator'
-import { TenantResponseDto } from '../infra/docs/dto/swagger-responses.dto'
+import { TenantRecruiterItemDto, TenantResponseDto } from '../infra/docs/dto/swagger-responses.dto'
 import { ApiJwtAuth, ApiJwtTenantB2b, ApiStandardErrors } from '../infra/docs/swagger-decorators'
 import { TenantOptional, TenantRequired } from '../tenant-context/tenant.decorators'
 import { CreateTenantDto } from './dto/create-tenant.dto'
@@ -31,7 +36,9 @@ import { UpdateTenantBrandingDto } from './dto/update-tenant-branding.dto'
 import { ActivateTenantUseCase } from './use-cases/activate-tenant.use-case'
 import { CreateTenantUseCase } from './use-cases/create-tenant.use-case'
 import { GetCurrentTenantUseCase } from './use-cases/get-current-tenant.use-case'
+import { ListCurrentTenantRecruitersUseCase } from './use-cases/list-current-tenant-recruiters.use-case'
 import { ListTenantsUseCase } from './use-cases/list-tenants.use-case'
+import { RemoveTenantRecruiterUseCase } from './use-cases/remove-tenant-recruiter.use-case'
 import { SoftDeleteTenantUseCase } from './use-cases/soft-delete-tenant.use-case'
 import { SuspendTenantUseCase } from './use-cases/suspend-tenant.use-case'
 import { UpdateTenantBrandingUseCase } from './use-cases/update-tenant-branding.use-case'
@@ -60,6 +67,8 @@ export class TenantsController {
     private readonly softDeleteTenant: SoftDeleteTenantUseCase,
     private readonly updateTenantBranding: UpdateTenantBrandingUseCase,
     private readonly getCurrentTenant: GetCurrentTenantUseCase,
+    private readonly listCurrentTenantRecruiters: ListCurrentTenantRecruitersUseCase,
+    private readonly removeTenantRecruiter: RemoveTenantRecruiterUseCase,
   ) {}
 
   @Get('current')
@@ -74,6 +83,42 @@ export class TenantsController {
   @ApiOkResponse({ type: TenantResponseDto })
   async current() {
     return this.getCurrentTenant.execute()
+  }
+
+  @Get('current/recruiters')
+  @UseGuards(JwtAuthGuard)
+  @TenantRequired()
+  @Roles(UserRole.TENANT_ADMIN)
+  @ApiJwtTenantB2b()
+  @ApiOperation({
+    summary: 'Listar recrutadores da empresa actual',
+    description:
+      'Apenas `TENANT_ADMIN`. Devolve os utilizadores com papel `RECRUITER` no tenant do JWT, ordenados por antiguidade, com `avatarUrl` assinado.',
+  })
+  @ApiOkResponse({ type: TenantRecruiterItemDto, isArray: true })
+  async currentRecruiters() {
+    return this.listCurrentTenantRecruiters.execute()
+  }
+
+  @Delete('current/recruiters/:userId')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @UseGuards(JwtAuthGuard)
+  @TenantRequired()
+  @Roles(UserRole.TENANT_ADMIN)
+  @ApiJwtTenantB2b()
+  @ApiOperation({
+    summary: 'Remover recrutador da empresa actual',
+    description:
+      'Apenas `TENANT_ADMIN`. Apaga o utilizador. Histórico de candidaturas, transições e avaliações preserva os registos com a referência ao autor a `null` (ON DELETE SET NULL).',
+  })
+  @ApiParam({ name: 'userId', format: 'uuid' })
+  @ApiNoContentResponse()
+  async removeCurrentRecruiter(
+    @Request() req: RequestWithJwt,
+    @Param('userId', new ParseUUIDPipe()) userId: string,
+  ) {
+    const user = requireUser(req)
+    await this.removeTenantRecruiter.execute(user.sub, userId)
   }
 
   @Patch('current/branding')

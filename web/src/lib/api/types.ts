@@ -154,6 +154,14 @@ export interface PublicTenantBrandingResponse {
   banner: PublicBrandingAsset | null
 }
 
+export interface TenantRecruiterItem {
+  id: string
+  email: string
+  /** URL GET pré assinada (expira); ausente quando não há foto. */
+  avatarUrl: string | null
+  createdAt: string
+}
+
 export interface B2BAccountResponse {
   id: string
   email: string
