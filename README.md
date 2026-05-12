@@ -1,6 +1,10 @@
 # Deploy Talent
 
-> **Navegação:** **Visão geral** · [Funcionalidades e Regras de Negócio](./FUNCIONALIDADES.md) · [Modelo de Dados](./BANCO_DE_DADOS.md)
+> **Navegação:**
+> - **Visão geral**
+> - [Funcionalidades e Regras de Negócio](./FUNCIONALIDADES.md)
+> - [Modelo de Dados](./BANCO_DE_DADOS.md)
+> - [Fluxos](./FLUXOS.md)
 
 Plataforma multi-tenant de recrutamento (ATS). Backend **NestJS** + frontend **Next.js** num único repositório.
 

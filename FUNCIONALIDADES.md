@@ -1,6 +1,10 @@
 # Funcionalidades e Regras de Negócio
 
-> **Navegação:** [Visão geral](./README.md) · **Funcionalidades e Regras de Negócio** · [Modelo de Dados](./BANCO_DE_DADOS.md)
+> **Navegação:**
+> - [Visão geral](./README.md)
+> - **Funcionalidades e Regras de Negócio**
+> - [Modelo de Dados](./BANCO_DE_DADOS.md)
+> - [Fluxos](./FLUXOS.md)
 
 O **Deploy Talent** é uma plataforma multi-tenant de recrutamento (ATS) que materializa, num só produto, todo o ciclo de aquisição de talento: desde o site público de carreiras de cada empresa, passando pelo marketplace agregado de vagas, até à gestão interna do pipeline de candidaturas. Do lado **B2B**, cada empresa opera como um *tenant* isolado por `tenant_id`, com os seus próprios recrutadores, vagas, candidaturas, avaliações e ativos de marca (logo, banner), sob uma hierarquia de papéis (`SUPER_ADMIN`, `TENANT_ADMIN`, `RECRUITER`) que delimita o que cada utilizador vê e faz. Do lado **B2C**, o candidato mantém um perfil único e global (*one-profile*), independente das empresas onde se candidata: edita uma vez, propaga em todas as candidaturas ativas, e pode anonimizar a conta para responder a pedidos no estilo LGPD. As vagas seguem uma máquina de estados explícita (`DRAFT → PUBLISHED → PAUSED → CLOSED`) e as candidaturas percorrem um pipeline auditável (`SOURCED`, `APPLIED`, `IN_PROGRESS`, `REJECTED`, `WITHDRAWN`, `HIRED`), com cada transição gravada em histórico identificando o utilizador autor da mudança. À volta deste núcleo, a plataforma trata também das pontas operacionais: ficheiros (currículos, avatares, logos, banners) entram e saem do S3 por URLs pré-assinadas com TTL e autorização por papel + prefixo da chave; e-mails transacionais (submissão, contratação, rejeição) são disparados via SMTP em *best-effort* para não bloquear o fluxo principal; e a camada de segurança combina JWT + RBAC, CORS configurável, Helmet em produção, throttling global e uma extensão do Prisma client que injeta `tenantId` automaticamente nas queries de domínio, funcionando como rede de proteção extra para o isolamento entre tenants.
 

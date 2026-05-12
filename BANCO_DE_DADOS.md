@@ -1,6 +1,10 @@
 # Modelo de Dados
 
-> **Navegação:** [Visão geral](./README.md) · [Funcionalidades e Regras de Negócio](./FUNCIONALIDADES.md) · **Modelo de Dados**
+> **Navegação:**
+> - [Visão geral](./README.md)
+> - [Funcionalidades e Regras de Negócio](./FUNCIONALIDADES.md)
+> - **Modelo de Dados**
+> - [Fluxos](./FLUXOS.md)
 
 Diagrama do banco de dados PostgreSQL gerido pelo Prisma. O schema vive em `api/prisma/schema/*.prisma` e está particionado por agregado (`tenants`, `users`, `candidates`, `jobs`, `applications`, `evaluations`).
 
