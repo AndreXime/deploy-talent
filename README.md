@@ -52,13 +52,13 @@ cp .env.example .env
 npm run prisma:generate
 npm run prisma:migrate          # cria schema e aplica migrações
 npx prisma db seed              # popula tenants, vagas, candidatos (ver "Seed" abaixo)
-npm run start:dev               # http://localhost:3000  · Swagger em /docs
+npm run start:dev               # http://localhost:3050  · Swagger em /docs
 
 # 3) Web (noutro shell, em web/)
 cd web
 npm install
 cp .env.example .env
-npm run dev                     # http://localhost:3001
+npm run dev                     # http://localhost:3000
 ```
 
 ### B) Tudo em Docker
@@ -67,8 +67,8 @@ npm run dev                     # http://localhost:3001
 
 ```bash
 docker compose --profile app up -d --build
-# API → http://localhost:3000   (Swagger em /docs)
-# Web → http://localhost:3001
+# API → http://localhost:3050   (Swagger em /docs)
+# Web → http://localhost:3000
 ```
 
 O `api` arranca depois do `postgres` ficar healthy e do `minio-setup` criar o bucket `files`. As migrações **não correm automaticamente** dentro do container, porque a imagem de produção não inclui o CLI do Prisma. Aplica-as a partir do `api/` local antes de subir o stack:
@@ -185,10 +185,10 @@ Estados: `SOURCED`, `APPLIED`, `IN_PROGRESS`, `REJECTED`, `WITHDRAWN`, `HIRED`.
 
 | Serviço | URL |
 |---|---|
-| Web | http://localhost:3001 |
-| API | http://localhost:3000 |
-| Swagger (API) | http://localhost:3000/docs |
-| OpenAPI JSON | http://localhost:3000/docs-json |
+| Web | http://localhost:3000 |
+| API | http://localhost:3050 |
+| Swagger (API) | http://localhost:3050/docs |
+| OpenAPI JSON | http://localhost:3050/docs-json |
 | MinIO (consola) | http://127.0.0.1:9001 |
 | Mailpit (UI) | http://127.0.0.1:8025 |
 | Postgres | `localhost:5432` (`deploy_talent` / `deploy_talent`) |
