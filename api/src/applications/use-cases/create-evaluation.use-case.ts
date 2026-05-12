@@ -1,4 +1,10 @@
-import { BadRequestException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common'
+import {
+  BadRequestException,
+  ForbiddenException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common'
 import type { PrismaClient } from '../../../generated/prisma/client'
 import { UserRole } from '../../../generated/prisma/client'
 import { PRISMA_CLIENT } from '../../infra/prisma/prisma.constants'
@@ -37,4 +43,3 @@ export class CreateEvaluationUseCase {
     })
   }
 }
-

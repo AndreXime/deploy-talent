@@ -14,6 +14,7 @@ export class GetInvitationByTokenUseCase {
       where: { tokenHash },
       select: {
         email: true,
+        name: true,
         role: true,
         expiresAt: true,
         acceptedAt: true,
@@ -37,6 +38,7 @@ export class GetInvitationByTokenUseCase {
 
     return {
       email: invitation.email,
+      name: invitation.name,
       role: invitation.role,
       tenantName: invitation.tenant?.name ?? null,
       expiresAt: invitation.expiresAt,

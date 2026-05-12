@@ -1,10 +1,6 @@
 import { Badge } from '@/components/ui/badge'
 import type { ApiApplicationStatus, ApiJobStatus } from '@/lib/api/types'
-import {
-  applicationStatusLabel,
-  jobStatusLabel,
-  jobStatusPublicLabel,
-} from '@/lib/domain-labels'
+import { applicationStatusLabel, jobStatusLabel, jobStatusPublicLabel } from '@/lib/domain-labels'
 
 export type JobBadgeAudience = 'b2b' | 'public'
 

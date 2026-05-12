@@ -4,6 +4,9 @@
 model Invitation {
   id              String    @id @default(uuid())
   email           String
+  /// Nome do convidado (usado apenas para CANDIDATE sourcing, para preencher
+  /// `Candidate.name` no aceite). Para `TENANT_ADMIN` e `RECRUITER` é null.
+  name            String?
   role            UserRole
   tenantId        String?
   /// SHA 256 do token enviado por email. O token cru nunca é persistido.

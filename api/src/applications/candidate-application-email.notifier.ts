@@ -94,11 +94,19 @@ export class CandidateApplicationEmailNotifier {
     await this.sendSafe({ to: recipientEmail, subject, text, html })
   }
 
-  private async sendSafe(input: { to: string; subject: string; text: string; html: string }): Promise<void> {
+  private async sendSafe(input: {
+    to: string
+    subject: string
+    text: string
+    html: string
+  }): Promise<void> {
     try {
       await this.email.send(input)
     } catch (err) {
-      this.logger.warn(`Candidate notification email skipped after failure: ${input.subject}`, err as Error)
+      this.logger.warn(
+        `Candidate notification email skipped after failure: ${input.subject}`,
+        err as Error,
+      )
     }
   }
 }

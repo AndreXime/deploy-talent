@@ -182,6 +182,23 @@ export class CreatedInvitationDto {
   @ApiProperty({ type: String, format: 'date-time' }) expiresAt!: Date
 }
 
+/**
+ * Resultado do sourcing de candidato por um recrutador.
+ *
+ * - `CANDIDATE_INVITED`: email não estava registado; convite com link de
+ *   activação foi enviado e `invitationId` é devolvido.
+ * - `JOB_LINK_SENT`: candidato já tem conta mas ainda não se candidatou; email
+ *   apenas com o link público da vaga foi enviado.
+ * - `ALREADY_APPLIED`: candidato já tem candidatura para esta vaga; nenhum
+ *   email é enviado e `applicationId` aponta para a candidatura existente.
+ */
+export class SourceCandidateResultDto {
+  @ApiProperty({ enum: ['CANDIDATE_INVITED', 'JOB_LINK_SENT', 'ALREADY_APPLIED'] })
+  outcome!: 'CANDIDATE_INVITED' | 'JOB_LINK_SENT' | 'ALREADY_APPLIED'
+  @ApiProperty({ required: false, format: 'uuid' }) invitationId?: string
+  @ApiProperty({ required: false, format: 'uuid' }) applicationId?: string
+}
+
 /** Resposta de presign S3 (`StorageService`). */
 export class PresignedUrlResponseDto {
   @ApiProperty({ description: 'URL para PUT ou GET conforme operação' }) url!: string

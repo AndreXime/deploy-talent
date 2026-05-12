@@ -3,10 +3,10 @@ import { NestFactory } from '@nestjs/core'
 import helmet from 'helmet'
 import { AppModule } from './app.module'
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter'
+import { BootLogger } from './common/middleware/boot-logger'
 import { requestLoggerMiddleware } from './common/middleware/request-logger.middleware'
 import { setupDocs } from './infra/docs/setup-docs'
 import { EnvService } from './infra/env/env.service'
-import { BootLogger } from './common/middleware/boot-logger'
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -50,7 +50,7 @@ async function bootstrap() {
 }
 
 bootstrap().catch((err: unknown) => {
-  const reason = err instanceof Error ? err.stack ?? err.message : String(err)
+  const reason = err instanceof Error ? (err.stack ?? err.message) : String(err)
   console.error('[bootstrap] arranque falhou:', reason)
   process.exit(1)
 })

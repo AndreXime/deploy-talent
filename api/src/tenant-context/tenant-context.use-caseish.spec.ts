@@ -12,4 +12,3 @@ describe('TenantContextService', () => {
     expect(() => svc.requireTenantId()).toThrow('Missing tenant in request context')
   })
 })
-

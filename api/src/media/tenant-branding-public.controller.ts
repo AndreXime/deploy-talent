@@ -1,8 +1,8 @@
 import { Controller, Get, Param } from '@nestjs/common'
 import { ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger'
+import { Public } from '../auth/public.decorator'
 import { PublicTenantBrandingResponseDto } from '../infra/docs/dto/swagger-responses.dto'
 import { ApiStandardErrors } from '../infra/docs/swagger-decorators'
-import { Public } from '../auth/public.decorator'
 import { TenantOptional } from '../tenant-context/tenant.decorators'
 import { GetPublicTenantBrandingUseCase } from './use-cases/get-public-tenant-branding.use-case'
 

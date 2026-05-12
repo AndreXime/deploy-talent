@@ -7,8 +7,8 @@ import {
 } from '@nestjs/common'
 import type { PrismaClient } from '../../../generated/prisma/client'
 import { UserRole } from '../../../generated/prisma/client'
-import { PRISMA_CLIENT } from '../../infra/prisma/prisma.constants'
 import { CandidateProfileReadService } from '../../candidates/candidate-profile-read.service'
+import { PRISMA_CLIENT } from '../../infra/prisma/prisma.constants'
 import { TenantContextService } from '../../tenant-context/tenant-context.service'
 import type { Actor } from './application.actor'
 

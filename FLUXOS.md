@@ -67,20 +67,22 @@ flowchart TD
 
 ## Activação de conta via convite
 
-A página `/ativar/[token]` no frontend é pública. Faz pré visualização para mostrar empresa e email, depois aceita a palavra passe escolhida e devolve um JWT pronto.
+A página `/ativar/[token]` no frontend é pública. Faz pré visualização para mostrar nome, empresa (quando B2B) e email, depois aceita a palavra passe escolhida e devolve um JWT pronto. Para convites `CANDIDATE` (sourcing) também é criado o `Candidate` na mesma transação.
 
 ```mermaid
 flowchart TD
     open([Destinatário abre /ativar/&lt;token&gt;]) --> preview[GET /invitations/:token]
     preview --> valid{Token válido, não aceite, não revogado e não expirado?}
     valid -- não --> err404[404 Not Found]
-    valid -- sim --> show[Mostra empresa + email + formulário de palavra passe]
+    valid -- sim --> show[Mostra dados do convite e formulário de palavra passe]
     show --> submit([POST /invitations/:token/accept])
-    submit --> tenantOk{Tenant ainda activo?}
+    submit --> isB2b{Convite B2B?}
+    isB2b -- sim --> tenantOk{Tenant ainda activo?}
     tenantOk -- não --> err400[400 Bad Request]
+    isB2b -- não --> clash
     tenantOk -- sim --> clash{Email já é utilizador entretanto?}
     clash -- sim --> err409[409 Conflict]
-    clash -- não --> tx[Transação: cria User com role do convite + marca aceitação]
+    clash -- não --> tx[Transação: cria User com role do convite, cria Candidate se role=CANDIDATE, marca aceitação]
     tx --> jwt[LoginUseCase emite access_token]
     jwt --> done([Frontend grava sessão e redirecciona para home do papel])
 ```
@@ -123,22 +125,26 @@ flowchart TD
     notify --> done([201 Application])
 ```
 
-## Sourcing pelo recrutador
+## Sourcing por email pelo recrutador
 
-O recrutador cria uma candidatura em nome de um candidato encontrado fora da plataforma. Se o email ainda não existir, a API provisiona `User` + `Candidate` com palavra passe aleatória para o candidato poder recuperar a conta mais tarde.
+O recrutador faz prospecção por email a partir da vaga. A API decide o efeito a partir do estado do email na plataforma: convite para se cadastrar, email com link da vaga, ou nada se já existir candidatura. Nenhuma candidatura é criada pelo lado da empresa; o candidato submete `apply` quando quiser.
 
 ```mermaid
 flowchart TD
-    start([RECRUITER: POST /applications/sourced com email + jobId]) --> jobOk{Vaga pertence ao tenant?}
-    jobOk -- não --> err403[403 Forbidden]
-    jobOk -- sim --> userExists{Email já é utilizador?}
-    userExists -- sim --> candExists{Possui perfil Candidate?}
-    candExists -- não --> err400[400 Bad Request]
-    userExists -- não --> provision[Cria User CANDIDATE com palavra passe aleatória + Candidate]
-    provision --> createApp
-    candExists -- sim --> createApp[Cria Application SOURCED com sourcedByUserId = recrutador]
-    createApp --> history[Regista ApplicationHistory: SOURCED → SOURCED com movedBy]
-    history --> done([201 Application])
+    start([RECRUITER: POST /applications/sourced com nome + email + jobId]) --> jobOk{Vaga pertence ao tenant?}
+    jobOk -- não --> err404[404 Not Found]
+    jobOk -- sim --> userExists{Email pertence a um User?}
+    userExists -- não --> invite[Cria Invitation CANDIDATE com tenantId null]
+    invite --> emailInvite[Email com link de activação ativar/&lt;token&gt;]
+    emailInvite --> doneInvited([201 CANDIDATE_INVITED])
+
+    userExists -- sim --> isCandidate{Role do User é CANDIDATE?}
+    isCandidate -- não --> err409[409 Conflict]
+    isCandidate -- sim --> hasApp{Já existe Application para esta vaga?}
+    hasApp -- sim --> noOp[Nada enviado, devolve applicationId]
+    noOp --> doneApplied([201 ALREADY_APPLIED])
+    hasApp -- não --> emailJob[Email com link público da vaga carreiras/&lt;tenantId&gt;/vagas/&lt;jobId&gt;]
+    emailJob --> doneLink([201 JOB_LINK_SENT])
 ```
 
 ## Transição no pipeline de candidaturas

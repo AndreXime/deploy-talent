@@ -1,9 +1,9 @@
 import { BadRequestException, ForbiddenException, Inject, Injectable } from '@nestjs/common'
 import type { ApplicationStatus, PrismaClient } from '../../../generated/prisma/client'
 import { UserRole } from '../../../generated/prisma/client'
+import { CandidateProfileReadService } from '../../candidates/candidate-profile-read.service'
 import { resolvePagination } from '../../common/dto/pagination-query.dto'
 import { PRISMA_CLIENT } from '../../infra/prisma/prisma.constants'
-import { CandidateProfileReadService } from '../../candidates/candidate-profile-read.service'
 import { TenantContextService } from '../../tenant-context/tenant-context.service'
 import type { Actor } from './application.actor'
 
@@ -11,6 +11,7 @@ export interface ListApplicationsForTenantInput {
   page?: number
   limit?: number
   status?: ApplicationStatus
+  jobId?: string
 }
 
 @Injectable()
@@ -29,7 +30,9 @@ export class ListApplicationsForTenantUseCase {
     if (!tenantId) throw new BadRequestException('Missing tenant context')
 
     const { page, limit, skip, take } = resolvePagination(input.page, input.limit)
-    const where = input.status !== undefined ? { status: input.status } : {}
+    const where: { status?: ApplicationStatus; jobId?: string } = {}
+    if (input.status !== undefined) where.status = input.status
+    if (input.jobId !== undefined) where.jobId = input.jobId
 
     const [rows, total] = await Promise.all([
       this.prisma.application.findMany({

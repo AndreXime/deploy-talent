@@ -1,7 +1,7 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import { ChevronRight, PlusCircle } from 'lucide-react'
+import { ChevronRight, PlusCircle, Users } from 'lucide-react'
 import Link from 'next/link'
 import { useState } from 'react'
 import { JobStatusBadge } from '@/components/status-badge'
@@ -115,12 +115,20 @@ export default function TenantJobsPage() {
                     <JobStatusBadge status={job.status} />
                   </TableCell>
                   <TableCell className="text-end">
-                    <Button variant="outline" size="sm" className="gap-1" asChild>
-                      <Link href={`/empresa/vagas/${job.id}`}>
-                        Gerir
-                        <ChevronRight className="size-4" aria-hidden />
-                      </Link>
-                    </Button>
+                    <div className="flex flex-wrap justify-end gap-2">
+                      <Button variant="outline" size="sm" className="gap-1" asChild>
+                        <Link href={`/empresa/candidaturas?jobId=${job.id}`}>
+                          <Users className="size-4" aria-hidden />
+                          Ver candidatos
+                        </Link>
+                      </Button>
+                      <Button variant="outline" size="sm" className="gap-1" asChild>
+                        <Link href={`/empresa/vagas/${job.id}`}>
+                          Gerir
+                          <ChevronRight className="size-4" aria-hidden />
+                        </Link>
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))
@@ -153,7 +161,10 @@ function JobsLoadingRows() {
             <Skeleton className="h-5 w-20 rounded-full" />
           </TableCell>
           <TableCell className="text-end">
-            <Skeleton className="ml-auto h-8 w-20" />
+            <div className="flex justify-end gap-2">
+              <Skeleton className="h-8 w-32" />
+              <Skeleton className="h-8 w-20" />
+            </div>
           </TableCell>
         </TableRow>
       ))}

@@ -53,7 +53,6 @@ export default function TenantJobDetailPage() {
   const [sourceOpen, setSourceOpen] = useState(false)
   const [sEmail, setSEmail] = useState('')
   const [sName, setSName] = useState('')
-  const [sStage, setSStage] = useState('')
 
   const jobQ = useQuery({
     enabled: !!token && valid,
@@ -111,14 +110,22 @@ export default function TenantJobDetailPage() {
         jobId: jobId.trim(),
         candidateEmail: sEmail.trim(),
         candidateName: sName.trim(),
-        stage: sStage.trim() || undefined,
       }),
-    onSuccess: () => {
-      toast.success('Candidatura adicionada pela equipa.')
+    onSuccess: (result) => {
+      switch (result.outcome) {
+        case 'CANDIDATE_INVITED':
+          toast.success('Convite de candidato enviado por email.')
+          break
+        case 'JOB_LINK_SENT':
+          toast.success('Email enviado com o link da vaga.')
+          break
+        case 'ALREADY_APPLIED':
+          toast.info('Este candidato já tem candidatura para esta vaga.')
+          break
+      }
       setSourceOpen(false)
       setSEmail('')
       setSName('')
-      setSStage('')
       qc.invalidateQueries({ queryKey: ['tenant-applications', token] })
     },
     onError: (err: unknown) => {
@@ -249,8 +256,11 @@ export default function TenantJobDetailPage() {
           <Card>
             <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <CardTitle>Sourcing direto nesta posição</CardTitle>
-                <CardDescription>Adicione alguém ao funil iniciado pela equipa.</CardDescription>
+                <CardTitle>Sourcing por email</CardTitle>
+                <CardDescription>
+                  Convida um candidato externo a candidatar se. A plataforma decide qual email
+                  enviar conforme o candidato já tenha conta ou candidatura nesta vaga.
+                </CardDescription>
               </div>
               <Button
                 variant="outline"
@@ -269,6 +279,13 @@ export default function TenantJobDetailPage() {
               <DialogHeader>
                 <DialogTitle>Prospectar candidato para {j.title}</DialogTitle>
               </DialogHeader>
+              <div className="grid gap-3 pt-2 text-sm text-muted-foreground">
+                <p>
+                  Se o email ainda não estiver na plataforma, o candidato recebe convite para criar
+                  conta. Se já tiver conta sem candidatura nesta vaga, recebe o link da vaga. Caso
+                  já se tenha candidatado, nada é enviado.
+                </p>
+              </div>
               <div className="grid gap-3 pt-2">
                 <div className="space-y-2">
                   <Label htmlFor="cn">Nome</Label>
@@ -281,22 +298,13 @@ export default function TenantJobDetailPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="ce">E-mail</Label>
+                  <Label htmlFor="ce">Email</Label>
                   <Input
                     id="ce"
                     type="email"
                     value={sEmail}
                     onChange={(e) => setSEmail(e.target.value)}
                     required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="cs">Etapa inicial (opcional)</Label>
-                  <Input
-                    id="cs"
-                    value={sStage}
-                    onChange={(e) => setSStage(e.target.value)}
-                    maxLength={80}
                   />
                 </div>
               </div>
@@ -306,10 +314,12 @@ export default function TenantJobDetailPage() {
                 </Button>
                 <Button
                   type="button"
-                  disabled={sourceMut.isPending}
+                  disabled={
+                    sourceMut.isPending || sEmail.trim().length === 0 || sName.trim().length < 2
+                  }
                   onClick={() => sourceMut.mutate()}
                 >
-                  Registar sourcing
+                  Enviar
                 </Button>
               </DialogFooter>
             </DialogContent>

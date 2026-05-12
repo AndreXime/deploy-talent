@@ -1,4 +1,10 @@
-import { BadRequestException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common'
+import {
+  BadRequestException,
+  ForbiddenException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common'
 import { JobStatus, type PrismaClient } from '../../../generated/prisma/client'
 import { PRISMA_CLIENT } from '../../infra/prisma/prisma.constants'
 import { TenantContextService } from '../../tenant-context/tenant-context.service'
@@ -36,4 +42,3 @@ export class UpdateJobUseCase {
     })
   }
 }
-

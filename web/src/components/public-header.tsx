@@ -57,8 +57,7 @@ export function PublicHeader() {
               {claims?.role === 'CANDIDATE' && (
                 <Button variant="outline" size="sm" className="gap-2" asChild>
                   <Link href={homePathForRole('CANDIDATE')}>
-                    <LayoutDashboard className="size-4" aria-hidden />
-                    A minha área
+                    <LayoutDashboard className="size-4" aria-hidden />A minha área
                   </Link>
                 </Button>
               )}

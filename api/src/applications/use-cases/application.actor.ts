@@ -4,4 +4,3 @@ export interface Actor {
   userId: string
   role: UserRole
 }
-

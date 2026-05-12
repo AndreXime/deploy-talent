@@ -26,9 +26,9 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
 import { forgetMe, getMyProfile, patchMyProfile } from '@/lib/api/candidates-api'
-import type { PatchCandidateProfileBody } from '@/lib/api/types'
 import { ApiRequestError } from '@/lib/api/client'
 import { presignUpload, uploadFileToPresignedUrl } from '@/lib/api/media-api'
+import type { PatchCandidateProfileBody } from '@/lib/api/types'
 import { requireSessionToken } from '@/lib/require-session-token'
 import { useAuth } from '@/providers/auth-provider'
 
@@ -41,7 +41,9 @@ const RESUME_TYPES = [
 ] as const
 
 function mimeForFile(file: File): string {
-  return IMAGE_ACCEPT.includes(file.type as (typeof IMAGE_ACCEPT)[number]) ? file.type : 'image/jpeg'
+  return IMAGE_ACCEPT.includes(file.type as (typeof IMAGE_ACCEPT)[number])
+    ? file.type
+    : 'image/jpeg'
 }
 
 function nameInitials(fullName: string): string {

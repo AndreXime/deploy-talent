@@ -72,4 +72,3 @@ function getMissingPublishFields(job: {
   if (job.seniority.trim().length === 0) missing.push('seniority')
   return missing
 }
-

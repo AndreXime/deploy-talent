@@ -2,8 +2,8 @@ import { Controller, Get, Inject } from '@nestjs/common'
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger'
 import { SkipThrottle } from '@nestjs/throttler'
 import type { PrismaClient } from '../../generated/prisma/client'
-import { PRISMA_CLIENT } from '../infra/prisma/prisma.constants'
 import { Public } from '../auth/public.decorator'
+import { PRISMA_CLIENT } from '../infra/prisma/prisma.constants'
 
 @Public()
 @SkipThrottle()

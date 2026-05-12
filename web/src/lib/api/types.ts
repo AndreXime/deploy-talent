@@ -181,9 +181,18 @@ export interface CreatedInvitationResponse {
 
 export interface InvitationPreviewResponse {
   email: string
+  name: string | null
   role: string
   tenantName: string | null
   expiresAt: string
+}
+
+export type SourceCandidateOutcome = 'CANDIDATE_INVITED' | 'JOB_LINK_SENT' | 'ALREADY_APPLIED'
+
+export interface SourceCandidateResult {
+  outcome: SourceCandidateOutcome
+  invitationId?: string
+  applicationId?: string
 }
 
 export interface ApiErrorBody {

@@ -24,7 +24,7 @@ O candidato tem um único perfil global; alterações propagam para todas as can
 
 ### Candidaturas e pipeline
 
-O candidato candidata-se com o UUID do tenant na URL e pode desistir (`WITHDRAWN`). Recrutadores fazem *sourcing* (`SOURCED`), movem o processo entre estados (`IN_PROGRESS`, `REJECTED`, `HIRED`, …) e cada transição é gravada em `ApplicationHistory` com `stage` e utilizador que moveu.
+O candidato candidata-se com o UUID do tenant na URL e pode desistir (`WITHDRAWN`). O recrutador faz *sourcing por email* (ver "Sourcing por email"), movimenta o processo entre estados (`IN_PROGRESS`, `REJECTED`, `HIRED`, …) e cada transição é gravada em `ApplicationHistory` com `stage` e utilizador que moveu.
 
 ### Avaliações internas
 
@@ -44,7 +44,17 @@ Autenticação JWT com RBAC no token, CORS configurável, Helmet em produção e
 
 ### Convites de ativação
 
-Toda a entrada B2B na plataforma passa por **convite por email**, nunca por palavra passe definida por terceiros. O `SUPER_ADMIN` convida o `TENANT_ADMIN` de cada empresa; depois é o próprio `TENANT_ADMIN` que convida os seus `RECRUITER` no contexto do tenant do JWT. Em ambos os casos a API gera um token opaco de 32 bytes, persiste apenas o SHA 256, e o link único `${WEB_BASE_URL}/ativar/<token>` viaja exclusivamente por SMTP. O destinatário abre o link, define a sua própria palavra passe e a conta é criada nesse momento, com login imediato.
+Toda a entrada B2B na plataforma passa por **convite por email**, nunca por palavra passe definida por terceiros. O `SUPER_ADMIN` convida o `TENANT_ADMIN` de cada empresa; depois é o próprio `TENANT_ADMIN` que convida os seus `RECRUITER` no contexto do tenant do JWT. O sourcing por email partilha o mesmo mecanismo de convite para criar `CANDIDATE` quando o email ainda não existe na plataforma. Em todos os casos a API gera um token opaco de 32 bytes, persiste apenas o SHA 256, e o link único `${WEB_BASE_URL}/ativar/<token>` viaja exclusivamente por SMTP. O destinatário abre o link, define a sua própria palavra passe e a conta é criada nesse momento, com login imediato.
+
+### Sourcing por email
+
+`TENANT_ADMIN` e `RECRUITER` fazem prospecção a partir do detalhe da vaga submetendo apenas `nome + email`. A API decide o efeito conforme o estado do email no domínio:
+
+- **`CANDIDATE_INVITED`**: email não está registado. É criado um `Invitation` com `role: CANDIDATE` e `tenantId: null`, e enviado link de activação `${WEB_BASE_URL}/ativar/<token>`. Ao aceitar, o `User` e o `Candidate` são provisionados em transação, com o nome guardado no convite. A candidatura à vaga acontece quando o candidato a submete a partir da página pública.
+- **`JOB_LINK_SENT`**: email pertence a um `User` `CANDIDATE` mas sem candidatura nesta vaga. Não é criado nada na plataforma; apenas é disparado um email com o link público da vaga (`${WEB_BASE_URL}/carreiras/<tenantId>/vagas/<jobId>`).
+- **`ALREADY_APPLIED`**: já existe uma `Application` para o par (vaga, candidato). Nenhum email é enviado; a API responde com `applicationId` e o frontend mostra "candidato já se candidatou a esta vaga".
+
+Se o email pertencer a um utilizador interno (`SUPER_ADMIN`, `TENANT_ADMIN`, `RECRUITER`), a API responde `409 Conflict`.
 
 ## Regras de Negócio
 
@@ -73,7 +83,7 @@ Estados possíveis: `SOURCED`, `APPLIED`, `IN_PROGRESS`, `REJECTED`, `WITHDRAWN`
 Regras de criação:
 
 - **Candidato:** `POST /applications/apply` só funciona para vagas `PUBLISHED` ou `PAUSED`; cria a candidatura em `APPLIED`, define `appliedAt` e regista a entrada inicial em `ApplicationHistory`.
-- **Sourcing:** recrutadores criam candidatura em `SOURCED` e podem provisionar candidato + utilizador com password aleatória se o e-mail ainda não existir.
+- **Sourcing:** `POST /applications/sourced` não cria candidaturas. Conforme o estado do email envia convite de plataforma (`CANDIDATE_INVITED`), envia link público da vaga (`JOB_LINK_SENT`) ou responde sem efeito (`ALREADY_APPLIED`). A candidatura efectiva acontece quando o candidato submete `apply` a partir da página pública.
 
 Regras de transição:
 

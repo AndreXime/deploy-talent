@@ -105,6 +105,12 @@ export default function ActivateInvitationPage() {
             >
               <CardContent className="grid gap-4">
                 <dl className="grid gap-1 text-sm">
+                  {previewQ.data.name && (
+                    <div className="flex justify-between gap-3">
+                      <dt className="text-muted-foreground">Nome</dt>
+                      <dd className="font-medium">{previewQ.data.name}</dd>
+                    </div>
+                  )}
                   <div className="flex justify-between gap-3">
                     <dt className="text-muted-foreground">Email</dt>
                     <dd className="font-medium">{previewQ.data.email}</dd>

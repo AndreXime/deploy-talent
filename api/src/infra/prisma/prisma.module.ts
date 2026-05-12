@@ -1,10 +1,10 @@
 import { Global, Module } from '@nestjs/common'
 import { PrismaPg } from '@prisma/adapter-pg'
 import { PrismaClient } from '../../../generated/prisma/client'
-import { EnvService } from '../env/env.service'
 import { TenantContextService } from '../../tenant-context/tenant-context.service'
-import { PrismaConnectionService } from './prisma-connection.service'
+import { EnvService } from '../env/env.service'
 import { PRISMA_CLIENT } from './prisma.constants'
+import { PrismaConnectionService } from './prisma-connection.service'
 import { tenantPrismaExtension } from './tenant-prisma.extension'
 
 @Global()

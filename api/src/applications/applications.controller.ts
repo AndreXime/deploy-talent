@@ -27,6 +27,7 @@ import {
   ApplicationCandidateListItemDto,
   ApplicationResponseDto,
   EvaluationResponseDto,
+  SourceCandidateResultDto,
 } from '../infra/docs/dto/swagger-responses.dto'
 import { ApiJwtAuth, ApiJwtTenantB2b, ApiStandardErrors } from '../infra/docs/swagger-decorators'
 import { TenantOptional, TenantRequired } from '../tenant-context/tenant.decorators'
@@ -84,11 +85,15 @@ export class ApplicationsController {
   @Roles(UserRole.TENANT_ADMIN, UserRole.RECRUITER)
   @ApiJwtTenantB2b()
   @ApiOperation({
-    summary: 'Sourcing: criar candidatura em estado SOURCED',
-    description: 'Cria usuário candidato sob demanda quando o e-mail ainda não existir.',
+    summary: 'Sourcing: nudge por email a um candidato para uma vaga',
+    description:
+      'Comportamento conforme o estado do email no email indicado:\n' +
+      '- `CANDIDATE_INVITED`: candidato sem conta na plataforma, envia link de activação que cria utilizador `CANDIDATE` ao aceitar.\n' +
+      '- `JOB_LINK_SENT`: candidato já tem conta mas ainda não se candidatou a esta vaga, envia email apenas com o link público da vaga.\n' +
+      '- `ALREADY_APPLIED`: candidato já tem candidatura para a vaga; nenhum email é enviado.',
   })
   @ApiBody({ type: SourceDto })
-  @ApiCreatedResponse({ type: ApplicationResponseDto })
+  @ApiCreatedResponse({ type: SourceCandidateResultDto })
   @ApiStandardErrors(true)
   async sourced(@Request() req: RequestWithUser, @Body() body: SourceDto) {
     const user = requireUser(req)
@@ -167,7 +172,9 @@ export class ApplicationsController {
   @TenantRequired()
   @Roles(UserRole.TENANT_ADMIN, UserRole.RECRUITER)
   @ApiJwtTenantB2b()
-  @ApiOperation({ summary: 'Listar candidaturas do tenant (paginação e filtro por status)' })
+  @ApiOperation({
+    summary: 'Listar candidaturas do tenant (paginação e filtros por status e jobId)',
+  })
   @ApiOkResponse({ description: '`items`, `total`, `page`, `limit`' })
   async listForTenant(
     @Request() req: RequestWithUser,
@@ -176,7 +183,12 @@ export class ApplicationsController {
     const user = requireUser(req)
     return this.listApplicationsForTenant.execute(
       { userId: user.sub, role: user.role as UserRole },
-      { page: query.page, limit: query.limit, status: query.status },
+      {
+        page: query.page,
+        limit: query.limit,
+        status: query.status,
+        jobId: query.jobId,
+      },
     )
   }
 

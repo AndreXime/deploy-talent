@@ -8,13 +8,13 @@ import {
 } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
 import type { Request } from 'express'
-import { Observable, from, mergeMap } from 'rxjs'
+import { from, mergeMap, Observable } from 'rxjs'
 import type { PrismaClient } from '../../generated/prisma/client'
 import { UserRole } from '../../generated/prisma/client'
 import type { JwtPayload } from '../auth/jwt-payload'
 import { PRISMA_CLIENT } from '../infra/prisma/prisma.constants'
-import { TenantContextService } from './tenant-context.service'
 import { IS_TENANT_REQUIRED } from './tenant.decorators'
+import { TenantContextService } from './tenant-context.service'
 
 type RequestWithUser = Request & { user?: JwtPayload }
 

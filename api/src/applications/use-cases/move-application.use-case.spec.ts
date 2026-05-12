@@ -1,7 +1,7 @@
 import { ForbiddenException, NotFoundException } from '@nestjs/common'
 import { ApplicationStatus, type PrismaClient, UserRole } from '../../../generated/prisma/client'
-import { CandidateApplicationEmailNotifier } from '../candidate-application-email.notifier'
 import { TenantContextService } from '../../tenant-context/tenant-context.service'
+import { CandidateApplicationEmailNotifier } from '../candidate-application-email.notifier'
 import { MoveApplicationUseCase } from './move-application.use-case'
 
 describe('MoveApplicationUseCase', () => {

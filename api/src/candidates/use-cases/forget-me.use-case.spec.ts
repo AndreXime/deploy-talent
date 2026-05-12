@@ -22,4 +22,3 @@ describe('ForgetMeUseCase', () => {
     await expect(useCase.execute('u1')).rejects.toBeInstanceOf(ForbiddenException)
   })
 })
-

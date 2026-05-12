@@ -1,13 +1,8 @@
 import { Body, Controller, Post, Request, UseGuards } from '@nestjs/common'
+import { ApiBody, ApiCreatedResponse, ApiOperation, ApiTags } from '@nestjs/swagger'
 import type { Request as ExpressRequest } from 'express'
-import {
-  ApiBody,
-  ApiCreatedResponse,
-  ApiOperation,
-  ApiTags,
-} from '@nestjs/swagger'
-import type { JwtPayload } from '../auth/jwt-payload'
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
+import type { JwtPayload } from '../auth/jwt-payload'
 import { PresignedUrlResponseDto } from '../infra/docs/dto/swagger-responses.dto'
 import { ApiJwtAuth, ApiStandardErrors } from '../infra/docs/swagger-decorators'
 import { TenantOptional } from '../tenant-context/tenant.decorators'

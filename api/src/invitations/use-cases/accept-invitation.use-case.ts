@@ -35,16 +35,26 @@ export class AcceptInvitationUseCase {
       throw new NotFoundException('Invitation expired')
     }
 
-    if (invitation.role !== UserRole.TENANT_ADMIN && invitation.role !== UserRole.RECRUITER) {
+    const isB2bInvite =
+      invitation.role === UserRole.TENANT_ADMIN || invitation.role === UserRole.RECRUITER
+    const isCandidateInvite = invitation.role === UserRole.CANDIDATE
+
+    if (!isB2bInvite && !isCandidateInvite) {
       throw new BadRequestException('Unsupported invitation role')
     }
 
-    if (
-      !invitation.tenant ||
-      invitation.tenant.deletedAt !== null ||
-      invitation.tenant.isActive === false
-    ) {
-      throw new BadRequestException('Tenant unavailable')
+    if (isB2bInvite) {
+      if (
+        !invitation.tenant ||
+        invitation.tenant.deletedAt !== null ||
+        invitation.tenant.isActive === false
+      ) {
+        throw new BadRequestException('Tenant unavailable')
+      }
+    }
+
+    if (isCandidateInvite && !invitation.name) {
+      throw new BadRequestException('Candidate invitation missing recipient name')
     }
 
     const emailClash = await this.prisma.user.findFirst({
@@ -62,9 +72,19 @@ export class AcceptInvitationUseCase {
           email: invitation.email,
           passwordHash,
           role: invitation.role,
-          tenantId: invitation.tenant?.id ?? null,
+          tenantId: isB2bInvite ? (invitation.tenant?.id ?? null) : null,
         },
       })
+
+      if (isCandidateInvite) {
+        await tx.candidate.create({
+          data: {
+            userId: created.id,
+            name: invitation.name as string,
+            email: invitation.email,
+          },
+        })
+      }
 
       const consumed = await tx.invitation.updateMany({
         where: { id: invitation.id, acceptedAt: null, revokedAt: null },

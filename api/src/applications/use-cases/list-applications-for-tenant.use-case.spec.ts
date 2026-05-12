@@ -66,4 +66,32 @@ describe('ListApplicationsForTenantUseCase', () => {
     expect(result.items[0].candidate).not.toHaveProperty('resumeKey')
     expect(candidateRead.toApiRead).toHaveBeenCalledWith(fakeCandidate)
   })
+
+  it('propaga jobId no filtro do prisma quando informado', async () => {
+    const prisma = {
+      application: {
+        findMany: jest.fn(async () => []),
+        count: jest.fn(async () => 0),
+      },
+    }
+    const tenantContext = { getTenantId: () => 't1' }
+    const candidateRead = { toApiRead: jest.fn() }
+    const useCase = new ListApplicationsForTenantUseCase(
+      prisma as unknown as PrismaClient,
+      tenantContext as unknown as TenantContextService,
+      candidateRead as unknown as CandidateProfileReadService,
+    )
+
+    await useCase.execute(
+      { userId: 'u1', role: UserRole.RECRUITER },
+      { jobId: 'j1', status: 'APPLIED' as never },
+    )
+
+    expect(prisma.application.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { jobId: 'j1', status: 'APPLIED' } }),
+    )
+    expect(prisma.application.count).toHaveBeenCalledWith({
+      where: { jobId: 'j1', status: 'APPLIED' },
+    })
+  })
 })

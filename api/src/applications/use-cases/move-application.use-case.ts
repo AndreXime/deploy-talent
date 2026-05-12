@@ -1,8 +1,14 @@
-import { BadRequestException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common'
+import {
+  BadRequestException,
+  ForbiddenException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common'
 import { ApplicationStatus, type PrismaClient, UserRole } from '../../../generated/prisma/client'
-import { CandidateApplicationEmailNotifier } from '../candidate-application-email.notifier'
 import { PRISMA_CLIENT } from '../../infra/prisma/prisma.constants'
 import { TenantContextService } from '../../tenant-context/tenant-context.service'
+import { CandidateApplicationEmailNotifier } from '../candidate-application-email.notifier'
 import type { MoveApplicationDto } from '../dto/move-application.dto'
 import type { Actor } from './application.actor'
 
@@ -32,7 +38,9 @@ export class MoveApplicationUseCase {
     if (!app) throw new NotFoundException('Application not found')
 
     if (!isValidApplicationTransition(app.status, input.status)) {
-      throw new ForbiddenException(`Invalid application transition: ${app.status} -> ${input.status}`)
+      throw new ForbiddenException(
+        `Invalid application transition: ${app.status} -> ${input.status}`,
+      )
     }
 
     const updated = await this.prisma.application.update({
@@ -107,4 +115,3 @@ function isValidApplicationTransition(from: ApplicationStatus, to: ApplicationSt
       return false
   }
 }
-

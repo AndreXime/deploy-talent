@@ -135,6 +135,57 @@ describe('AcceptInvitationUseCase', () => {
     })
   })
 
+  it('aceita convite CANDIDATE: cria User CANDIDATE sem tenant e Candidate com o nome do convite', async () => {
+    const createdUser = {
+      id: 'u3',
+      email: 'cand@a.com',
+      tenantId: null,
+      role: 'CANDIDATE',
+    }
+    const tx = {
+      user: { create: jest.fn(async () => createdUser) },
+      candidate: { create: jest.fn(async () => ({ id: 'cand1' })) },
+      invitation: { updateMany: jest.fn(async () => ({ count: 1 })) },
+    }
+    const prisma = {
+      invitation: {
+        findUnique: jest.fn(async () => ({
+          id: 'i3',
+          email: 'cand@a.com',
+          name: 'Cândida',
+          role: 'CANDIDATE',
+          expiresAt: new Date(Date.now() + 3600_000),
+          acceptedAt: null,
+          revokedAt: null,
+          tenant: null,
+        })),
+      },
+      user: { findFirst: jest.fn(async () => null) },
+      $transaction: jest.fn(async (cb: (tx: typeof tx) => Promise<unknown>) => cb(tx)),
+    }
+    const login = buildLoginUseCase()
+    const useCase = new AcceptInvitationUseCase(prisma as unknown as PrismaClient, login)
+
+    const result = await useCase.execute('tok', 'password1')
+
+    expect(result).toEqual({ access_token: 'jwt' })
+    expect(tx.user.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        email: 'cand@a.com',
+        role: 'CANDIDATE',
+        tenantId: null,
+        passwordHash: 'hashed',
+      }),
+    })
+    expect(tx.candidate.create).toHaveBeenCalledWith({
+      data: {
+        userId: 'u3',
+        name: 'Cândida',
+        email: 'cand@a.com',
+      },
+    })
+  })
+
   it('rejects when the email belongs to an existing user between preview and accept', async () => {
     const prisma = {
       invitation: {

@@ -8,6 +8,7 @@ import type {
   EvaluationResponse,
   JobResponse,
   Paginated,
+  SourceCandidateResult,
 } from '@/lib/api/types'
 
 export function applyToJob(token: string, tenantId: string, body: { jobId: string }) {
@@ -45,7 +46,12 @@ export function withdrawMyApplication(token: string, applicationId: string) {
 
 export function listTenantApplications(
   token: string,
-  query?: { page?: number; limit?: number; status?: ApiApplicationStatus },
+  query?: {
+    page?: number
+    limit?: number
+    status?: ApiApplicationStatus
+    jobId?: string
+  },
 ) {
   return apiRequest<Paginated<ApplicationTenantListItem>>('/applications', {
     method: 'GET',
@@ -86,10 +92,9 @@ export function sourceCandidate(
     jobId: string
     candidateEmail: string
     candidateName: string
-    stage?: string
   },
 ) {
-  return apiRequest<ApplicationResponse>('/applications/sourced', {
+  return apiRequest<SourceCandidateResult>('/applications/sourced', {
     method: 'POST',
     token,
     json: body,

@@ -17,5 +17,6 @@ import { InviteTenantAdminUseCase } from './use-cases/invite-tenant-admin.use-ca
     AcceptInvitationUseCase,
     InvitationEmailNotifier,
   ],
+  exports: [InvitationEmailNotifier],
 })
 export class InvitationsModule {}

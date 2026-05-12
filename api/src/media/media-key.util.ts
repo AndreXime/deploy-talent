@@ -13,7 +13,9 @@ export type ResumeDocumentContentType = (typeof RESUME_DOCUMENT_CONTENT_TYPES)[n
 
 export type ProfileImageContentType = (typeof PROFILE_IMAGE_CONTENT_TYPES)[number]
 
-export function assertProfileImageContentType(value: string): asserts value is ProfileImageContentType {
+export function assertProfileImageContentType(
+  value: string,
+): asserts value is ProfileImageContentType {
   if (!PROFILE_IMAGE_CONTENT_TYPES.includes(value as ProfileImageContentType)) {
     throw new BadRequestException(
       `contentType must be one of: ${PROFILE_IMAGE_CONTENT_TYPES.join(', ')}`,

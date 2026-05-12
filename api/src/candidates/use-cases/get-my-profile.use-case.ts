@@ -18,4 +18,3 @@ export class GetMyProfileUseCase {
     return this.candidateRead.toApiRead(profile)
   }
 }
-

@@ -1,8 +1,9 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import { ChevronRight } from 'lucide-react'
+import { ChevronRight, X } from 'lucide-react'
 import Link from 'next/link'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useState } from 'react'
 import { ApplicationStatusBadge } from '@/components/status-badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -17,6 +18,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { listTenantApplications } from '@/lib/api/applications-api'
+import { getTenantJob } from '@/lib/api/jobs-api'
 import type { ApiApplicationStatus } from '@/lib/api/types'
 import { applicationStatusLabel } from '@/lib/domain-labels'
 import { requireSessionToken } from '@/lib/require-session-token'
@@ -38,19 +40,33 @@ function formatUpdatedAt(iso: string): string {
 }
 
 export default function TenantApplicationsPage() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const jobId = searchParams.get('jobId') ?? undefined
   const { token } = useAuth()
   const [status, setStatus] = useState<ApiApplicationStatus | 'ALL'>('ALL')
 
   const q = useQuery({
     enabled: !!token,
-    queryKey: ['tenant-applications', token, status],
+    queryKey: ['tenant-applications', token, status, jobId],
     queryFn: () =>
       listTenantApplications(requireSessionToken(token), {
         page: 1,
         limit: 50,
         status: status === 'ALL' ? undefined : status,
+        jobId,
       }),
   })
+
+  const jobQ = useQuery({
+    enabled: !!token && !!jobId,
+    queryKey: ['tenant-job', token, jobId],
+    queryFn: () => getTenantJob(requireSessionToken(token), jobId as string),
+  })
+
+  const clearJobFilter = () => {
+    router.replace('/empresa/candidaturas')
+  }
 
   const rows = q.data?.items ?? []
 
@@ -62,6 +78,27 @@ export default function TenantApplicationsPage() {
           Consulte quem está em processo e abra o detalhe para movimentar o funil.
         </p>
       </div>
+
+      {jobId && (
+        <div className="flex flex-wrap items-center gap-3 rounded-lg border bg-muted/40 px-4 py-3 text-sm">
+          <span className="text-muted-foreground">A mostrar candidaturas da vaga</span>
+          <span className="font-medium">
+            {jobQ.isLoading ? <Skeleton className="inline-block h-4 w-32 align-middle" /> : null}
+            {jobQ.data?.title}
+            {jobQ.isError ? 'desconhecida' : null}
+          </span>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="ml-auto gap-1"
+            onClick={clearJobFilter}
+          >
+            <X className="size-4" aria-hidden />
+            Limpar filtro
+          </Button>
+        </div>
+      )}
 
       <div className="flex flex-col gap-2">
         <label className="text-sm font-medium" htmlFor="application_status_filter">
@@ -106,7 +143,9 @@ export default function TenantApplicationsPage() {
             ) : rows.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} className="py-10 text-center text-sm text-muted-foreground">
-                  Não há candidaturas com este filtro.
+                  {jobId
+                    ? 'Esta vaga ainda não tem candidaturas.'
+                    : 'Não há candidaturas com este filtro.'}
                 </TableCell>
               </TableRow>
             ) : (

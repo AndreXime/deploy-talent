@@ -62,4 +62,3 @@ export class UpdateMyProfileUseCase {
     return this.candidateRead.toApiRead(updated)
   }
 }
-

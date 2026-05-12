@@ -1,15 +1,9 @@
 import { Body, Controller, ForbiddenException, Post, Request, UseGuards } from '@nestjs/common'
+import { ApiBody, ApiCreatedResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger'
 import type { Request as ExpressRequest } from 'express'
-import {
-  ApiBody,
-  ApiCreatedResponse,
-  ApiOperation,
-  ApiParam,
-  ApiTags,
-} from '@nestjs/swagger'
 import { UserRole } from '../../generated/prisma/client'
-import type { JwtPayload } from '../auth/jwt-payload'
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
+import type { JwtPayload } from '../auth/jwt-payload'
 import { Roles } from '../auth/rbac/roles.decorator'
 import { ApplicationResponseDto } from '../infra/docs/dto/swagger-responses.dto'
 import { ApiJwtAuth, ApiStandardErrors } from '../infra/docs/swagger-decorators'

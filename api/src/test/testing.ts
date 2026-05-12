@@ -22,4 +22,3 @@ export function providePrismaMock(prisma: PrismaMock) {
     useValue: prisma,
   }
 }
-

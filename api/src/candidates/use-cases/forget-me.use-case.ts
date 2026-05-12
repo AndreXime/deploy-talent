@@ -46,4 +46,3 @@ export class ForgetMeUseCase {
     return this.candidateRead.toApiRead(updated)
   }
 }
-

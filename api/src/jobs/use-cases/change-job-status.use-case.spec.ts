@@ -56,8 +56,8 @@ describe('ChangeJobStatusUseCase', () => {
       seniority: 's',
     })
 
-    await expect(
-      useCase.execute('j1', JobStatus.PUBLISHED as unknown as never),
-    ).rejects.toThrow('Missing required fields to publish')
+    await expect(useCase.execute('j1', JobStatus.PUBLISHED as unknown as never)).rejects.toThrow(
+      'Missing required fields to publish',
+    )
   })
 })
