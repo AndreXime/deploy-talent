@@ -22,15 +22,9 @@ import {
 import type { Request as ExpressRequest } from 'express'
 import type { User } from '../../generated/prisma/client'
 import { UserRole } from '../../generated/prisma/client'
-// (Jwt payload handled by passport)
-import {
-  AccessTokenDto,
-  B2BAccountResponseDto,
-  ProvisionedUserDto,
-} from '../infra/docs/dto/swagger-responses.dto'
+import { AccessTokenDto, B2BAccountResponseDto } from '../infra/docs/dto/swagger-responses.dto'
 import { ApiJwtTenantB2b, ApiStandardErrors } from '../infra/docs/swagger-decorators'
 import { TenantOptional, TenantRequired } from '../tenant-context/tenant.decorators'
-import { CreateRecruiterDto } from './dto/create-recruiter.dto'
 import { LoginDto } from './dto/login.dto'
 import { RegisterCandidateDto } from './dto/register-candidate.dto'
 import { UpdateB2BAvatarDto } from './dto/update-b2b-avatar.dto'
@@ -39,7 +33,6 @@ import { LocalAuthGuard } from './guards/local-auth.guard'
 import type { JwtPayload } from './jwt-payload'
 import { Public } from './public.decorator'
 import { Roles } from './rbac/roles.decorator'
-import { CreateRecruiterUseCase } from './use-cases/create-recruiter.use-case'
 import { GetMyB2BAccountUseCase } from './use-cases/get-my-b2b-account.use-case'
 import { LoginUseCase } from './use-cases/login.use-case'
 import { RegisterCandidateUseCase } from './use-cases/register-candidate.use-case'
@@ -60,7 +53,6 @@ export class AuthController {
   constructor(
     private readonly loginUseCase: LoginUseCase,
     private readonly registerCandidateUseCase: RegisterCandidateUseCase,
-    private readonly createRecruiterUseCase: CreateRecruiterUseCase,
     private readonly updateB2BAvatar: UpdateB2BAvatarUseCase,
     private readonly getMyB2BAccount: GetMyB2BAccountUseCase,
   ) {}
@@ -87,21 +79,6 @@ export class AuthController {
   @ApiBadRequestResponse({ description: 'E-mail já em uso ou validação do corpo' })
   async registerCandidate(@Body() body: RegisterCandidateDto) {
     return this.registerCandidateUseCase.execute(body)
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @TenantRequired()
-  @Roles(UserRole.TENANT_ADMIN)
-  @Post('register/recruiter')
-  @ApiJwtTenantB2b()
-  @ApiOperation({
-    summary: 'Convidar recrutador no tenant atual',
-    description: '`TENANT_ADMIN`; tenant vem do JWT.',
-  })
-  @ApiCreatedResponse({ type: ProvisionedUserDto })
-  @ApiStandardErrors(true)
-  async createRecruiter(@Body() body: CreateRecruiterDto) {
-    return this.createRecruiterUseCase.execute(body)
   }
 
   @UseGuards(JwtAuthGuard)

@@ -1,9 +1,5 @@
 import { apiRequest } from '@/lib/api/client'
-import type {
-  AccessTokenResponse,
-  B2BAccountResponse,
-  ProvisionedUserResponse,
-} from '@/lib/api/types'
+import type { AccessTokenResponse, B2BAccountResponse } from '@/lib/api/types'
 
 export function loginRequest(body: { email: string; password: string }) {
   return apiRequest<AccessTokenResponse>('/auth/login', {
@@ -15,14 +11,6 @@ export function loginRequest(body: { email: string; password: string }) {
 export function registerCandidateRequest(body: { email: string; password: string; name: string }) {
   return apiRequest<AccessTokenResponse>('/auth/register/candidate', {
     method: 'POST',
-    json: body,
-  })
-}
-
-export function createRecruiterRequest(token: string, body: { email: string; password: string }) {
-  return apiRequest<ProvisionedUserResponse>('/auth/register/recruiter', {
-    method: 'POST',
-    token,
     json: body,
   })
 }

@@ -22,12 +22,14 @@ import {
   CreatedInvitationDto,
   InvitationPreviewDto,
 } from '../infra/docs/dto/swagger-responses.dto'
-import { ApiJwtAuth, ApiStandardErrors } from '../infra/docs/swagger-decorators'
-import { TenantOptional } from '../tenant-context/tenant.decorators'
+import { ApiJwtAuth, ApiJwtTenantB2b, ApiStandardErrors } from '../infra/docs/swagger-decorators'
+import { TenantOptional, TenantRequired } from '../tenant-context/tenant.decorators'
 import { AcceptInvitationDto } from './dto/accept-invitation.dto'
+import { InviteRecruiterDto } from './dto/invite-recruiter.dto'
 import { InviteTenantAdminDto } from './dto/invite-tenant-admin.dto'
 import { AcceptInvitationUseCase } from './use-cases/accept-invitation.use-case'
 import { GetInvitationByTokenUseCase } from './use-cases/get-invitation-by-token.use-case'
+import { InviteRecruiterUseCase } from './use-cases/invite-recruiter.use-case'
 import { InviteTenantAdminUseCase } from './use-cases/invite-tenant-admin.use-case'
 
 interface RequestWithJwt extends ExpressRequest {
@@ -40,6 +42,7 @@ interface RequestWithJwt extends ExpressRequest {
 export class InvitationsController {
   constructor(
     private readonly inviteTenantAdmin: InviteTenantAdminUseCase,
+    private readonly inviteRecruiter: InviteRecruiterUseCase,
     private readonly getInvitation: GetInvitationByTokenUseCase,
     private readonly acceptInvitation: AcceptInvitationUseCase,
   ) {}
@@ -64,6 +67,28 @@ export class InvitationsController {
     if (!user) throw new ForbiddenException('Missing authentication')
     return this.inviteTenantAdmin.execute({
       tenantId: body.tenantId,
+      email: body.email,
+      invitedByUserId: user.sub,
+    })
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @TenantRequired()
+  @Roles(UserRole.TENANT_ADMIN)
+  @Post('recruiter')
+  @ApiJwtTenantB2b()
+  @ApiOperation({
+    summary: 'Convidar recrutador para a empresa actual',
+    description:
+      'Apenas `TENANT_ADMIN`; o tenant vem do JWT. Gera um token único e envia link de ativação por email; o destinatário define a palavra passe ao aceitar o convite.',
+  })
+  @ApiBody({ type: InviteRecruiterDto })
+  @ApiCreatedResponse({ type: CreatedInvitationDto })
+  @ApiStandardErrors(true)
+  async createRecruiterInvite(@Body() body: InviteRecruiterDto, @Request() req: RequestWithJwt) {
+    const user = req.user
+    if (!user) throw new ForbiddenException('Missing authentication')
+    return this.inviteRecruiter.execute({
       email: body.email,
       invitedByUserId: user.sub,
     })

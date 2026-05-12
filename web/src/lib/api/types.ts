@@ -154,13 +154,6 @@ export interface PublicTenantBrandingResponse {
   banner: PublicBrandingAsset | null
 }
 
-export interface ProvisionedUserResponse {
-  id: string
-  email: string
-  tenantId: string | null
-  role: string
-}
-
 export interface B2BAccountResponse {
   id: string
   email: string

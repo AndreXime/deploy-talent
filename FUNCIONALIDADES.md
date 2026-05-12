@@ -40,7 +40,7 @@ Autenticação JWT com RBAC no token, CORS configurável, Helmet em produção e
 
 ### Convites de ativação
 
-O `SUPER_ADMIN` não cria contas de `TENANT_ADMIN` com palavra passe definida pelo próprio. Em vez disso envia um **convite por email**: a API gera um token opaco de 32 bytes, persiste apenas o SHA 256, e o link único `${WEB_BASE_URL}/ativar/<token>` viaja exclusivamente por SMTP. O destinatário abre o link, define a sua própria palavra passe e a conta é criada nesse momento, com login imediato.
+Toda a entrada B2B na plataforma passa por **convite por email**, nunca por palavra passe definida por terceiros. O `SUPER_ADMIN` convida o `TENANT_ADMIN` de cada empresa; depois é o próprio `TENANT_ADMIN` que convida os seus `RECRUITER` no contexto do tenant do JWT. Em ambos os casos a API gera um token opaco de 32 bytes, persiste apenas o SHA 256, e o link único `${WEB_BASE_URL}/ativar/<token>` viaja exclusivamente por SMTP. O destinatário abre o link, define a sua própria palavra passe e a conta é criada nesse momento, com login imediato.
 
 ## Regras de Negócio
 
@@ -82,7 +82,7 @@ Regras de transição:
 | Papel | Escopo operacional |
 |---|---|
 | `SUPER_ADMIN` | Criar, listar, suspender, ativar e soft-delete de tenants; convidar `TENANT_ADMIN` por email (link único de ativação). |
-| `TENANT_ADMIN` | Convidar `RECRUITER`; gerir vagas e pipeline no tenant do **JWT**. |
+| `TENANT_ADMIN` | Convidar `RECRUITER` por email (link único de ativação); gerir vagas e pipeline no tenant do **JWT**. |
 | `RECRUITER` | Mesmo escopo operacional de vagas e candidaturas no tenant do **JWT**. |
 | `CANDIDATE` | Registo/login, `GET/PATCH/DELETE /candidates/me`, `/applications/me` e candidatura com UUID do tenant na URL. |
 
@@ -110,11 +110,11 @@ Regras de transição:
 - Eventos que disparam envio: submissão de candidatura, contratação (`HIRED`), rejeição (`REJECTED`).
 - O envio é *best-effort*: erros de SMTP são registados mas não revertem a operação principal.
 
-### Convite de administrador de tenant
+### Convites B2B (admin de tenant e recrutador)
 
-- O `SUPER_ADMIN` envia um convite por email para cada futuro `TENANT_ADMIN`; o corpo do pedido não aceita nem permite definir palavra passe.
+- O onboarding de **ambos** os papéis B2B passa pela mesma máquina de convite. `SUPER_ADMIN` envia o convite ao futuro `TENANT_ADMIN` (`POST /invitations/tenant-admin`); o `TENANT_ADMIN` envia o convite a cada futuro `RECRUITER` no tenant do seu JWT (`POST /invitations/recruiter`). Em nenhum dos pedidos é possível enviar ou definir palavra passe.
 - A API gera um token opaco aleatório (32 bytes, base64url) e guarda **apenas o SHA 256**, evitando que uma fuga de leitura no Postgres comprometa convites pendentes.
-- Cada novo convite para o mesmo email e empresa revoga automaticamente os convites pendentes anteriores.
+- Cada novo convite para o mesmo email, empresa e papel revoga automaticamente os convites pendentes anteriores.
 - Validade configurável por `INVITATION_TTL_HOURS` (1..720, padrão 72h). Convites expirados, já aceites ou revogados deixam de ser utilizáveis.
 - Se o envio SMTP falhar o convite é revogado, garantindo que não fica um token activo em base de dados sem ter sido entregue.
-- A ativação cria o utilizador, marca o convite como aceite numa única transação, e devolve um `access_token` para login imediato.
+- A ativação (`POST /invitations/:token/accept`) cria o utilizador com o papel registado no convite, marca o convite como aceite numa única transação, e devolve um `access_token` para login imediato.

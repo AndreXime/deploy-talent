@@ -13,10 +13,7 @@ export function getMyProfile(token: string) {
   })
 }
 
-export function patchMyProfile(
-  token: string,
-  body: PatchCandidateProfileBody,
-) {
+export function patchMyProfile(token: string, body: PatchCandidateProfileBody) {
   return apiRequest<CandidateProfileResponse>('/candidates/me', {
     method: 'PATCH',
     token,

@@ -13,6 +13,14 @@ export function inviteTenantAdminRequest(token: string, body: { tenantId: string
   })
 }
 
+export function inviteRecruiterRequest(token: string, body: { email: string }) {
+  return apiRequest<CreatedInvitationResponse>('/invitations/recruiter', {
+    method: 'POST',
+    token,
+    json: body,
+  })
+}
+
 export function getInvitationByTokenRequest(invitationToken: string) {
   return apiRequest<InvitationPreviewResponse>(
     `/invitations/${encodeURIComponent(invitationToken)}`,

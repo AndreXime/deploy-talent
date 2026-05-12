@@ -93,6 +93,48 @@ describe('AcceptInvitationUseCase', () => {
     expect((login.execute as jest.Mock).mock.calls[0][0]).toEqual(createdUser)
   })
 
+  it('also accepts RECRUITER invitations and provisions the user with that role', async () => {
+    const createdUser = {
+      id: 'u2',
+      email: 'rec@a.com',
+      tenantId: 't1',
+      role: 'RECRUITER',
+    }
+    const tx = {
+      user: { create: jest.fn(async () => createdUser) },
+      invitation: { updateMany: jest.fn(async () => ({ count: 1 })) },
+    }
+    const prisma = {
+      invitation: {
+        findUnique: jest.fn(async () => ({
+          id: 'i2',
+          email: 'rec@a.com',
+          role: 'RECRUITER',
+          expiresAt: new Date(Date.now() + 3600_000),
+          acceptedAt: null,
+          revokedAt: null,
+          tenant: { id: 't1', isActive: true, deletedAt: null },
+        })),
+      },
+      user: { findFirst: jest.fn(async () => null) },
+      $transaction: jest.fn(async (cb: (tx: typeof tx) => Promise<unknown>) => cb(tx)),
+    }
+    const login = buildLoginUseCase()
+    const useCase = new AcceptInvitationUseCase(prisma as unknown as PrismaClient, login)
+
+    const result = await useCase.execute('tok', 'password1')
+
+    expect(result).toEqual({ access_token: 'jwt' })
+    expect(tx.user.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        email: 'rec@a.com',
+        role: 'RECRUITER',
+        tenantId: 't1',
+        passwordHash: 'hashed',
+      }),
+    })
+  })
+
   it('rejects when the email belongs to an existing user between preview and accept', async () => {
     const prisma = {
       invitation: {

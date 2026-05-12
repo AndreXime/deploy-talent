@@ -7,7 +7,6 @@ import { AuthController } from './auth.controller'
 import { JwtAuthGuard } from './guards/jwt-auth.guard'
 import { JwtStrategy } from './strategies/jwt.strategy'
 import { LocalStrategy } from './strategies/local.strategy'
-import { CreateRecruiterUseCase } from './use-cases/create-recruiter.use-case'
 import { GetMyB2BAccountUseCase } from './use-cases/get-my-b2b-account.use-case'
 import { LoginUseCase } from './use-cases/login.use-case'
 import { RegisterCandidateUseCase } from './use-cases/register-candidate.use-case'
@@ -33,7 +32,6 @@ import { ValidateLocalUserUseCase } from './use-cases/validate-local-user.use-ca
   providers: [
     LoginUseCase,
     RegisterCandidateUseCase,
-    CreateRecruiterUseCase,
     UpdateB2BAvatarUseCase,
     GetMyB2BAccountUseCase,
     ValidateLocalUserUseCase,

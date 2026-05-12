@@ -130,30 +130,6 @@ export class AccessTokenDto {
   access_token!: string
 }
 
-/** Usuário provisionado (`tenant-admin`, `recruiter`) sem devolver secrets. */
-export class ProvisionedUserDto {
-  @ApiProperty({ description: 'ID do usuário', format: 'uuid' })
-  id!: string
-
-  @ApiProperty({ description: 'E-mail cadastrado', format: 'email' })
-  email!: string
-
-  @ApiProperty({
-    description: 'Tenant ao qual o usuário pertence; `SUPER_ADMIN` costuma não ter tenants',
-    format: 'uuid',
-    nullable: true,
-    type: String,
-    example: null,
-  })
-  tenantId!: string | null
-
-  @ApiProperty({
-    description: 'Papel da conta',
-    enum: ['SUPER_ADMIN', 'TENANT_ADMIN', 'RECRUITER', 'CANDIDATE'],
-  })
-  role!: string
-}
-
 /** Conta B2B do utilizador autenticado (`GET /auth/me`, `PATCH /auth/me/avatar`). */
 export class B2BAccountResponseDto {
   @ApiProperty({ format: 'uuid' }) id!: string

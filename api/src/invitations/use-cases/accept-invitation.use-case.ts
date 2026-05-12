@@ -35,7 +35,7 @@ export class AcceptInvitationUseCase {
       throw new NotFoundException('Invitation expired')
     }
 
-    if (invitation.role !== UserRole.TENANT_ADMIN) {
+    if (invitation.role !== UserRole.TENANT_ADMIN && invitation.role !== UserRole.RECRUITER) {
       throw new BadRequestException('Unsupported invitation role')
     }
 

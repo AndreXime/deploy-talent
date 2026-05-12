@@ -158,7 +158,7 @@ Todas as contas geradas usam a mesma password.
 | Papel | Uso típico |
 |---|---|
 | `SUPER_ADMIN` | Criar/listar/suspender/ativar/soft-delete tenants; convidar `TENANT_ADMIN` por email (a conta é ativada pelo próprio com link único). |
-| `TENANT_ADMIN` | Convidar `RECRUITER`; vagas e pipeline no tenant do **JWT**. |
+| `TENANT_ADMIN` | Convidar `RECRUITER` por email (a conta é ativada pelo próprio com link único); vagas e pipeline no tenant do **JWT**. |
 | `RECRUITER` | Mesmo escopo operacional de vagas/candidaturas no tenant do **JWT**. |
 | `CANDIDATE` | Registo/login, `GET/PATCH/DELETE /candidates/me`, candidaturas (`/applications/me`) e candidatar com UUID do tenant na URL. |
 
