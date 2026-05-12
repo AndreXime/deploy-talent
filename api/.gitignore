@@ -3,3 +3,4 @@ generated
 node_modules
 .env
 prisma/seed/mock-data.json
+*.tsbuildinfo
