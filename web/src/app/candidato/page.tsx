@@ -9,16 +9,14 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { listMyApplications } from '@/lib/api/applications-api'
-import { getApiBaseUrl } from '@/lib/env'
 import { requireSessionToken } from '@/lib/require-session-token'
 import { useAuth } from '@/providers/auth-provider'
 
 export default function CandidateHomePage() {
   const { token } = useAuth()
-  const noApi = !getApiBaseUrl()
 
   const q = useQuery({
-    enabled: !!token && !noApi,
+    enabled: !!token,
     queryKey: ['my-applications', token, 1],
     queryFn: () => listMyApplications(requireSessionToken(token), { page: 1, limit: 50 }),
   })
@@ -31,14 +29,6 @@ export default function CandidateHomePage() {
           Acompanhe o estado junto das empresas onde se candidatou.
         </p>
       </div>
-
-      {noApi && (
-        <Alert variant="destructive">
-          <AlertDescription>
-            Defina <code>NEXT_PUBLIC_API_BASE_URL</code>.
-          </AlertDescription>
-        </Alert>
-      )}
 
       {q.isLoading && (
         <div className="space-y-3">

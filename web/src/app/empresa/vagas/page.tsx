@@ -12,17 +12,15 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { listTenantJobs } from '@/lib/api/jobs-api'
 import type { ApiJobStatus } from '@/lib/api/types'
 import { jobStatusLabel } from '@/lib/domain-labels'
-import { getApiBaseUrl } from '@/lib/env'
 import { requireSessionToken } from '@/lib/require-session-token'
 import { useAuth } from '@/providers/auth-provider'
 
 export default function TenantJobsPage() {
   const { token } = useAuth()
-  const noApi = !getApiBaseUrl()
   const [status, setStatus] = useState<ApiJobStatus | 'ALL'>('ALL')
 
   const q = useQuery({
-    enabled: !!token && !noApi,
+    enabled: !!token,
     queryKey: ['tenant-jobs', token, status],
     queryFn: () =>
       listTenantJobs(requireSessionToken(token), {
@@ -48,14 +46,6 @@ export default function TenantJobsPage() {
           </Link>
         </Button>
       </div>
-
-      {noApi && (
-        <Alert variant="destructive">
-          <AlertDescription>
-            Defina <code>NEXT_PUBLIC_API_BASE_URL</code>.
-          </AlertDescription>
-        </Alert>
-      )}
 
       <Card className="max-w-xs shadow-none">
         <CardHeader className="pb-2">

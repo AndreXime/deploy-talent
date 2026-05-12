@@ -5,16 +5,14 @@ import { useParams, useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 import { PublicHeader } from '@/components/public-header'
 import { getTenantBySlug } from '@/lib/api/tenants-api'
-import { getApiBaseUrl } from '@/lib/env'
 
 export default function CareerSlugRedirectPage() {
   const params = useParams<{ slug: string }>()
   const router = useRouter()
   const slug = params?.slug?.trim() ?? ''
-  const noApi = !getApiBaseUrl()
 
   const q = useQuery({
-    enabled: Boolean(slug) && !noApi,
+    enabled: Boolean(slug),
     queryKey: ['tenant-by-slug', slug],
     queryFn: () => getTenantBySlug(slug),
     retry: false,
@@ -31,10 +29,6 @@ export default function CareerSlugRedirectPage() {
       <main className="mx-auto flex w-full max-w-lg flex-1 flex-col gap-4 px-4 py-16 text-center text-sm text-muted-foreground">
         {!slug ? (
           <p>Slug inválido.</p>
-        ) : noApi ? (
-          <p>
-            Defina <code className="text-xs">NEXT_PUBLIC_API_BASE_URL</code>.
-          </p>
         ) : q.isLoading ? (
           <p>A abrir página da empresa…</p>
         ) : q.isError ? (

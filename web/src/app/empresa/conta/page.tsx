@@ -2,7 +2,6 @@
 
 import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -10,7 +9,6 @@ import { Label } from '@/components/ui/label'
 import { patchB2BAvatar } from '@/lib/api/auth-api'
 import { ApiRequestError } from '@/lib/api/client'
 import { presignUpload, uploadFileToPresignedUrl } from '@/lib/api/media-api'
-import { getApiBaseUrl } from '@/lib/env'
 import { requireSessionToken } from '@/lib/require-session-token'
 import { useAuth } from '@/providers/auth-provider'
 
@@ -22,7 +20,6 @@ function mime(file: File): string {
 
 export default function B2BAccountPage() {
   const { token } = useAuth()
-  const noApi = !getApiBaseUrl()
 
   const patchMut = useMutation({
     mutationFn: (avatarKey: string) => patchB2BAvatar(requireSessionToken(token), avatarKey),
@@ -59,13 +56,6 @@ export default function B2BAccountPage() {
           Foto usada internamente na equipa (não confundir com a marca pública da empresa).
         </p>
       </div>
-      {noApi && (
-        <Alert variant="destructive">
-          <AlertDescription>
-            Defina <code>NEXT_PUBLIC_API_BASE_URL</code>.
-          </AlertDescription>
-        </Alert>
-      )}
       <Card>
         <CardHeader>
           <CardTitle>Foto de perfil</CardTitle>

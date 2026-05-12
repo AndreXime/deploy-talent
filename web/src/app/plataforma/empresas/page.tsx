@@ -3,7 +3,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -34,14 +33,12 @@ import {
   softDeleteTenant,
   suspendTenant,
 } from '@/lib/api/tenants-api'
-import { getApiBaseUrl } from '@/lib/env'
 import { requireSessionToken } from '@/lib/require-session-token'
 import { useAuth } from '@/providers/auth-provider'
 
 export default function PlatformTenantsPage() {
   const { token } = useAuth()
   const qc = useQueryClient()
-  const noApi = !getApiBaseUrl()
 
   const [createOpen, setCreateOpen] = useState(false)
   const [cName, setCName] = useState('')
@@ -51,7 +48,7 @@ export default function PlatformTenantsPage() {
   const [admPass, setAdmPass] = useState('')
 
   const listQ = useQuery({
-    enabled: !!token && !noApi,
+    enabled: !!token,
     queryKey: ['platform-tenants', token],
     queryFn: () => listPlatformTenants(requireSessionToken(token)),
   })
@@ -122,15 +119,6 @@ export default function PlatformTenantsPage() {
           Nova empresa
         </Button>
       </div>
-
-      {noApi && (
-        <Alert variant="destructive">
-          <AlertTitle>API</AlertTitle>
-          <AlertDescription>
-            Defina <code>NEXT_PUBLIC_API_BASE_URL</code>.
-          </AlertDescription>
-        </Alert>
-      )}
 
       {listQ.isLoading && <Skeleton className="h-64 w-full" />}
 

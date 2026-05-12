@@ -30,7 +30,6 @@ import {
 import { ApiRequestError } from '@/lib/api/client'
 import type { ApiApplicationStatus } from '@/lib/api/types'
 import { applicationStatusLabel } from '@/lib/domain-labels'
-import { getApiBaseUrl } from '@/lib/env'
 import { isUuid } from '@/lib/is-uuid'
 import { nextApplicationStatuses } from '@/lib/pipeline-rules'
 import { requireSessionToken } from '@/lib/require-session-token'
@@ -42,20 +41,19 @@ export default function TenantApplicationDetailPage() {
   const { token } = useAuth()
   const qc = useQueryClient()
   const valid = isUuid(id)
-  const noApi = !getApiBaseUrl()
 
   const [stageNote, setStageNote] = useState('')
   const [evalScore, setEvalScore] = useState('')
   const [evalNotes, setEvalNotes] = useState('')
 
   const appQ = useQuery({
-    enabled: !!token && valid && !noApi,
+    enabled: !!token && valid,
     queryKey: ['tenant-application', token, id],
     queryFn: () => getTenantApplication(requireSessionToken(token), id),
   })
 
   const evalQ = useQuery({
-    enabled: !!token && valid && !noApi,
+    enabled: !!token && valid,
     queryKey: ['evaluations', token, id],
     queryFn: () => listEvaluations(requireSessionToken(token), id),
   })
@@ -114,13 +112,6 @@ export default function TenantApplicationDetailPage() {
       {!valid && (
         <Alert variant="destructive">
           <AlertDescription>Identificação inválida.</AlertDescription>
-        </Alert>
-      )}
-      {noApi && (
-        <Alert variant="destructive">
-          <AlertDescription>
-            Defina <code>NEXT_PUBLIC_API_BASE_URL</code>.
-          </AlertDescription>
         </Alert>
       )}
 

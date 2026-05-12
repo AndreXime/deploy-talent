@@ -5,7 +5,6 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { Suspense, useState } from 'react'
 import { toast } from 'sonner'
 import { PublicHeader } from '@/components/public-header'
-import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -21,7 +20,6 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { loginRequest } from '@/lib/api/auth-api'
 import { ApiRequestError } from '@/lib/api/client'
 import { parseJwtClaims } from '@/lib/auth-token'
-import { getApiBaseUrl } from '@/lib/env'
 import { homePathForRole } from '@/lib/routes'
 import { useAuth } from '@/providers/auth-provider'
 
@@ -41,14 +39,9 @@ function LoginForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
-  const [configError] = useState(() => !getApiBaseUrl())
 
   async function submitLogin(e: React.FormEvent) {
     e.preventDefault()
-    if (configError) {
-      toast.error('Configure NEXT_PUBLIC_API_BASE_URL no ambiente.')
-      return
-    }
     setLoading(true)
     try {
       const res = await loginRequest({ email, password })
@@ -79,13 +72,6 @@ function LoginForm() {
         </CardHeader>
         <form onSubmit={submitLogin}>
           <CardContent className="grid gap-4">
-            {configError && (
-              <Alert variant="destructive">
-                <AlertDescription>
-                  Falta configurar <code>NEXT_PUBLIC_API_BASE_URL</code>.
-                </AlertDescription>
-              </Alert>
-            )}
             <div className="space-y-2">
               <Label htmlFor="email">E-mail</Label>
               <Input

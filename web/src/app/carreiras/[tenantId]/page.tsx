@@ -15,7 +15,6 @@ import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
 import { listPublicJobsForTenant } from '@/lib/api/jobs-api'
 import { getPublicBranding } from '@/lib/api/tenants-api'
-import { getApiBaseUrl } from '@/lib/env'
 import { isUuid } from '@/lib/is-uuid'
 
 function pickString(v: string | null): string | undefined {
@@ -27,7 +26,6 @@ function CareerListInner({ tenantId, valid }: { tenantId: string; valid: boolean
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
-  const noApi = !getApiBaseUrl()
 
   const q = pickString(searchParams.get('q'))
   const modality = pickString(searchParams.get('modality'))
@@ -56,13 +54,13 @@ function CareerListInner({ tenantId, valid }: { tenantId: string; valid: boolean
   }
 
   const brandingQ = useQuery({
-    enabled: valid && !noApi,
+    enabled: valid,
     queryKey: ['branding-public', tenantId],
     queryFn: () => getPublicBranding(tenantId),
   })
 
   const jobsQ = useQuery({
-    enabled: valid && !noApi,
+    enabled: valid,
     queryKey: ['public-jobs', tenantId, q, modality, location, seniority],
     queryFn: () =>
       listPublicJobsForTenant(tenantId, {
@@ -110,14 +108,6 @@ function CareerListInner({ tenantId, valid }: { tenantId: string; valid: boolean
             Encontre oportunidades abertas e candidate-se com o seu perfil.
           </p>
         </div>
-
-        {noApi ? (
-          <Alert variant="destructive">
-            <AlertDescription>
-              Defina <code>NEXT_PUBLIC_API_BASE_URL</code> para carregar as vagas.
-            </AlertDescription>
-          </Alert>
-        ) : null}
 
         {!valid ? (
           <Alert variant="destructive">

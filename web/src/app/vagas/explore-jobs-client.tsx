@@ -22,7 +22,6 @@ import {
 import { Skeleton } from '@/components/ui/skeleton'
 import { getMarketplaceJobFilterOptions, listMarketplaceJobs } from '@/lib/api/jobs-api'
 import type { MarketplaceTenantFilterOption } from '@/lib/api/types'
-import { getApiBaseUrl } from '@/lib/env'
 import { isUuid } from '@/lib/is-uuid'
 
 function pickString(v: string | null): string | undefined {
@@ -165,7 +164,6 @@ export function ExploreJobsClient() {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
-  const noApi = !getApiBaseUrl()
 
   const page = Math.max(1, Number.parseInt(searchParams.get('page') ?? '1', 10) || 1)
   const q = pickString(searchParams.get('q'))
@@ -201,7 +199,6 @@ export function ExploreJobsClient() {
   }, [draftLocation, draftModality, draftQ, draftSeniority, draftTenantId, pathname, router])
 
   const filtersQ = useQuery({
-    enabled: !noApi,
     queryKey: ['marketplace-job-filters'],
     queryFn: getMarketplaceJobFilterOptions,
     staleTime: 5 * 60_000,
@@ -227,7 +224,7 @@ export function ExploreJobsClient() {
   const facetSelectDisabled = filtersQ.isLoading
 
   const jobsQ = useQuery({
-    enabled: !noApi && tenantIdValid,
+    enabled: tenantIdValid,
     queryKey: ['marketplace-jobs', page, q, modality, location, seniority, tenantId],
     queryFn: () =>
       listMarketplaceJobs({
@@ -259,14 +256,6 @@ export function ExploreJobsClient() {
             Oportunidades publicadas por empresas activas na plataforma.
           </p>
         </div>
-
-        {noApi && (
-          <Alert variant="destructive">
-            <AlertDescription>
-              Defina <code>NEXT_PUBLIC_API_BASE_URL</code>.
-            </AlertDescription>
-          </Alert>
-        )}
 
         <Card>
           <CardHeader>

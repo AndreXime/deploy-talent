@@ -2,7 +2,6 @@
 
 import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -10,7 +9,6 @@ import { Label } from '@/components/ui/label'
 import { ApiRequestError } from '@/lib/api/client'
 import { presignUpload, uploadFileToPresignedUrl } from '@/lib/api/media-api'
 import { patchCurrentBranding } from '@/lib/api/tenants-api'
-import { getApiBaseUrl } from '@/lib/env'
 import { requireSessionToken } from '@/lib/require-session-token'
 import { useAuth } from '@/providers/auth-provider'
 
@@ -22,7 +20,6 @@ function mime(file: File): string {
 
 export default function TenantBrandingPage() {
   const { token } = useAuth()
-  const noApi = !getApiBaseUrl()
 
   const patchMut = useMutation({
     mutationFn: (body: { logoKey?: string; bannerKey?: string }) =>
@@ -86,13 +83,6 @@ export default function TenantBrandingPage() {
           Estas imagens aparecem no topo da página pública de vagas da sua empresa.
         </p>
       </div>
-      {noApi && (
-        <Alert variant="destructive">
-          <AlertDescription>
-            Defina <code>NEXT_PUBLIC_API_BASE_URL</code>.
-          </AlertDescription>
-        </Alert>
-      )}
       <Card>
         <CardHeader>
           <CardTitle>Logótipo</CardTitle>

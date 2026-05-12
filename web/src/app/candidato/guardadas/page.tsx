@@ -9,17 +9,15 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { listMySavedJobs } from '@/lib/api/candidates-api'
-import { getApiBaseUrl } from '@/lib/env'
 import { requireSessionToken } from '@/lib/require-session-token'
 import { useAuth } from '@/providers/auth-provider'
 
 export default function SavedJobsPage() {
   const { token, claims, hydrated } = useAuth()
-  const noApi = !getApiBaseUrl()
   const isCandidate = claims?.role === 'CANDIDATE'
 
   const listQ = useQuery({
-    enabled: hydrated && !!token && isCandidate && !noApi,
+    enabled: hydrated && !!token && isCandidate,
     queryKey: ['my-saved-jobs', token],
     queryFn: () => listMySavedJobs(requireSessionToken(token), { page: 1, limit: 50 }),
   })
@@ -55,12 +53,6 @@ export default function SavedJobsPage() {
           Referências que marcou para rever ou candidatar-se mais tarde.
         </p>
       </div>
-
-      {noApi ? (
-        <Alert variant="destructive">
-          <AlertDescription>Defina NEXT_PUBLIC_API_BASE_URL.</AlertDescription>
-        </Alert>
-      ) : null}
 
       {listQ.isLoading ? (
         <div className="space-y-3">

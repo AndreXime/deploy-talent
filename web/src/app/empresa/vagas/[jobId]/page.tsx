@@ -33,7 +33,6 @@ import { ApiRequestError } from '@/lib/api/client'
 import { changeJobStatus, getTenantJob, patchJob } from '@/lib/api/jobs-api'
 import type { ApiJobStatus } from '@/lib/api/types'
 import { jobStatusLabel } from '@/lib/domain-labels'
-import { getApiBaseUrl } from '@/lib/env'
 import { isUuid } from '@/lib/is-uuid'
 import { canPublishJob, nextJobStatuses } from '@/lib/pipeline-rules'
 import { requireSessionToken } from '@/lib/require-session-token'
@@ -45,7 +44,6 @@ export default function TenantJobDetailPage() {
   const { token } = useAuth()
   const qc = useQueryClient()
   const valid = isUuid(jobId.trim())
-  const noApi = !getApiBaseUrl()
 
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
@@ -58,7 +56,7 @@ export default function TenantJobDetailPage() {
   const [sStage, setSStage] = useState('')
 
   const jobQ = useQuery({
-    enabled: !!token && valid && !noApi,
+    enabled: !!token && valid,
     queryKey: ['tenant-job', token, jobId],
     queryFn: () => getTenantJob(requireSessionToken(token), jobId.trim()),
   })
@@ -150,13 +148,6 @@ export default function TenantJobDetailPage() {
       {!valid && (
         <Alert variant="destructive">
           <AlertDescription>Identificação inválida.</AlertDescription>
-        </Alert>
-      )}
-      {noApi && (
-        <Alert variant="destructive">
-          <AlertDescription>
-            Defina <code>NEXT_PUBLIC_API_BASE_URL</code>.
-          </AlertDescription>
         </Alert>
       )}
 

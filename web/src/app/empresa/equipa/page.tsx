@@ -4,7 +4,6 @@ import { useMutation } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
-import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -18,7 +17,6 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { createRecruiterRequest } from '@/lib/api/auth-api'
 import { ApiRequestError } from '@/lib/api/client'
-import { getApiBaseUrl } from '@/lib/env'
 import { requireSessionToken } from '@/lib/require-session-token'
 import { homePathForRole } from '@/lib/routes'
 import { useAuth } from '@/providers/auth-provider'
@@ -26,7 +24,6 @@ import { useAuth } from '@/providers/auth-provider'
 export default function InviteRecruiterPage() {
   const router = useRouter()
   const { claims, hydrated, token } = useAuth()
-  const noApi = !getApiBaseUrl()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
 
@@ -68,13 +65,6 @@ export default function InviteRecruiterPage() {
           um canal seguro fora daqui.
         </p>
       </div>
-      {noApi && (
-        <Alert variant="destructive">
-          <AlertDescription>
-            Defina <code>NEXT_PUBLIC_API_BASE_URL</code>.
-          </AlertDescription>
-        </Alert>
-      )}
       <Card>
         <CardHeader>
           <CardTitle>Recrutador</CardTitle>
@@ -106,7 +96,7 @@ export default function InviteRecruiterPage() {
           </div>
         </CardContent>
         <CardFooter>
-          <Button type="button" disabled={mut.isPending || noApi} onClick={() => mut.mutate()}>
+          <Button type="button" disabled={mut.isPending} onClick={() => mut.mutate()}>
             {mut.isPending ? 'A criar…' : 'Criar utilização'}
           </Button>
         </CardFooter>

@@ -10,7 +10,6 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { listMarketplaceJobs } from '@/lib/api/jobs-api'
-import { getApiBaseUrl } from '@/lib/env'
 
 const FEATURED_LIMIT = 3
 
@@ -25,9 +24,7 @@ function snippetFromDescription(raw: string, maxLen: number): string {
 }
 
 export function HomeFeaturedJobs() {
-  const noApi = !getApiBaseUrl()
   const jobsQ = useQuery({
-    enabled: !noApi,
     queryKey: ['home-featured-jobs'],
     queryFn: () => listMarketplaceJobs({ page: 1, limit: FEATURED_LIMIT }),
   })
@@ -55,14 +52,6 @@ export function HomeFeaturedJobs() {
           </Button>
         </div>
 
-        {noApi ? (
-          <Alert variant="destructive" className="mt-10">
-            <AlertDescription>
-              Defina <code>NEXT_PUBLIC_API_BASE_URL</code> para listar vagas reais.
-            </AlertDescription>
-          </Alert>
-        ) : null}
-
         {jobsQ.isLoading ? (
           <ul className="mt-12 grid grid-cols-1 gap-6 lg:grid-cols-3">
             {skeletonPlaceholders.map((id) => (
@@ -73,7 +62,7 @@ export function HomeFeaturedJobs() {
           </ul>
         ) : null}
 
-        {!noApi && jobsQ.isError ? (
+        {jobsQ.isError ? (
           <Alert variant="destructive" className="mt-10">
             <AlertDescription>
               Não foi possível carregar as vagas.{' '}
@@ -85,7 +74,7 @@ export function HomeFeaturedJobs() {
           </Alert>
         ) : null}
 
-        {!noApi && jobsQ.data && jobsQ.data.items.length === 0 ? (
+        {jobsQ.data && jobsQ.data.items.length === 0 ? (
           <Card className="mt-10 border-dashed">
             <CardHeader>
               <CardTitle className="text-base">Ainda sem vagas públicas</CardTitle>
@@ -101,7 +90,7 @@ export function HomeFeaturedJobs() {
           </Card>
         ) : null}
 
-        {!noApi && jobsQ.data && jobsQ.data.items.length > 0 ? (
+        {jobsQ.data && jobsQ.data.items.length > 0 ? (
           <ul className="mt-12 grid grid-cols-1 gap-6 lg:grid-cols-3">
             {jobsQ.data.items.map(({ job, tenant }) => (
               <li key={job.id}>

@@ -16,7 +16,6 @@ import { listMySavedJobs, saveJobBookmark, unsaveJob } from '@/lib/api/candidate
 import { ApiRequestError } from '@/lib/api/client'
 import { getPublicJob } from '@/lib/api/jobs-api'
 import { getPublicBranding } from '@/lib/api/tenants-api'
-import { getApiBaseUrl } from '@/lib/env'
 import { isUuid } from '@/lib/is-uuid'
 import { requireSessionToken } from '@/lib/require-session-token'
 import { useAuth } from '@/providers/auth-provider'
@@ -32,16 +31,15 @@ export default function PublicJobDetailPage() {
   const jobId = params?.jobId?.trim() ?? ''
   const validTenant = isUuid(tenantId)
   const validJob = isUuid(jobId)
-  const noApi = !getApiBaseUrl()
 
   const brandingQ = useQuery({
-    enabled: validTenant && !noApi,
+    enabled: validTenant,
     queryKey: ['branding-public', tenantId],
     queryFn: () => getPublicBranding(tenantId),
   })
 
   const jobQ = useQuery({
-    enabled: validTenant && validJob && !noApi,
+    enabled: validTenant && validJob,
     queryKey: ['public-job', tenantId, jobId],
     queryFn: () => getPublicJob(tenantId, jobId),
   })
@@ -49,7 +47,7 @@ export default function PublicJobDetailPage() {
   const isCandidate = claims?.role === 'CANDIDATE'
 
   const savedIdsQ = useQuery({
-    enabled: Boolean(token) && isCandidate && !noApi && validJob,
+    enabled: Boolean(token) && isCandidate && validJob,
     queryKey: ['my-saved-job-ids', token],
     queryFn: async () => {
       const res = await listMySavedJobs(requireSessionToken(token), { page: 1, limit: 100 })
@@ -140,14 +138,6 @@ export default function PublicJobDetailPage() {
             </Link>
           </Button>
         </div>
-
-        {noApi && (
-          <Alert variant="destructive">
-            <AlertDescription>
-              Defina <code>NEXT_PUBLIC_API_BASE_URL</code>.
-            </AlertDescription>
-          </Alert>
-        )}
 
         {(!validTenant || !validJob) && (
           <Alert variant="destructive">

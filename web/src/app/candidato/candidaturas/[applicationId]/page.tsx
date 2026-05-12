@@ -22,7 +22,6 @@ import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
 import { getMyApplication, withdrawMyApplication } from '@/lib/api/applications-api'
 import { ApiRequestError } from '@/lib/api/client'
-import { getApiBaseUrl } from '@/lib/env'
 import { isUuid } from '@/lib/is-uuid'
 import { candidateMayWithdraw } from '@/lib/pipeline-rules'
 import { requireSessionToken } from '@/lib/require-session-token'
@@ -33,13 +32,12 @@ export default function CandidateApplicationDetailPage() {
   const applicationId = params?.applicationId?.trim() ?? ''
   const { token } = useAuth()
   const queryClient = useQueryClient()
-  const noApi = !getApiBaseUrl()
   const valid = isUuid(applicationId)
 
   const [withdrawOpen, setWithdrawOpen] = useState(false)
 
   const q = useQuery({
-    enabled: !!token && valid && !noApi,
+    enabled: !!token && valid,
     queryKey: ['my-application', token, applicationId],
     queryFn: () => getMyApplication(requireSessionToken(token), applicationId),
   })
@@ -72,14 +70,6 @@ export default function CandidateApplicationDetailPage() {
       {!valid && (
         <Alert variant="destructive">
           <AlertDescription>Identificação inválida.</AlertDescription>
-        </Alert>
-      )}
-
-      {noApi && (
-        <Alert variant="destructive">
-          <AlertDescription>
-            Defina <code>NEXT_PUBLIC_API_BASE_URL</code>.
-          </AlertDescription>
         </Alert>
       )}
 

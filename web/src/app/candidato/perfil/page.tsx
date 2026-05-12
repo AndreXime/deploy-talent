@@ -29,7 +29,6 @@ import { forgetMe, getMyProfile, patchMyProfile } from '@/lib/api/candidates-api
 import type { PatchCandidateProfileBody } from '@/lib/api/types'
 import { ApiRequestError } from '@/lib/api/client'
 import { presignUpload, uploadFileToPresignedUrl } from '@/lib/api/media-api'
-import { getApiBaseUrl } from '@/lib/env'
 import { requireSessionToken } from '@/lib/require-session-token'
 import { useAuth } from '@/providers/auth-provider'
 
@@ -67,7 +66,6 @@ function resumeContentType(file: File): string {
 export default function CandidateProfilePage() {
   const { token, signOut } = useAuth()
   const queryClient = useQueryClient()
-  const noApi = !getApiBaseUrl()
   const [forgetOpen, setForgetOpen] = useState(false)
 
   const [name, setName] = useState('')
@@ -78,7 +76,7 @@ export default function CandidateProfilePage() {
   const resumeInputRef = useRef<HTMLInputElement>(null)
 
   const profileQ = useQuery({
-    enabled: !!token && !noApi,
+    enabled: !!token,
     queryKey: ['my-profile', token],
     queryFn: () => getMyProfile(requireSessionToken(token)),
   })
@@ -203,14 +201,6 @@ export default function CandidateProfilePage() {
           Estes dados acompanham todas as suas candidaturas futuras e atuais.
         </p>
       </div>
-
-      {noApi && (
-        <Alert variant="destructive">
-          <AlertDescription>
-            Defina <code>NEXT_PUBLIC_API_BASE_URL</code>.
-          </AlertDescription>
-        </Alert>
-      )}
 
       {profileQ.isLoading && <Skeleton className="h-80 w-full" />}
 

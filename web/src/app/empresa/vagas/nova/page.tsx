@@ -5,7 +5,6 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -20,14 +19,12 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { ApiRequestError } from '@/lib/api/client'
 import { createJob } from '@/lib/api/jobs-api'
-import { getApiBaseUrl } from '@/lib/env'
 import { requireSessionToken } from '@/lib/require-session-token'
 import { useAuth } from '@/providers/auth-provider'
 
 export default function NewJobPage() {
   const router = useRouter()
   const { token } = useAuth()
-  const noApi = !getApiBaseUrl()
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [modality, setModality] = useState('')
@@ -67,13 +64,6 @@ export default function NewJobPage() {
           Começa em estado de rascunho até publicar com todos os campos necessários preenchidos.
         </p>
       </div>
-      {noApi && (
-        <Alert variant="destructive">
-          <AlertDescription>
-            Defina <code>NEXT_PUBLIC_API_BASE_URL</code>.
-          </AlertDescription>
-        </Alert>
-      )}
       <Card>
         <CardHeader>
           <CardTitle>Dados principais</CardTitle>
@@ -133,7 +123,7 @@ export default function NewJobPage() {
           </div>
         </CardContent>
         <CardFooter className="flex flex-wrap gap-2 border-t px-6 py-4">
-          <Button type="button" disabled={mut.isPending || noApi} onClick={() => mut.mutate()}>
+          <Button type="button" disabled={mut.isPending} onClick={() => mut.mutate()}>
             {mut.isPending ? 'A guardar…' : 'Criar rascunho'}
           </Button>
         </CardFooter>

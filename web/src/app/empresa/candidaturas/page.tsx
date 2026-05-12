@@ -12,17 +12,15 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { listTenantApplications } from '@/lib/api/applications-api'
 import type { ApiApplicationStatus } from '@/lib/api/types'
 import { applicationStatusLabel } from '@/lib/domain-labels'
-import { getApiBaseUrl } from '@/lib/env'
 import { requireSessionToken } from '@/lib/require-session-token'
 import { useAuth } from '@/providers/auth-provider'
 
 export default function TenantApplicationsPage() {
   const { token } = useAuth()
-  const noApi = !getApiBaseUrl()
   const [status, setStatus] = useState<ApiApplicationStatus | 'ALL'>('ALL')
 
   const q = useQuery({
-    enabled: !!token && !noApi,
+    enabled: !!token,
     queryKey: ['tenant-applications', token, status],
     queryFn: () =>
       listTenantApplications(requireSessionToken(token), {
@@ -40,14 +38,6 @@ export default function TenantApplicationsPage() {
           Consulte quem está em processo e abra o detalhe para movimentar o funil.
         </p>
       </div>
-
-      {noApi && (
-        <Alert variant="destructive">
-          <AlertDescription>
-            Defina <code>NEXT_PUBLIC_API_BASE_URL</code>.
-          </AlertDescription>
-        </Alert>
-      )}
 
       <Card className="max-w-xs shadow-none">
         <CardHeader className="pb-2">

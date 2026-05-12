@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { PublicHeader } from '@/components/public-header'
-import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -19,7 +18,6 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { registerCandidateRequest } from '@/lib/api/auth-api'
 import { ApiRequestError } from '@/lib/api/client'
-import { getApiBaseUrl } from '@/lib/env'
 import { useAuth } from '@/providers/auth-provider'
 
 export default function RegisterPage() {
@@ -29,14 +27,9 @@ export default function RegisterPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
-  const [configError] = useState(() => !getApiBaseUrl())
 
   async function submitRegister(e: React.FormEvent) {
     e.preventDefault()
-    if (configError) {
-      toast.error('Configure NEXT_PUBLIC_API_BASE_URL.')
-      return
-    }
     setLoading(true)
     try {
       const res = await registerCandidateRequest({ name, email, password })
@@ -65,13 +58,6 @@ export default function RegisterPage() {
           </CardHeader>
           <form onSubmit={submitRegister}>
             <CardContent className="grid gap-4">
-              {configError && (
-                <Alert variant="destructive">
-                  <AlertDescription>
-                    Falta configurar <code>NEXT_PUBLIC_API_BASE_URL</code>.
-                  </AlertDescription>
-                </Alert>
-              )}
               <div className="space-y-2">
                 <Label htmlFor="name">Nome completo</Label>
                 <Input

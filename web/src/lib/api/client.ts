@@ -1,5 +1,5 @@
 import type { ApiErrorBody } from '@/lib/api/types'
-import { getApiBaseUrl } from '@/lib/env'
+import { API_BASE_URL } from '@/lib/env'
 
 const UNAUTH_EVENT = 'deploy-talent:unauthorized'
 
@@ -46,12 +46,7 @@ export interface ApiRequestOptions extends Omit<RequestInit, 'body'> {
 }
 
 export async function apiRequest<T>(path: string, options: ApiRequestOptions = {}): Promise<T> {
-  const base = getApiBaseUrl()
-  if (!base) {
-    throw new ApiRequestError(0, null, 'Configure NEXT_PUBLIC_API_BASE_URL.')
-  }
-
-  let url = `${base}${path.startsWith('/') ? path : `/${path}`}`
+  let url = `${API_BASE_URL}${path.startsWith('/') ? path : `/${path}`}`
   if (options.query) {
     const params = new URLSearchParams()
     for (const [k, v] of Object.entries(options.query)) {
