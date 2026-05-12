@@ -35,4 +35,3 @@ export class CreateRecruiterUseCase {
     return { id: user.id, email: user.email, tenantId: user.tenantId, role: user.role }
   }
 }
-

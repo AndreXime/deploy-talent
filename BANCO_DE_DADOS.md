@@ -13,11 +13,13 @@ erDiagram
     TENANT ||--o{ APPLICATION          : "agrega"
     TENANT ||--o{ APPLICATION_HISTORY  : "audita"
     TENANT ||--o{ EVALUATION           : "armazena"
+    TENANT ||--o{ INVITATION           : "convida"
 
     USER ||--o| CANDIDATE              : "perfil"
     USER ||--o{ APPLICATION            : "sourced_by"
     USER ||--o{ APPLICATION_HISTORY    : "moved_by"
     USER ||--o{ EVALUATION             : "created_by"
+    USER ||--o{ INVITATION             : "convidado_por"
 
     CANDIDATE ||--o{ APPLICATION       : "candidata"
     CANDIDATE ||--o{ SAVED_JOB         : "guarda"
@@ -120,6 +122,20 @@ erDiagram
         uuid     jobId FK
         datetime createdAt
     }
+
+    INVITATION {
+        uuid     id PK
+        string   email
+        enum     role "SUPER_ADMIN|TENANT_ADMIN|RECRUITER|CANDIDATE"
+        uuid     tenantId FK "nullable"
+        string   tokenHash UK "SHA 256 do token"
+        uuid     invitedByUserId FK "nullable"
+        datetime expiresAt
+        datetime acceptedAt "nullable"
+        datetime revokedAt  "nullable"
+        datetime createdAt
+        datetime updatedAt
+    }
 ```
 
 ## Constraints e índices relevantes
@@ -136,6 +152,9 @@ erDiagram
 | `application_history` | FK `movedByUserId` `ON DELETE SET NULL` | preserva histórico mesmo se o utilizador for removido |
 | `evaluations` | FK `createdByUserId` `ON DELETE SET NULL` | preserva avaliações órfãs |
 | `saved_jobs` | único `(candidateId, jobId)` | sem duplicados de favoritos |
+| `invitations` | `tokenHash` único | impede colisões e permite lookup directo pelo token recebido por email |
+| `invitations` | FK `tenantId` `ON DELETE CASCADE` | apagar a empresa invalida convites pendentes |
+| `invitations` | FK `invitedByUserId` `ON DELETE SET NULL` | mantém auditoria mesmo após remoção do autor |
 
 Todas as FKs para `Tenant`, `Job`, `Candidate` e `Application` propagam com `ON DELETE CASCADE`; apagar um tenant remove o seu universo de dados (vagas, candidaturas, histórico, avaliações).
 

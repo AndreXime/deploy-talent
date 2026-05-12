@@ -167,6 +167,31 @@ export class EnvService {
   }
 
   /**
+   * URL pública do frontend, usada para montar links em emails (ex.: convite de
+   * ativação de conta). Sem barra final.
+   */
+  get webBaseUrl(): string {
+    const value = this.config.get<string>('WEB_BASE_URL', { infer: true })
+    if (!value || value.trim().length === 0) {
+      throw new Error('Missing WEB_BASE_URL')
+    }
+    return value.trim().replace(/\/+$/, '')
+  }
+
+  /**
+   * Tempo de vida (em horas) de um convite de ativação. Default 72h.
+   */
+  get invitationTtlHours(): number {
+    const value = this.config.get<string>('INVITATION_TTL_HOURS', { infer: true })
+    if (!value || value.trim().length === 0) return 72
+    const parsed = Number(value)
+    if (!Number.isInteger(parsed) || parsed < 1 || parsed > 24 * 30) {
+      throw new Error(`Invalid INVITATION_TTL_HOURS: "${value}" (expected integer 1..720)`)
+    }
+    return parsed
+  }
+
+  /**
    * Origens permitidas para CORS (vírgula). Em PROD, lista vazia = CORS desligado (defina explicitamente).
    * Em DEV/TEST, lista vazia = `true` (qualquer origem).
    */

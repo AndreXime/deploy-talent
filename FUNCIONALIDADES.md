@@ -38,6 +38,10 @@ Upload via S3 com URL pré-assinada para: avatar do candidato, currículo, logo 
 
 Autenticação JWT com RBAC no token, CORS configurável, Helmet em produção e throttling global. Fora de `PROD`, o Swagger fica em `/docs`.
 
+### Convites de ativação
+
+O `SUPER_ADMIN` não cria contas de `TENANT_ADMIN` com palavra passe definida pelo próprio. Em vez disso envia um **convite por email**: a API gera um token opaco de 32 bytes, persiste apenas o SHA 256, e o link único `${WEB_BASE_URL}/ativar/<token>` viaja exclusivamente por SMTP. O destinatário abre o link, define a sua própria palavra passe e a conta é criada nesse momento, com login imediato.
+
 ## Regras de Negócio
 
 ### Vagas (`Job`)
@@ -77,7 +81,7 @@ Regras de transição:
 
 | Papel | Escopo operacional |
 |---|---|
-| `SUPER_ADMIN` | Criar, listar, suspender, ativar e soft-delete de tenants; criar `TENANT_ADMIN`. |
+| `SUPER_ADMIN` | Criar, listar, suspender, ativar e soft-delete de tenants; convidar `TENANT_ADMIN` por email (link único de ativação). |
 | `TENANT_ADMIN` | Convidar `RECRUITER`; gerir vagas e pipeline no tenant do **JWT**. |
 | `RECRUITER` | Mesmo escopo operacional de vagas e candidaturas no tenant do **JWT**. |
 | `CANDIDATE` | Registo/login, `GET/PATCH/DELETE /candidates/me`, `/applications/me` e candidatura com UUID do tenant na URL. |
@@ -105,3 +109,12 @@ Regras de transição:
 
 - Eventos que disparam envio: submissão de candidatura, contratação (`HIRED`), rejeição (`REJECTED`).
 - O envio é *best-effort*: erros de SMTP são registados mas não revertem a operação principal.
+
+### Convite de administrador de tenant
+
+- O `SUPER_ADMIN` envia um convite por email para cada futuro `TENANT_ADMIN`; o corpo do pedido não aceita nem permite definir palavra passe.
+- A API gera um token opaco aleatório (32 bytes, base64url) e guarda **apenas o SHA 256**, evitando que uma fuga de leitura no Postgres comprometa convites pendentes.
+- Cada novo convite para o mesmo email e empresa revoga automaticamente os convites pendentes anteriores.
+- Validade configurável por `INVITATION_TTL_HOURS` (1..720, padrão 72h). Convites expirados, já aceites ou revogados deixam de ser utilizáveis.
+- Se o envio SMTP falhar o convite é revogado, garantindo que não fica um token activo em base de dados sem ter sido entregue.
+- A ativação cria o utilizador, marca o convite como aceite numa única transação, e devolve um `access_token` para login imediato.

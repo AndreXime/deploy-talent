@@ -3,4 +3,3 @@ export interface JwtPayload {
   tenantId: string | null
   role: string
 }
-

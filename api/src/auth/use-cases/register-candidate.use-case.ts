@@ -36,4 +36,3 @@ export class RegisterCandidateUseCase {
     return this.login.execute(user)
   }
 }
-

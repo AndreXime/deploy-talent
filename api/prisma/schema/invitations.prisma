@@ -1,0 +1,24 @@
+/// Convite para um futuro utilizador concluir o registo (ex.: SUPER_ADMIN
+/// convida o admin de um tenant). O token cru é enviado por email; aqui só
+/// guardamos o SHA 256 para mitigar fugas em caso de leitura indevida.
+model Invitation {
+  id              String    @id @default(uuid())
+  email           String
+  role            UserRole
+  tenantId        String?
+  /// SHA 256 do token enviado por email. O token cru nunca é persistido.
+  tokenHash       String    @unique
+  invitedByUserId String?
+  expiresAt       DateTime
+  acceptedAt      DateTime?
+  revokedAt       DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  tenant    Tenant? @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  invitedBy User?   @relation("InvitationsCreated", fields: [invitedByUserId], references: [id], onDelete: SetNull)
+
+  @@index([email])
+  @@index([tenantId])
+  @@map("invitations")
+}

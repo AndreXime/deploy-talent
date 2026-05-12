@@ -136,6 +136,8 @@ Todas as contas geradas usam a mesma password.
 | `SMTP_PORT` | Sim | Porta SMTP (ex.: 1025 Mailpit, 587 SES STARTTLS). |
 | `SMTP_SECURE` | Não | `true`/`1` para TLS implícito (porta 465). |
 | `SMTP_USER` / `SMTP_PASSWORD` | Não | Auth SMTP; podem ser omitidos em servidores abertos (Mailpit). |
+| `WEB_BASE_URL` | Sim | URL pública do frontend (sem barra final). Usada para montar os links dos emails de convite. |
+| `INVITATION_TTL_HOURS` | Não | Tempo de vida dos convites de ativação (1..720, padrão 72). |
 | `CORS_ORIGINS` | Não | Lista CSV de origens. Vazio em `PROD` = CORS desligado; vazio em `DEV/TEST` = qualquer origem. |
 
 ### Web (`web/.env`)
@@ -155,7 +157,7 @@ Todas as contas geradas usam a mesma password.
 
 | Papel | Uso típico |
 |---|---|
-| `SUPER_ADMIN` | Criar/listar/suspender/ativar/soft-delete tenants; criar `TENANT_ADMIN`. |
+| `SUPER_ADMIN` | Criar/listar/suspender/ativar/soft-delete tenants; convidar `TENANT_ADMIN` por email (a conta é ativada pelo próprio com link único). |
 | `TENANT_ADMIN` | Convidar `RECRUITER`; vagas e pipeline no tenant do **JWT**. |
 | `RECRUITER` | Mesmo escopo operacional de vagas/candidaturas no tenant do **JWT**. |
 | `CANDIDATE` | Registo/login, `GET/PATCH/DELETE /candidates/me`, candidaturas (`/applications/me`) e candidatar com UUID do tenant na URL. |

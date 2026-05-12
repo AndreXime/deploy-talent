@@ -15,6 +15,7 @@ model User {
   movedApplications   ApplicationHistory[] @relation("MovedBy")
   createdEvaluations  Evaluation[]         @relation("EvaluationCreatedBy")
   candidateProfile    Candidate?
+  invitationsCreated  Invitation[]         @relation("InvitationsCreated")
 
   @@index([tenantId])
   @@map("users")

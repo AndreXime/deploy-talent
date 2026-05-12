@@ -161,6 +161,21 @@ export interface ProvisionedUserResponse {
   role: string
 }
 
+export interface CreatedInvitationResponse {
+  id: string
+  email: string
+  role: string
+  tenantId: string | null
+  expiresAt: string
+}
+
+export interface InvitationPreviewResponse {
+  email: string
+  role: string
+  tenantName: string | null
+  expiresAt: string
+}
+
 export interface ApiErrorBody {
   statusCode: number
   error: string

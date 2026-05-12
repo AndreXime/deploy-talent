@@ -24,8 +24,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { createTenantAdminRequest } from '@/lib/api/auth-api'
 import { ApiRequestError } from '@/lib/api/client'
+import { inviteTenantAdminRequest } from '@/lib/api/invitations-api'
 import {
   activateTenant,
   createTenant,
@@ -45,7 +45,6 @@ export default function PlatformTenantsPage() {
   const [cSlug, setCSlug] = useState('')
   const [adminOpen, setAdminOpen] = useState<string | null>(null)
   const [admEmail, setAdmEmail] = useState('')
-  const [admPass, setAdmPass] = useState('')
 
   const listQ = useQuery({
     enabled: !!token,
@@ -69,22 +68,20 @@ export default function PlatformTenantsPage() {
     },
   })
 
-  const adminMut = useMutation({
+  const inviteMut = useMutation({
     mutationFn: () =>
-      createTenantAdminRequest(requireSessionToken(token), {
+      inviteTenantAdminRequest(requireSessionToken(token), {
         tenantId: adminOpen ?? '',
         email: admEmail.trim(),
-        password: admPass,
       }),
     onSuccess: () => {
-      toast.success('Administrador da empresa criado.')
+      toast.success('Convite enviado por email.')
       setAdminOpen(null)
       setAdmEmail('')
-      setAdmPass('')
     },
     onError: (err: unknown) => {
       if (err instanceof ApiRequestError) toast.error(err.message)
-      else toast.error('Não foi possível criar o administrador.')
+      else toast.error('Não foi possível enviar o convite.')
     },
   })
 
@@ -163,7 +160,7 @@ export default function PlatformTenantsPage() {
                           disabled={!!row.deletedAt}
                           onClick={() => setAdminOpen(row.id)}
                         >
-                          Criar admin
+                          Convidar admin
                         </Button>
                         <Button
                           variant="outline"
@@ -241,26 +238,20 @@ export default function PlatformTenantsPage() {
       <Dialog open={adminOpen !== null} onOpenChange={(open) => !open && setAdminOpen(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Administrador desta empresa</DialogTitle>
+            <DialogTitle>Convidar administrador</DialogTitle>
           </DialogHeader>
           <div className="grid gap-3 pt-2">
+            <p className="text-sm text-muted-foreground">
+              Enviamos um link único para o email indicado. O destinatário define a palavra passe ao
+              aceitar o convite, e o link expira passadas algumas horas.
+            </p>
             <div className="space-y-2">
-              <Label htmlFor="aem">E-mail inicial</Label>
+              <Label htmlFor="aem">Email do administrador</Label>
               <Input
                 id="aem"
                 type="email"
                 value={admEmail}
                 onChange={(e) => setAdmEmail(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="apw">Palavra-passe inicial</Label>
-              <Input
-                id="apw"
-                type="password"
-                minLength={8}
-                value={admPass}
-                onChange={(e) => setAdmPass(e.target.value)}
               />
             </div>
           </div>
@@ -270,10 +261,10 @@ export default function PlatformTenantsPage() {
             </Button>
             <Button
               type="button"
-              disabled={adminMut.isPending || !admEmail.trim() || admPass.length < 8}
-              onClick={() => adminMut.mutate()}
+              disabled={inviteMut.isPending || !admEmail.trim()}
+              onClick={() => inviteMut.mutate()}
             >
-              Criar administrador
+              Enviar convite
             </Button>
           </DialogFooter>
         </DialogContent>

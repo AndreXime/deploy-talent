@@ -16,6 +16,7 @@ model Tenant {
   apps        Application[]
   evaluations Evaluation[]
   history     ApplicationHistory[]
+  invitations Invitation[]
 
   @@map("tenants")
 }

@@ -12,6 +12,7 @@ import { EmailModule } from './infra/email/email.module'
 import { EnvModule } from './infra/env/env.module'
 import { PrismaModule } from './infra/prisma/prisma.module'
 import { StorageModule } from './infra/storage/storage.module'
+import { InvitationsModule } from './invitations/invitations.module'
 import { JobsModule } from './jobs/jobs.module'
 import { MediaModule } from './media/media.module'
 import { TenantContextInterceptor } from './tenant-context/tenant-context.interceptor'
@@ -39,6 +40,7 @@ import { TenantsModule } from './tenants/tenants.module'
     StorageModule,
     MediaModule,
     EmailModule,
+    InvitationsModule,
     HealthModule,
   ],
   controllers: [AppController],

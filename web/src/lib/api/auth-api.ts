@@ -15,17 +15,6 @@ export function registerCandidateRequest(body: { email: string; password: string
   })
 }
 
-export function createTenantAdminRequest(
-  token: string,
-  body: { tenantId: string; email: string; password: string },
-) {
-  return apiRequest<ProvisionedUserResponse>('/auth/register/tenant-admin', {
-    method: 'POST',
-    token,
-    json: body,
-  })
-}
-
 export function createRecruiterRequest(token: string, body: { email: string; password: string }) {
   return apiRequest<ProvisionedUserResponse>('/auth/register/recruiter', {
     method: 'POST',

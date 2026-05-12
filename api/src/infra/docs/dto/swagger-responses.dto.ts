@@ -88,7 +88,8 @@ export class ApplicationResponseDto {
   @ApiProperty({ format: 'uuid' }) tenantId!: string
   @ApiProperty({ format: 'uuid' }) jobId!: string
   @ApiProperty({ format: 'uuid' }) candidateId!: string
-  @ApiProperty({ enum: APPLICATION_STATUS_VALUES }) status!: (typeof APPLICATION_STATUS_VALUES)[number]
+  @ApiProperty({ enum: APPLICATION_STATUS_VALUES })
+  status!: (typeof APPLICATION_STATUS_VALUES)[number]
   @ApiProperty({ nullable: true }) stage!: string | null
   @ApiProperty({ nullable: true, format: 'uuid' }) sourcedByUserId!: string | null
   @ApiProperty({ nullable: true, type: String, format: 'date-time' }) appliedAt!: Date | null
@@ -124,8 +125,7 @@ export class EvaluationResponseDto {
 export class AccessTokenDto {
   @ApiProperty({
     description: 'JWT Bearer usado em `Authorization: Bearer <token>`',
-    example:
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIuLi4ifQ.signature',
+    example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIuLi4ifQ.signature',
   })
   access_token!: string
 }
@@ -152,6 +152,30 @@ export class ProvisionedUserDto {
     enum: ['SUPER_ADMIN', 'TENANT_ADMIN', 'RECRUITER', 'CANDIDATE'],
   })
   role!: string
+}
+
+/** Pré visualização pública de um convite (sem expor o token nem o hash). */
+export class InvitationPreviewDto {
+  @ApiProperty({ format: 'email' }) email!: string
+  @ApiProperty({
+    enum: ['SUPER_ADMIN', 'TENANT_ADMIN', 'RECRUITER', 'CANDIDATE'],
+  })
+  role!: string
+  @ApiProperty({ nullable: true, description: 'Nome da empresa (quando aplicável)' })
+  tenantName!: string | null
+  @ApiProperty({ type: String, format: 'date-time' }) expiresAt!: Date
+}
+
+/** Convite recém criado (devolvido ao SUPER_ADMIN após disparar o email). */
+export class CreatedInvitationDto {
+  @ApiProperty({ format: 'uuid' }) id!: string
+  @ApiProperty({ format: 'email' }) email!: string
+  @ApiProperty({
+    enum: ['SUPER_ADMIN', 'TENANT_ADMIN', 'RECRUITER', 'CANDIDATE'],
+  })
+  role!: string
+  @ApiProperty({ nullable: true, format: 'uuid' }) tenantId!: string | null
+  @ApiProperty({ type: String, format: 'date-time' }) expiresAt!: Date
 }
 
 /** Resposta de presign S3 (`StorageService`). */

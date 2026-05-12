@@ -17,4 +17,3 @@ export class ValidateLocalUserUseCase {
     return user
   }
 }
-
