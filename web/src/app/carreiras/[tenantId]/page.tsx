@@ -15,7 +15,7 @@ import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
 import { listPublicJobsForTenant } from '@/lib/api/jobs-api'
 import { getPublicBranding } from '@/lib/api/tenants-api'
-import { careersHeadline, getApiBaseUrl } from '@/lib/env'
+import { getApiBaseUrl } from '@/lib/env'
 import { isUuid } from '@/lib/is-uuid'
 
 function pickString(v: string | null): string | undefined {
@@ -75,8 +75,6 @@ function CareerListInner({ tenantId, valid }: { tenantId: string; valid: boolean
       }),
   })
 
-  const headline = careersHeadline()
-
   return (
     <>
       {brandingQ.data?.banner?.url ? (
@@ -97,7 +95,7 @@ function CareerListInner({ tenantId, valid }: { tenantId: string; valid: boolean
             ) : null}
             <div className="flex min-w-0 flex-col">
               <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                {headline}
+                Vagas abertas
               </span>
               {brandingQ.data?.name ? (
                 <h1 className="truncate text-2xl font-semibold tracking-tight lg:text-3xl">

@@ -143,7 +143,6 @@ Todas as contas geradas usam a mesma password.
 | Variável | Obrigatória | Descrição |
 |---|---|---|
 | `NEXT_PUBLIC_API_BASE_URL` | Sim | URL base da API Nest **alcançável pelo browser**, sem `/` final. *Baked* em build-time. |
-| `NEXT_PUBLIC_CAREERS_HEADLINE` | Não | Etiqueta opcional acima das vagas no site público de carreiras. |
 
 ## Autenticação e tenant (API)
 
