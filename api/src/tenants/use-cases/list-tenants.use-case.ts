@@ -10,4 +10,3 @@ export class ListTenantsUseCase {
     return this.prisma.tenant.findMany({ orderBy: { createdAt: 'desc' } })
   }
 }
-

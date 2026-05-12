@@ -1,5 +1,6 @@
 'use client'
 
+import { useQuery } from '@tanstack/react-query'
 import { Briefcase, Building2, Menu, Palette, UserPlus, Users } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
@@ -8,6 +9,8 @@ import { Button, buttonVariants } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
+import { Skeleton } from '@/components/ui/skeleton'
+import { getCurrentTenant } from '@/lib/api/tenants-api'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/providers/auth-provider'
 
@@ -40,17 +43,51 @@ function NavLinks({ onNavigate }: Readonly<{ onNavigate?: () => void }>) {
             key={href}
             href={href}
             onClick={onNavigate}
+            aria-current={active ? 'page' : undefined}
             className={cn(
               'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-              active ? 'bg-secondary text-secondary-foreground' : 'hover:bg-accent',
+              active
+                ? 'bg-sidebar-primary text-sidebar-primary-foreground shadow-sm hover:bg-sidebar-primary/90'
+                : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
             )}
           >
-            <Icon className="size-4 shrink-0 opacity-80" aria-hidden />
+            <Icon
+              className={cn('size-4 shrink-0', active ? 'opacity-100' : 'opacity-70')}
+              aria-hidden
+            />
             {label}
           </Link>
         )
       })}
     </nav>
+  )
+}
+
+function CompanyHeading() {
+  const { token } = useAuth()
+  const tenantQ = useQuery({
+    enabled: !!token,
+    queryKey: ['company-shell-current-tenant', token],
+    queryFn: () => getCurrentTenant(token as string),
+    staleTime: 5 * 60 * 1000,
+  })
+
+  return (
+    <div className="flex flex-col gap-0.5">
+      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+        Área da empresa
+      </p>
+      {tenantQ.isLoading ? (
+        <Skeleton className="mt-1 h-5 w-32" />
+      ) : (
+        <p
+          className="truncate text-base font-semibold text-sidebar-foreground"
+          title={tenantQ.data?.name}
+        >
+          {tenantQ.data?.name ?? '—'}
+        </p>
+      )}
+    </div>
   )
 }
 
@@ -60,14 +97,12 @@ export function CompanyShell({ children }: Readonly<{ children: React.ReactNode 
   const { signOut } = useAuth()
 
   return (
-    <div className="flex min-h-full flex-col lg:flex-row">
-      <aside className="hidden w-56 shrink-0 flex-col border-r bg-sidebar text-sidebar-foreground lg:flex xl:w-64">
+    <div className="flex min-h-full flex-col lg:h-dvh lg:flex-row lg:overflow-hidden">
+      <aside className="hidden w-56 shrink-0 flex-col border-r bg-sidebar text-sidebar-foreground lg:flex lg:h-dvh xl:w-64">
         <div className="border-b px-4 py-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            Área da empresa
-          </p>
+          <CompanyHeading />
         </div>
-        <ScrollArea className="flex-1">
+        <ScrollArea className="min-h-0 flex-1">
           <NavLinks />
         </ScrollArea>
         <Separator />
@@ -87,7 +122,7 @@ export function CompanyShell({ children }: Readonly<{ children: React.ReactNode 
         </div>
       </aside>
 
-      <div className="flex min-h-full flex-1 flex-col">
+      <div className="flex min-h-full min-w-0 flex-1 flex-col lg:h-dvh lg:min-h-0 lg:overflow-y-auto">
         <header className="flex items-center justify-between border-b px-4 py-3 lg:hidden">
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger
@@ -101,7 +136,8 @@ export function CompanyShell({ children }: Readonly<{ children: React.ReactNode 
             </SheetTrigger>
             <SheetContent side="left" className="w-72 p-0">
               <SheetHeader className="border-b p-4 text-left">
-                <SheetTitle>Menu</SheetTitle>
+                <SheetTitle className="sr-only">Menu da empresa</SheetTitle>
+                <CompanyHeading />
               </SheetHeader>
               <NavLinks onNavigate={() => setOpen(false)} />
             </SheetContent>

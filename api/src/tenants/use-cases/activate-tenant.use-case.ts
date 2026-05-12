@@ -13,4 +13,3 @@ export class ActivateTenantUseCase {
     return this.prisma.tenant.update({ where: { id: tenantId }, data: { isActive: true } })
   }
 }
-

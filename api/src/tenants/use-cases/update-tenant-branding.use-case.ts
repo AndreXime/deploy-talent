@@ -4,8 +4,8 @@ import { UserRole } from '../../../generated/prisma/client'
 import type { Actor } from '../../applications/use-cases/application.actor'
 import { PRISMA_CLIENT } from '../../infra/prisma/prisma.constants'
 import { StorageService } from '../../infra/storage/storage.service'
-import { TenantContextService } from '../../tenant-context/tenant-context.service'
 import { assertKeyMatchesTenant } from '../../media/media-key.util'
+import { TenantContextService } from '../../tenant-context/tenant-context.service'
 import type { UpdateTenantBrandingDto } from '../dto/update-tenant-branding.dto'
 
 @Injectable()

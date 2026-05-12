@@ -13,4 +13,3 @@ export class SuspendTenantUseCase {
     return this.prisma.tenant.update({ where: { id: tenantId }, data: { isActive: false } })
   }
 }
-

@@ -15,6 +15,10 @@ export function getPublicBranding(tenantId: string) {
   })
 }
 
+export function getCurrentTenant(token: string) {
+  return apiRequest<TenantResponse>('/tenants/current', { method: 'GET', token })
+}
+
 export function patchCurrentBranding(
   token: string,
   body: { logoKey?: string; bannerKey?: string },

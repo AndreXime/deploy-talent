@@ -1,5 +1,14 @@
-import { Body, Controller, ForbiddenException, Get, Param, Patch, Post, Request, UseGuards } from '@nestjs/common'
-import type { Request as ExpressRequest } from 'express'
+import {
+  Body,
+  Controller,
+  ForbiddenException,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Request,
+  UseGuards,
+} from '@nestjs/common'
 import {
   ApiBody,
   ApiCreatedResponse,
@@ -8,11 +17,12 @@ import {
   ApiParam,
   ApiTags,
 } from '@nestjs/swagger'
+import type { Request as ExpressRequest } from 'express'
 import { UserRole } from '../../generated/prisma/client'
-import type { JwtPayload } from '../auth/jwt-payload'
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
-import { Roles } from '../auth/rbac/roles.decorator'
 import type { Actor } from '../applications/use-cases/application.actor'
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
+import type { JwtPayload } from '../auth/jwt-payload'
+import { Roles } from '../auth/rbac/roles.decorator'
 import { TenantResponseDto } from '../infra/docs/dto/swagger-responses.dto'
 import { ApiJwtAuth, ApiJwtTenantB2b, ApiStandardErrors } from '../infra/docs/swagger-decorators'
 import { TenantOptional, TenantRequired } from '../tenant-context/tenant.decorators'
@@ -20,6 +30,7 @@ import { CreateTenantDto } from './dto/create-tenant.dto'
 import { UpdateTenantBrandingDto } from './dto/update-tenant-branding.dto'
 import { ActivateTenantUseCase } from './use-cases/activate-tenant.use-case'
 import { CreateTenantUseCase } from './use-cases/create-tenant.use-case'
+import { GetCurrentTenantUseCase } from './use-cases/get-current-tenant.use-case'
 import { ListTenantsUseCase } from './use-cases/list-tenants.use-case'
 import { SoftDeleteTenantUseCase } from './use-cases/soft-delete-tenant.use-case'
 import { SuspendTenantUseCase } from './use-cases/suspend-tenant.use-case'
@@ -48,7 +59,22 @@ export class TenantsController {
     private readonly activateTenant: ActivateTenantUseCase,
     private readonly softDeleteTenant: SoftDeleteTenantUseCase,
     private readonly updateTenantBranding: UpdateTenantBrandingUseCase,
+    private readonly getCurrentTenant: GetCurrentTenantUseCase,
   ) {}
+
+  @Get('current')
+  @UseGuards(JwtAuthGuard)
+  @TenantRequired()
+  @Roles(UserRole.TENANT_ADMIN, UserRole.RECRUITER)
+  @ApiJwtTenantB2b()
+  @ApiOperation({
+    summary: 'Empresa do utilizador autenticado',
+    description: 'Devolve a empresa correspondente ao `tenantId` do JWT.',
+  })
+  @ApiOkResponse({ type: TenantResponseDto })
+  async current() {
+    return this.getCurrentTenant.execute()
+  }
 
   @Patch('current/branding')
   @UseGuards(JwtAuthGuard)
@@ -57,11 +83,15 @@ export class TenantsController {
   @ApiJwtTenantB2b()
   @ApiOperation({
     summary: 'Atualizar logo e/ou banner da empresa',
-    description: 'Use `POST /media/presign-upload` com `TENANT_LOGO` ou `TENANT_BANNER`, faça PUT no S3 e envie as `key` aqui. String vazia remove a mídia.',
+    description:
+      'Use `POST /media/presign-upload` com `TENANT_LOGO` ou `TENANT_BANNER`, faça PUT no S3 e envie as `key` aqui. String vazia remove a mídia.',
   })
   @ApiBody({ type: UpdateTenantBrandingDto })
   @ApiOkResponse({ type: TenantResponseDto })
-  async patchCurrentBranding(@Request() req: RequestWithJwt, @Body() body: UpdateTenantBrandingDto) {
+  async patchCurrentBranding(
+    @Request() req: RequestWithJwt,
+    @Body() body: UpdateTenantBrandingDto,
+  ) {
     const user = requireUser(req)
     const actor: Actor = { userId: user.sub, role: user.role as UserRole }
     return this.updateTenantBranding.execute(actor, body)
@@ -111,7 +141,8 @@ export class TenantsController {
   @Roles(UserRole.SUPER_ADMIN)
   @ApiOperation({
     summary: 'Soft-delete do tenant',
-    description: 'Preenche `deletedAt`, desativa o tenant e deve bloquear uso em rotas tenant-scoped.',
+    description:
+      'Preenche `deletedAt`, desativa o tenant e deve bloquear uso em rotas tenant-scoped.',
   })
   @ApiParam({ name: 'id', format: 'uuid' })
   @ApiOkResponse({ type: TenantResponseDto })
