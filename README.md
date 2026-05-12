@@ -1,101 +1,167 @@
-# Deploy Talent — API
+# Deploy Talent
 
-Backend **NestJS** da plataforma multi-tenant de recrutamento (ATS): isolamento lógico por `tenant_id`, perfil global de candidato (“one-profile”), vagas com máquina de estados e candidaturas com pipeline e histórico.
+> **Navegação:** **Visão geral** · [Funcionalidades e Regras de Negócio](./FUNCIONALIDADES.md) · [Modelo de Dados](./BANCO_DE_DADOS.md)
 
-Código da API: [`api/`](api/). Regras de negócio detalhadas: [`api/requirements.md`](api/requirements.md).
+Plataforma multi-tenant de recrutamento (ATS). Backend **NestJS** + frontend **Next.js** num único repositório.
+
+- Isolamento lógico por `tenant_id`, com perfil global do candidato (*one-profile*).
+- Vagas com máquina de estados e candidaturas com pipeline + histórico.
+- Site público de carreiras por empresa e marketplace público `/vagas`.
+- Upload de currículos, avatares, logos e banners via S3 com URLs pré-assinadas.
+- E-mail transacional via SMTP.
+
+```text
+.
+├── api/                 NestJS 11 + Prisma 7 (driver adapter pg)
+├── web/                 Next.js 16 (App Router, RSC, React Query)
+├── docker/              setup do bucket MinIO
+├── docker-compose.yml   infra local + apps containerizadas (profile)
+└── README.md
+```
 
 ## Stack
 
-- **Runtime:** Node.js, TypeScript  
-- **Framework:** NestJS 
-- **ORM:** Prisma
-- **Banco:** PostgreSQL  
-- **Auth:** Passport , RBAC por papel no token  
-- **Integrações (infra):** AWS SDK v3 — S3 (URLs pré-assinadas); e-mail via **SMTP**;
-- **Documentação:** OpenAPI/Swagger
-- **Qualidade:** Biome (lint/format), Jest  
-
-## Funcionalidades do sistema
-
-Visão orientada ao que a API expõe hoje (detalhe de regras e estados: [`api/requirements.md`](api/requirements.md)).
-
-- **Multi-tenant (empresas):** Cada organização é um *tenant* com dados isolados por `tenant_id`. Um administrador da plataforma (`SUPER_ADMIN`) gere o ciclo de vida dos tenants; dentro da empresa, `TENANT_ADMIN` e `RECRUITER` trabalham só no contexto do tenant do JWT.
-
-- **Vagas e página de carreiras:** Criação e edição de vagas com ciclo `DRAFT` → `PUBLISHED` / `PAUSED` → `CLOSED`. Endpoints **públicos** listam e mostram vagas elegíveis por `tenantId` (site de emprego por empresa). Novas candidaturas só em vagas publicadas ou pausadas.
-
-- **Perfil único do candidato (*one-profile*):** O candidato tem um perfil global (nome, contactos, currículo, etc.); alterações refletem em todas as candidaturas ativas. Pode **anonimizar a conta** (pedido de “esquecimento”, estilo LGPD) com remoção de dados identificáveis do perfil.
-
-- **Candidaturas e pipeline:** O candidato candidata-se com o UUID do tenant na URL; vê as suas candidaturas e pode **desistir** (`WITHDRAWN`). Recrutadores fazem **sourcing** (`SOURCED`), movem o processo entre estados (`IN_PROGRESS`, `REJECTED`, `HIRED`, …) com **histórico de auditoria** (quem mudou, quando, estágios opcionais).
-
-- **Avaliações internas:** Notas de entrevista ou pareceres por candidatura (`Evaluation`), criadas e lidas apenas no lado da empresa — o candidato não acede a este conteúdo.
-
-- **E-mail transacional (SMTP):** Envio automático ao candidato na **submissão da candidatura**, ao ser marcado como **contratado** (`HIRED`) e ao ser **rejeitado** (`REJECTED`). Falhas de envio não impedem a operação principal (ficam registadas no log).
-
-- **Ficheiros e marca:** Upload para S3 via **URL pré-assinada** (avatar do candidato; logo e banner do tenant). Download autorizado também por URL pré-assinada, segundo o papel e o prefixo da chave. Há recurso público de **branding** do tenant quando aplicável.
-
-- **Segurança e operação:** Autenticação JWT com papéis (RBAC), CORS configurável por ambiente, Helmet em produção, **limite de pedidos** global (throttling) e **health check** para monitorização. Fora de `PROD`, a documentação interativa Swagger está disponível em `/docs`.
+| | API  | Web |
+|---|---|---|
+| Runtime | Node.js 22, TypeScript | Node.js 22, TypeScript |
+| Framework | NestJS 11 | Next.js 16 (App Router) |
+| Persistência / dados | Prisma 7, PostgreSQL | TanStack Query, React Hook Form, Zod |
+| UI / estilo |  | Tailwind v4, shadcn/ui, lucide |
+| Auth | Passport (JWT local), RBAC no token | sessão via JWT da API |
+| Storage | AWS SDK v3 (S3 + pre-sign) | consome URLs pré-assinadas |
+| E-mail | Nodemailer (SMTP) |  |
+| Docs | OpenAPI/Swagger |  |
+| Qualidade | Biome, Jest | Biome |
 
 ## Como rodar
 
-Infra local opcional (`PostgreSQL`, **MinIO** compatível com S3, **Mailpit** para SMTP/UI): na raiz do repositório, `docker compose up -d`. O serviço **`minio`** é o servidor; o **`minio-setup`** (imagem `minio/mc`, [`docker/setup-minio.sh`](docker/setup-minio.sh)) corre uma vez e cria o bucket `files` e o CORS. Para ver e-mails: `http://127.0.0.1:8025`; consola MinIO: `http://127.0.0.1:9001`.
+Há três caminhos. Escolhe um.
 
-Na pasta `api/`:
+### A) Mais comum: infra em Docker, apps em modo dev local
+
+Recomendado para desenvolvimento: hot reload, breakpoints, tudo a passar pela tua máquina.
 
 ```bash
+# 1) sobe Postgres + MinIO + Mailpit
+docker compose up -d
+
+# 2) API (em api/)
+cd api
 npm install
 cp .env.example .env
 npm run prisma:generate
-npm run prisma:migrate
-npm run start:dev
+npm run prisma:migrate          # cria schema e aplica migrações
+npx prisma db seed              # popula tenants, vagas, candidatos (ver "Seed" abaixo)
+npm run start:dev               # http://localhost:3000  · Swagger em /docs
+
+# 3) Web (noutro shell, em web/)
+cd web
+npm install
+cp .env.example .env
+npm run dev                     # http://localhost:3001
 ```
 
-Produção:
+### B) Tudo em Docker
+
+Útil para ensaiar prod-like ou validar o build das imagens. Os serviços `api` e `web` estão escondidos atrás de um **profile `app`** para não pesar no fluxo dev habitual.
 
 ```bash
-npm run build
-npm run start:prod
+docker compose --profile app up -d --build
+# API → http://localhost:3000   (Swagger em /docs)
+# Web → http://localhost:3001
 ```
+
+O `api` arranca depois do `postgres` ficar healthy e do `minio-setup` criar o bucket `files`. As migrações **não correm automaticamente** dentro do container, porque a imagem de produção não inclui o CLI do Prisma. Aplica-as a partir do `api/` local antes de subir o stack:
+
+```bash
+cd api && npm run prisma:migrate && npx prisma db seed
+```
+
+> **Nota S3 + Docker:** as URLs pré-assinadas geradas pela API correm dentro da network do Compose e usam `http://minio:9000`. Para abrires essas URLs no browser do host, adiciona uma vez `127.0.0.1 minio` ao `/etc/hosts`. Em modo (A) este problema não existe, porque o `S3_ENDPOINT` é `http://127.0.0.1:9000`.
+
+## Build de produção
+
+Os `Dockerfile`s são multi-stage Alpine, com user não-root atrás de `tini`. Imagens finais validadas:
+
+| Imagem | Tamanho |
+|---|---|
+| `deploy-talent-api`  (`api/Dockerfile`)  | ~242 MB |
+| `deploy-talent-web`  (`web/Dockerfile`)  | ~218 MB |
+
+## Seed e credenciais de teste
+
+`npx prisma db seed` cria 5 tenants (`Seed Empresa N`), 5 recrutadores cada, um pool de candidatos e candidaturas distribuídas pelo pipeline. Também faz upload idempotente de placeholders de avatar/logo/banner para o bucket S3 (mantidos com chave fixa em `seed/placeholders/...`).
+
+Todas as contas geradas usam a mesma password.
+
+| Papel | E-mail | Password |
+|---|---|---|
+| `SUPER_ADMIN` | `superadmin@seed.local` | `Seed123!` |
+| `TENANT_ADMIN` (empresa N) | `empN-admin@seed.local` | `Seed123!` |
+| `RECRUITER` (empresa N) | `empN-recR@seed.local` (R = 1..5) | `Seed123!` |
+| `CANDIDATE` | gerados em `prisma/seed/mock-data.json` após o seed | `Seed123!` |
+
+## Funcionalidades expostas pela API
+
+- **Multi-tenant (empresas):** cada organização é um tenant com dados isolados por `tenant_id`. `SUPER_ADMIN` gere o ciclo de vida dos tenants; `TENANT_ADMIN` e `RECRUITER` trabalham apenas no contexto do tenant do JWT.
+- **Vagas e página de carreiras:** criação e edição com ciclo `DRAFT` → `PUBLISHED` / `PAUSED` → `CLOSED`. Endpoints públicos servem o site de empresa (`/carreiras/:tenantId`) e o marketplace agregado (`/vagas`). Candidaturas novas só em vagas `PUBLISHED` ou `PAUSED`.
+- **Perfil único do candidato (*one-profile*):** o candidato tem um perfil global; mudanças propagam a todas as candidaturas ativas. Pode anonimizar a conta (LGPD-style) com remoção dos dados identificáveis.
+- **Candidaturas e pipeline:** o candidato candidata-se com o UUID do tenant na URL e pode desistir (`WITHDRAWN`). Recrutadores fazem *sourcing* (`SOURCED`), movem o processo (`IN_PROGRESS`, `REJECTED`, `HIRED`, …) com histórico de auditoria.
+- **Avaliações internas:** notas/pareceres por candidatura (`Evaluation`), só visíveis no lado da empresa.
+- **E-mail transacional (SMTP):** disparado em submissão, contratação e rejeição. Falhas no envio não bloqueiam a operação principal.
+- **Ficheiros e marca:** upload S3 com URL pré-assinada (avatar do candidato, currículo, logo e banner do tenant). Download autorizado também por URL pré-assinada, segundo o papel e o prefixo da chave. Há recurso público de branding do tenant.
+- **Segurança e operação:** JWT + RBAC, CORS configurável, Helmet em produção, throttling global. Fora de `PROD`, Swagger em `/docs`.
 
 ## Variáveis de ambiente
 
+### API (`api/.env`)
+
 | Variável | Obrigatória | Descrição |
-|----------|-------------|-----------|
+|---|---|---|
 | `ENV_MODE` | Sim | `DEV`, `TEST` ou `PROD`. Em `PROD`, Swagger não é exposto. |
 | `PORT` | Sim | Porta HTTP (1–65535). |
 | `DATABASE_URL` | Sim | Connection string PostgreSQL (Prisma). |
 | `JWT_SECRET` | Sim | Segredo de assinatura do JWT. |
-| `JWT_EXPIRES_IN` | Sim | Expiração do token (formato aceito pelo Nest JWT, ex.: `7d`). |
-| `AWS_REGION` | Sim | Região do cliente S3 (também usada quando o SDK gera URLs assinadas). |
-| `S3_BUCKET` | Sim | Bucket para armazenamento. |
-| `EMAIL_FROM` | Sim | Remetente padrão (SMTP). |
-| `S3_ENDPOINT` | Não | Endpoint S3-compatível customizado (ex.: MinIO). |
+| `JWT_EXPIRES_IN` | Sim | Expiração do token (ex.: `7d`, `15m`). |
+| `AWS_REGION` | Sim | Região do cliente S3 (e do signer das URLs). |
+| `S3_BUCKET` | Sim | Bucket de armazenamento. |
+| `S3_ENDPOINT` | Não | Endpoint S3-compatível custom (ex.: MinIO). |
 | `S3_FORCE_PATH_STYLE` | Não | `true`/`1` para path-style. |
-| `S3_ACCESS_KEY_ID` / `S3_SECRET_ACCESS_KEY` | Não | Credenciais explícitas; se omitidas, usa cadeia padrão do SDK (ex.: IAM na AWS). |
-| `S3_PRESIGN_TTL_SECONDS` | Não | TTL das URLs pré-assinadas (60–3600; padrão 900). |
+| `S3_ACCESS_KEY_ID` / `S3_SECRET_ACCESS_KEY` | Não | Credenciais explícitas; se omitidas, usa a cadeia padrão do SDK (IAM, etc.). |
+| `S3_PRESIGN_TTL_SECONDS` | Não | TTL das URLs (60–3600; padrão 900). |
 | `S3_MAX_UPLOAD_BYTES` | Não | Limite referencial de upload (padrão 10 MiB). |
+| `EMAIL_FROM` | Sim | Remetente padrão (SMTP). |
 | `EMAIL_REPLY_TO` | Não | Reply-To opcional. |
 | `SMTP_HOST` | Sim | Hostname do servidor SMTP. |
-| `SMTP_PORT` | Sim | Porta SMTP (int 1–65535; ex.: 1025 Mailpit, 587 SES SMTP STARTTLS). |
-| `SMTP_SECURE` | Não | `true`/`1` para TLS implícito (ex.: porta 465). |
-| `SMTP_USER` / `SMTP_PASSWORD` | Não | Autenticação SMTP; omitidos quando o servidor não exige login (Mailpit por defeito). |
+| `SMTP_PORT` | Sim | Porta SMTP (ex.: 1025 Mailpit, 587 SES STARTTLS). |
+| `SMTP_SECURE` | Não | `true`/`1` para TLS implícito (porta 465). |
+| `SMTP_USER` / `SMTP_PASSWORD` | Não | Auth SMTP; podem ser omitidos em servidores abertos (Mailpit). |
+| `CORS_ORIGINS` | Não | Lista CSV de origens. Vazio em `PROD` = CORS desligado; vazio em `DEV/TEST` = qualquer origem. |
 
-## Autenticação e tenant
+### Web (`web/.env`)
 
-- **JWT:** envie `Authorization: Bearer <access_token>`. O payload inclui `sub` (id do usuário), `role` e `tenantId` (pode ser `null`, ex.: candidato ou super admin).
-- **Tenant B2B (`RECRUITER` / `TENANT_ADMIN`):** o tenant vem do campo `tenantId` do **JWT** (não envie header). Um interceptor valida que o tenant existe e está ativo e grava o contexto em `AsyncLocalStorage`.
-- **Candidato em rotas “por empresa”:** use o **UUID do tenant na URL** (ex.: `POST /tenants/:tenantId/applications/apply`), não o header.
-- **Contexto assíncrono:** o cliente Prisma estende queries de `job`, `application`, `applicationHistory` e `evaluation` para injetar/limitar por `tenantId` quando o contexto está definido — camada extra de isolamento além das regras dos use cases.
+| Variável | Obrigatória | Descrição |
+|---|---|---|
+| `NEXT_PUBLIC_API_BASE_URL` | Sim | URL base da API Nest **alcançável pelo browser**, sem `/` final. *Baked* em build-time. |
+| `NEXT_PUBLIC_CAREERS_HEADLINE` | Não | Etiqueta opcional acima das vagas no site público de carreiras. |
+
+## Autenticação e tenant (API)
+
+- **JWT:** `Authorization: Bearer <access_token>`. O payload inclui `sub`, `role` e `tenantId` (pode ser `null`, ex.: candidato ou super admin).
+- **B2B (`RECRUITER` / `TENANT_ADMIN`):** o tenant vem do `tenantId` do **JWT** (não envies header). Um interceptor valida que o tenant existe e está ativo e grava o contexto em `AsyncLocalStorage`.
+- **Candidato em rotas "por empresa":** usa o **UUID do tenant na URL** (ex.: `POST /tenants/:tenantId/applications/apply`), não o header.
+- **Contexto assíncrono:** o Prisma client estende queries de `job`, `application`, `applicationHistory` e `evaluation` para injetar/limitar por `tenantId` quando o contexto está definido, funcionando como camada extra de isolamento além das regras dos use cases.
 
 ## Papéis
 
-| Papel | Uso típico na API |
-|-------|-------------------|
-| `SUPER_ADMIN` | Criar/listar/suspender/ativar/soft-delete tenants; Criar `TENANT_ADMIN`. |
+| Papel | Uso típico |
+|---|---|
+| `SUPER_ADMIN` | Criar/listar/suspender/ativar/soft-delete tenants; criar `TENANT_ADMIN`. |
 | `TENANT_ADMIN` | Convidar `RECRUITER`; vagas e pipeline no tenant do **JWT**. |
 | `RECRUITER` | Mesmo escopo operacional de vagas/candidaturas no tenant do **JWT**. |
-| `CANDIDATE` | Registro/login; perfil `GET/PATCH/DELETE /candidates/me`; candidaturas e listagem `applications/me`; candidatar com UUID do tenant na URL (`POST /tenants/:tenantId/applications/apply`). |
+| `CANDIDATE` | Registo/login, `GET/PATCH/DELETE /candidates/me`, candidaturas (`/applications/me`) e candidatar com UUID do tenant na URL. |
 
-## Domínio implementado (visão rápida)
+## Domínio (visão rápida)
 
 ### Vagas (`Job`)
 
@@ -112,13 +178,18 @@ Transições permitidas pelo use case de mudança de status:
 
 Estados: `SOURCED`, `APPLIED`, `IN_PROGRESS`, `REJECTED`, `WITHDRAWN`, `HIRED`.
 
-- **Candidato:** `POST /applications/apply` só para vagas `PUBLISHED` ou `PAUSED`; cria `APPLIED` com `appliedAt` e registro inicial em `ApplicationHistory`.
-- **Sourcing:** recrutadores criam candidatura `SOURCED` e podem provisionar candidato + usuário com senha aleatória se o e-mail ainda não existir.
-- **Mover pipeline:** transições validadas (estados terminais não evoluem); histórico gravado com estágios (`stage`) e usuário que moveu.
+- **Candidato:** `POST /applications/apply` só para vagas `PUBLISHED` ou `PAUSED`; cria `APPLIED` com `appliedAt` e regista entrada inicial em `ApplicationHistory`.
+- **Sourcing:** recrutadores criam candidatura `SOURCED` e podem provisionar candidato + utilizador com password aleatória se o e-mail ainda não existir.
+- **Mover pipeline:** transições validadas (estados terminais não evoluem); histórico gravado com estágios (`stage`) e o utilizador que moveu.
 
-## Documentação interativa
+## URLs locais
 
-Com `ENV_MODE` diferente de `PROD`, após subir o servidor:
-
-- UI: `/docs`
-- OpenAPI JSON: `/docs-json`
+| Serviço | URL |
+|---|---|
+| Web | http://localhost:3001 |
+| API | http://localhost:3000 |
+| Swagger (API) | http://localhost:3000/docs |
+| OpenAPI JSON | http://localhost:3000/docs-json |
+| MinIO (consola) | http://127.0.0.1:9001 |
+| Mailpit (UI) | http://127.0.0.1:8025 |
+| Postgres | `localhost:5432` (`deploy_talent` / `deploy_talent`) |
