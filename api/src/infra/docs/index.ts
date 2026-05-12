@@ -29,14 +29,8 @@ export function buildOpenApiConfig() {
       },
       'bearer',
     )
-    .addTag(
-      'Health',
-      'Verificação básica de disponibilidade (sem autenticação).',
-    )
-    .addTag(
-      'Auth',
-      'Login público e registro; provisioning de admins/recrutadores (JWT + papel).',
-    )
+    .addTag('Health', 'Verificação básica de disponibilidade (sem autenticação).')
+    .addTag('Auth', 'Login público e registro; provisioning de admins/recrutadores (JWT + papel).')
     .addTag(
       'Tenants',
       'CRUD gestão da plataforma: empresas, suspender, soft delete. **`SUPER_ADMIN` + Bearer** apenas.',

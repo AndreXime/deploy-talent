@@ -154,6 +154,22 @@ export class ProvisionedUserDto {
   role!: string
 }
 
+/** Conta B2B do utilizador autenticado (`GET /auth/me`, `PATCH /auth/me/avatar`). */
+export class B2BAccountResponseDto {
+  @ApiProperty({ format: 'uuid' }) id!: string
+  @ApiProperty({ format: 'email' }) email!: string
+  @ApiProperty({ nullable: true, format: 'uuid' }) tenantId!: string | null
+  @ApiProperty({
+    enum: ['SUPER_ADMIN', 'TENANT_ADMIN', 'RECRUITER', 'CANDIDATE'],
+  })
+  role!: string
+  @ApiProperty({
+    nullable: true,
+    description: 'URL GET assinada (S3) do avatar; ausente quando não há foto.',
+  })
+  avatarUrl!: string | null
+}
+
 /** Pré visualização pública de um convite (sem expor o token nem o hash). */
 export class InvitationPreviewDto {
   @ApiProperty({ format: 'email' }) email!: string

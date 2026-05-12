@@ -161,6 +161,15 @@ export interface ProvisionedUserResponse {
   role: string
 }
 
+export interface B2BAccountResponse {
+  id: string
+  email: string
+  tenantId: string | null
+  role: string
+  /** URL GET pré assinada (expira); ausente se não houver foto. */
+  avatarUrl: string | null
+}
+
 export interface CreatedInvitationResponse {
   id: string
   email: string

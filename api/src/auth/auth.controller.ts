@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   ForbiddenException,
+  Get,
   HttpCode,
   HttpStatus,
   Patch,
@@ -22,7 +23,11 @@ import type { Request as ExpressRequest } from 'express'
 import type { User } from '../../generated/prisma/client'
 import { UserRole } from '../../generated/prisma/client'
 // (Jwt payload handled by passport)
-import { AccessTokenDto, ProvisionedUserDto } from '../infra/docs/dto/swagger-responses.dto'
+import {
+  AccessTokenDto,
+  B2BAccountResponseDto,
+  ProvisionedUserDto,
+} from '../infra/docs/dto/swagger-responses.dto'
 import { ApiJwtTenantB2b, ApiStandardErrors } from '../infra/docs/swagger-decorators'
 import { TenantOptional, TenantRequired } from '../tenant-context/tenant.decorators'
 import { CreateRecruiterDto } from './dto/create-recruiter.dto'
@@ -35,6 +40,7 @@ import type { JwtPayload } from './jwt-payload'
 import { Public } from './public.decorator'
 import { Roles } from './rbac/roles.decorator'
 import { CreateRecruiterUseCase } from './use-cases/create-recruiter.use-case'
+import { GetMyB2BAccountUseCase } from './use-cases/get-my-b2b-account.use-case'
 import { LoginUseCase } from './use-cases/login.use-case'
 import { RegisterCandidateUseCase } from './use-cases/register-candidate.use-case'
 import { UpdateB2BAvatarUseCase } from './use-cases/update-b2b-avatar.use-case'
@@ -56,6 +62,7 @@ export class AuthController {
     private readonly registerCandidateUseCase: RegisterCandidateUseCase,
     private readonly createRecruiterUseCase: CreateRecruiterUseCase,
     private readonly updateB2BAvatar: UpdateB2BAvatarUseCase,
+    private readonly getMyB2BAccount: GetMyB2BAccountUseCase,
   ) {}
 
   @Public()
@@ -100,6 +107,23 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @TenantRequired()
   @Roles(UserRole.TENANT_ADMIN, UserRole.RECRUITER)
+  @Get('me')
+  @ApiJwtTenantB2b()
+  @ApiOperation({
+    summary: 'Conta B2B do utilizador autenticado',
+    description: 'Inclui `avatarUrl` (URL GET assinada) em vez da chave S3 crua.',
+  })
+  @ApiOkResponse({ type: B2BAccountResponseDto })
+  @ApiStandardErrors(true)
+  async getMe(@Request() req: RequestWithJwt) {
+    const user = req.user
+    if (!user) throw new ForbiddenException('Missing authentication')
+    return this.getMyB2BAccount.execute(user.sub, user.role as UserRole)
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @TenantRequired()
+  @Roles(UserRole.TENANT_ADMIN, UserRole.RECRUITER)
   @Patch('me/avatar')
   @ApiJwtTenantB2b()
   @ApiOperation({
@@ -108,16 +132,17 @@ export class AuthController {
       'Use `POST /media/presign-upload` com `B2B_USER_AVATAR`, envie a `key` aqui. String vazia remove a foto.',
   })
   @ApiBody({ type: UpdateB2BAvatarDto })
-  @ApiOkResponse({ description: 'Usuário atualizado (inclui `avatarKey`)' })
+  @ApiOkResponse({ type: B2BAccountResponseDto })
   @ApiStandardErrors(true)
   async patchMyAvatar(@Request() req: RequestWithJwt, @Body() body: UpdateB2BAvatarDto) {
     const user = req.user
     if (!user) throw new ForbiddenException('Missing authentication')
-    return this.updateB2BAvatar.execute(
+    await this.updateB2BAvatar.execute(
       user.sub,
       user.tenantId,
       user.role as UserRole,
       body.avatarKey,
     )
+    return this.getMyB2BAccount.execute(user.sub, user.role as UserRole)
   }
 }

@@ -1,79 +1,79 @@
 'use client'
 
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useState } from 'react'
 import { toast } from 'sonner'
-import { Button } from '@/components/ui/button'
+import { ImageAssetField } from '@/components/image-asset-field'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import { Skeleton } from '@/components/ui/skeleton'
 import { ApiRequestError } from '@/lib/api/client'
 import { presignUpload, uploadFileToPresignedUrl } from '@/lib/api/media-api'
-import { patchCurrentBranding } from '@/lib/api/tenants-api'
+import { getCurrentTenant, getPublicBranding, patchCurrentBranding } from '@/lib/api/tenants-api'
 import { requireSessionToken } from '@/lib/require-session-token'
 import { useAuth } from '@/providers/auth-provider'
 
 const IMAGE_ACCEPT = ['image/jpeg', 'image/png', 'image/webp']
 
-function mime(file: File): string {
+function imageContentType(file: File): string {
   return IMAGE_ACCEPT.includes(file.type) ? file.type : 'image/jpeg'
 }
 
+type AssetKind = 'logo' | 'banner'
+
 export default function TenantBrandingPage() {
   const { token } = useAuth()
+  const queryClient = useQueryClient()
+  const [busy, setBusy] = useState<AssetKind | null>(null)
+
+  const tenantQ = useQuery({
+    enabled: !!token,
+    queryKey: ['company-shell-current-tenant', token],
+    queryFn: () => getCurrentTenant(requireSessionToken(token)),
+  })
+
+  const brandingQ = useQuery({
+    enabled: !!tenantQ.data?.id,
+    queryKey: ['tenant-branding-preview', tenantQ.data?.id],
+    queryFn: () => getPublicBranding(tenantQ.data?.id as string),
+  })
 
   const patchMut = useMutation({
     mutationFn: (body: { logoKey?: string; bannerKey?: string }) =>
       patchCurrentBranding(requireSessionToken(token), body),
-    onSuccess: () => toast.success('Marca atualizada.'),
+    onSuccess: () => {
+      toast.success('Marca atualizada.')
+      queryClient.invalidateQueries({ queryKey: ['tenant-branding-preview', tenantQ.data?.id] })
+    },
     onError: (err: unknown) => {
       if (err instanceof ApiRequestError) toast.error(err.message)
       else toast.error('Não foi possível atualizar.')
     },
+    onSettled: () => setBusy(null),
   })
 
-  async function upload(purpose: 'TENANT_LOGO' | 'TENANT_BANNER', file: File): Promise<void> {
+  async function upload(kind: AssetKind, file: File): Promise<void> {
     if (!token) return
-    const ct = mime(file)
-    const presigned = await presignUpload(token, { purpose, contentType: ct })
-    await uploadFileToPresignedUrl(presigned.url, file, ct)
-    if (purpose === 'TENANT_LOGO') {
-      patchMut.mutate({ logoKey: presigned.key })
-    } else {
-      patchMut.mutate({ bannerKey: presigned.key })
-    }
-  }
-
-  async function onLogo(ev: React.ChangeEvent<HTMLInputElement>) {
-    const f = ev.target.files?.[0]
-    ev.target.value = ''
-    if (!f || !token) return
+    setBusy(kind)
     try {
-      await upload('TENANT_LOGO', f)
+      const ct = imageContentType(file)
+      const purpose = kind === 'logo' ? 'TENANT_LOGO' : 'TENANT_BANNER'
+      const presigned = await presignUpload(token, { purpose, contentType: ct })
+      await uploadFileToPresignedUrl(presigned.url, file, ct)
+      patchMut.mutate(kind === 'logo' ? { logoKey: presigned.key } : { bannerKey: presigned.key })
     } catch (err: unknown) {
+      setBusy(null)
       if (err instanceof ApiRequestError) toast.error(err.message)
-      else toast.error('Não foi possível enviar o logótipo.')
+      else toast.error('Não foi possível enviar o ficheiro.')
     }
   }
 
-  async function onBanner(ev: React.ChangeEvent<HTMLInputElement>) {
-    const f = ev.target.files?.[0]
-    ev.target.value = ''
-    if (!f || !token) return
-    try {
-      await upload('TENANT_BANNER', f)
-    } catch (err: unknown) {
-      if (err instanceof ApiRequestError) toast.error(err.message)
-      else toast.error('Não foi possível enviar a imagem.')
-    }
+  function remove(kind: AssetKind): void {
+    setBusy(kind)
+    patchMut.mutate(kind === 'logo' ? { logoKey: '' } : { bannerKey: '' })
   }
 
-  function clearLogo() {
-    patchMut.mutate({ logoKey: '' })
-  }
-
-  function clearBanner() {
-    patchMut.mutate({ bannerKey: '' })
-  }
+  const logoUrl = brandingQ.data?.logo?.url ?? null
+  const bannerUrl = brandingQ.data?.banner?.url ?? null
 
   return (
     <main className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-8 p-4 lg:p-8">
@@ -83,33 +83,30 @@ export default function TenantBrandingPage() {
           Estas imagens aparecem no topo da página pública de vagas da sua empresa.
         </p>
       </div>
+
       <Card>
         <CardHeader>
           <CardTitle>Logótipo</CardTitle>
           <CardDescription>Formato quadrado funciona melhor em listagens.</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="space-y-2">
-            <Label htmlFor="logo">Ficheiro</Label>
-            <Input
-              id="logo"
-              type="file"
-              accept={IMAGE_ACCEPT.join(',')}
-              onChange={onLogo}
-              className="cursor-pointer"
+        <CardContent>
+          {brandingQ.isLoading ? (
+            <Skeleton className="h-28 w-full" />
+          ) : (
+            <ImageAssetField
+              currentUrl={logoUrl}
+              aspect="square"
+              alt={`Logótipo de ${brandingQ.data?.name ?? ''}`}
+              hint="JPG, PNG ou WEBP."
+              uploading={busy === 'logo' && patchMut.isPending}
+              removing={busy === 'logo' && patchMut.isPending && logoUrl !== null}
+              onUpload={(file) => upload('logo', file)}
+              onRemove={() => remove('logo')}
             />
-          </div>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={clearLogo}
-            disabled={patchMut.isPending}
-          >
-            Remover logótipo
-          </Button>
+          )}
         </CardContent>
       </Card>
+
       <Card>
         <CardHeader>
           <CardTitle>Banner</CardTitle>
@@ -117,26 +114,21 @@ export default function TenantBrandingPage() {
             Imagem larga opcional para reforçar a identidade visual.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="space-y-2">
-            <Label htmlFor="banner">Ficheiro</Label>
-            <Input
-              id="banner"
-              type="file"
-              accept={IMAGE_ACCEPT.join(',')}
-              onChange={onBanner}
-              className="cursor-pointer"
+        <CardContent>
+          {brandingQ.isLoading ? (
+            <Skeleton className="h-28 w-full" />
+          ) : (
+            <ImageAssetField
+              currentUrl={bannerUrl}
+              aspect="wide"
+              alt={`Banner de ${brandingQ.data?.name ?? ''}`}
+              hint="Recomendado 1600x400 (JPG, PNG ou WEBP)."
+              uploading={busy === 'banner' && patchMut.isPending}
+              removing={busy === 'banner' && patchMut.isPending && bannerUrl !== null}
+              onUpload={(file) => upload('banner', file)}
+              onRemove={() => remove('banner')}
             />
-          </div>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={clearBanner}
-            disabled={patchMut.isPending}
-          >
-            Remover banner
-          </Button>
+          )}
         </CardContent>
       </Card>
     </main>

@@ -1,12 +1,12 @@
 'use client'
 
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useState } from 'react'
 import { toast } from 'sonner'
-import { Button } from '@/components/ui/button'
+import { ImageAssetField } from '@/components/image-asset-field'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { patchB2BAvatar } from '@/lib/api/auth-api'
+import { Skeleton } from '@/components/ui/skeleton'
+import { getMyB2BAccount, patchB2BAvatar } from '@/lib/api/auth-api'
 import { ApiRequestError } from '@/lib/api/client'
 import { presignUpload, uploadFileToPresignedUrl } from '@/lib/api/media-api'
 import { requireSessionToken } from '@/lib/require-session-token'
@@ -14,38 +14,54 @@ import { useAuth } from '@/providers/auth-provider'
 
 const IMAGE_ACCEPT = ['image/jpeg', 'image/png', 'image/webp']
 
-function mime(file: File): string {
+function imageContentType(file: File): string {
   return IMAGE_ACCEPT.includes(file.type) ? file.type : 'image/jpeg'
 }
 
 export default function B2BAccountPage() {
   const { token } = useAuth()
+  const queryClient = useQueryClient()
+  const [uploading, setUploading] = useState(false)
+
+  const accountQ = useQuery({
+    enabled: !!token,
+    queryKey: ['b2b-account', token],
+    queryFn: () => getMyB2BAccount(requireSessionToken(token)),
+  })
 
   const patchMut = useMutation({
     mutationFn: (avatarKey: string) => patchB2BAvatar(requireSessionToken(token), avatarKey),
-    onSuccess: () => toast.success('Foto da conta actualizada.'),
+    onSuccess: (data) => {
+      queryClient.setQueryData(['b2b-account', token], data)
+      toast.success('Foto da conta atualizada.')
+    },
     onError: (err: unknown) => {
       if (err instanceof ApiRequestError) toast.error(err.message)
       else toast.error('Não foi possível guardar.')
     },
   })
 
-  async function onAvatar(ev: React.ChangeEvent<HTMLInputElement>) {
-    const f = ev.target.files?.[0]
-    ev.target.value = ''
-    if (!f || !token) return
+  async function uploadAvatar(file: File): Promise<void> {
+    if (!token) return
+    setUploading(true)
     try {
-      const ct = mime(f)
+      const ct = imageContentType(file)
       const presigned = await presignUpload(token, {
         purpose: 'B2B_USER_AVATAR',
         contentType: ct,
       })
-      await uploadFileToPresignedUrl(presigned.url, f, ct)
-      patchMut.mutate(presigned.key)
+      await uploadFileToPresignedUrl(presigned.url, file, ct)
+      await patchMut.mutateAsync(presigned.key)
     } catch (err: unknown) {
       if (err instanceof ApiRequestError) toast.error(err.message)
       else toast.error('Não foi possível enviar o ficheiro.')
+    } finally {
+      setUploading(false)
     }
+  }
+
+  async function removeAvatar(): Promise<void> {
+    await patchMut.mutateAsync('')
   }
 
   return (
@@ -56,31 +72,27 @@ export default function B2BAccountPage() {
           Foto usada internamente na equipa (não confundir com a marca pública da empresa).
         </p>
       </div>
+
       <Card>
         <CardHeader>
           <CardTitle>Foto de perfil</CardTitle>
           <CardDescription>JPEG, PNG ou WebP.</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="space-y-2">
-            <Label htmlFor="av">Ficheiro</Label>
-            <Input
-              id="av"
-              type="file"
-              accept={IMAGE_ACCEPT.join(',')}
-              onChange={onAvatar}
-              className="cursor-pointer"
+        <CardContent>
+          {accountQ.isLoading ? (
+            <Skeleton className="h-28 w-full" />
+          ) : (
+            <ImageAssetField
+              currentUrl={accountQ.data?.avatarUrl ?? null}
+              aspect="square"
+              alt={accountQ.data?.email ?? 'Foto de perfil'}
+              hint="JPG, PNG ou WEBP."
+              uploading={uploading}
+              removing={patchMut.isPending && !uploading}
+              onUpload={uploadAvatar}
+              onRemove={removeAvatar}
             />
-          </div>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            disabled={patchMut.isPending}
-            onClick={() => patchMut.mutate('')}
-          >
-            Remover foto
-          </Button>
+          )}
         </CardContent>
       </Card>
     </main>

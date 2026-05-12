@@ -14,4 +14,3 @@ export function setupDocs(app: INestApplication, env: EnvService) {
     jsonDocumentUrl: 'docs-json',
   })
 }
-

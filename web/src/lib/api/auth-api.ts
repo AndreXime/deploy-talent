@@ -1,5 +1,9 @@
 import { apiRequest } from '@/lib/api/client'
-import type { AccessTokenResponse, ProvisionedUserResponse } from '@/lib/api/types'
+import type {
+  AccessTokenResponse,
+  B2BAccountResponse,
+  ProvisionedUserResponse,
+} from '@/lib/api/types'
 
 export function loginRequest(body: { email: string; password: string }) {
   return apiRequest<AccessTokenResponse>('/auth/login', {
@@ -23,8 +27,12 @@ export function createRecruiterRequest(token: string, body: { email: string; pas
   })
 }
 
+export function getMyB2BAccount(token: string) {
+  return apiRequest<B2BAccountResponse>('/auth/me', { method: 'GET', token })
+}
+
 export function patchB2BAvatar(token: string, avatarKey: string) {
-  return apiRequest<unknown>('/auth/me/avatar', {
+  return apiRequest<B2BAccountResponse>('/auth/me/avatar', {
     method: 'PATCH',
     token,
     json: { avatarKey },
