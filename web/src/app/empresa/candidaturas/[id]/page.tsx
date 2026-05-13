@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'sonner'
+import { StageProgressTimeline } from '@/components/pipeline/stage-progress-timeline'
 import { ApplicationStatusBadge } from '@/components/status-badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -28,6 +29,12 @@ import {
   moveApplication,
 } from '@/lib/api/applications-api'
 import { ApiRequestError } from '@/lib/api/client'
+import {
+  listApplicationProgress,
+  listJobStages,
+  moveApplicationStage,
+  setStageInterviewLink,
+} from '@/lib/api/pipelines-api'
 import type { ApiApplicationStatus } from '@/lib/api/types'
 import { applicationStatusLabel } from '@/lib/domain-labels'
 import { isUuid } from '@/lib/is-uuid'
@@ -42,9 +49,9 @@ export default function TenantApplicationDetailPage() {
   const qc = useQueryClient()
   const valid = isUuid(id)
 
-  const [stageNote, setStageNote] = useState('')
   const [evalScore, setEvalScore] = useState('')
   const [evalNotes, setEvalNotes] = useState('')
+  const [targetStageId, setTargetStageId] = useState('')
 
   const appQ = useQuery({
     enabled: !!token && valid,
@@ -58,8 +65,22 @@ export default function TenantApplicationDetailPage() {
     queryFn: () => listEvaluations(requireSessionToken(token), id),
   })
 
+  const jobId = appQ.data?.jobId
+
+  const stagesQ = useQuery({
+    enabled: !!token && !!jobId,
+    queryKey: ['job-stages', token, jobId],
+    queryFn: () => listJobStages(requireSessionToken(token), jobId as string),
+  })
+
+  const progressQ = useQuery({
+    enabled: !!token && valid,
+    queryKey: ['application-progress', token, id],
+    queryFn: () => listApplicationProgress(requireSessionToken(token), id),
+  })
+
   const moveMut = useMutation({
-    mutationFn: (input: { status: ApiApplicationStatus; stage?: string }) =>
+    mutationFn: (input: { status: ApiApplicationStatus }) =>
       moveApplication(requireSessionToken(token), id, input),
     onSuccess: () => {
       toast.success('Funil actualizado.')
@@ -69,6 +90,45 @@ export default function TenantApplicationDetailPage() {
     onError: (err: unknown) => {
       if (err instanceof ApiRequestError) toast.error(err.message)
       else toast.error('Transição inválida.')
+    },
+  })
+
+  const moveStageMut = useMutation({
+    mutationFn: (jobStageId: string) =>
+      moveApplicationStage(requireSessionToken(token), id, jobStageId),
+    onSuccess: () => {
+      toast.success('Etapa actualizada.')
+      qc.invalidateQueries({ queryKey: ['tenant-application', token, id] })
+      qc.invalidateQueries({ queryKey: ['application-progress', token, id] })
+      setTargetStageId('')
+    },
+    onError: (err: unknown) => {
+      if (err instanceof ApiRequestError) toast.error(err.message)
+      else toast.error('Não foi possível mover a etapa.')
+    },
+  })
+
+  const [interviewUrl, setInterviewUrl] = useState('')
+  const [interviewScheduledAt, setInterviewScheduledAt] = useState('')
+
+  const interviewMut = useMutation({
+    mutationFn: (jobStageId: string) =>
+      setStageInterviewLink(requireSessionToken(token), id, jobStageId, {
+        url: interviewUrl.trim(),
+        scheduledAt:
+          interviewScheduledAt.trim().length > 0
+            ? new Date(interviewScheduledAt).toISOString()
+            : undefined,
+      }),
+    onSuccess: () => {
+      toast.success('Link de entrevista actualizado.')
+      qc.invalidateQueries({ queryKey: ['application-progress', token, id] })
+      setInterviewUrl('')
+      setInterviewScheduledAt('')
+    },
+    onError: (err: unknown) => {
+      if (err instanceof ApiRequestError) toast.error(err.message)
+      else toast.error('Não foi possível guardar o link.')
     },
   })
 
@@ -102,6 +162,9 @@ export default function TenantApplicationDetailPage() {
 
   const row = appQ.data
   const next = row ? nextApplicationStatuses(row.status) : []
+  const currentStage = row?.currentJobStageId
+    ? (stagesQ.data ?? []).find((s) => s.id === row.currentJobStageId)
+    : undefined
 
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-8 p-4 lg:p-8">
@@ -175,23 +238,98 @@ export default function TenantApplicationDetailPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Movimentar no funil</CardTitle>
+              <CardTitle className="text-lg">Etapas da pipeline</CardTitle>
               <CardDescription>
-                Escolha o próximo estado macro. Pode acrescentar uma nota de etapa visível
-                internamente.
+                Mover a candidatura para outra etapa. O candidato vê a etapa actual no portal.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="stage">Nota de etapa (opcional)</Label>
-                <Input
-                  id="stage"
-                  value={stageNote}
-                  onChange={(e) => setStageNote(e.target.value)}
-                  maxLength={80}
-                  placeholder="Ex.: Entrevista técnica agendada"
+              {stagesQ.isLoading || progressQ.isLoading ? (
+                <Skeleton className="h-32 w-full" />
+              ) : (
+                <StageProgressTimeline
+                  stages={stagesQ.data ?? []}
+                  progress={progressQ.data ?? []}
+                  currentJobStageId={row.currentJobStageId ?? null}
                 />
-              </div>
+              )}
+
+              {row.status !== 'REJECTED' &&
+                row.status !== 'WITHDRAWN' &&
+                row.status !== 'HIRED' &&
+                (stagesQ.data ?? []).length > 0 && (
+                  <div className="grid gap-2 sm:grid-cols-[1fr_auto]">
+                    <select
+                      id="target_stage"
+                      value={targetStageId}
+                      onChange={(e) => setTargetStageId(e.target.value)}
+                      className="flex h-10 w-full rounded-lg border border-input bg-transparent px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      <option value="">Escolher etapa…</option>
+                      {(stagesQ.data ?? []).map((s) => (
+                        <option key={s.id} value={s.id}>
+                          {s.name}
+                        </option>
+                      ))}
+                    </select>
+                    <Button
+                      type="button"
+                      disabled={!targetStageId || moveStageMut.isPending}
+                      onClick={() => moveStageMut.mutate(targetStageId)}
+                    >
+                      Mover para a etapa
+                    </Button>
+                  </div>
+                )}
+
+              {currentStage?.kind === 'INTERVIEW_LINK' && (
+                <div className="space-y-3 rounded-lg border bg-muted/30 p-3">
+                  <p className="text-sm font-medium">
+                    Configurar link da entrevista para a etapa actual ({currentStage.name})
+                  </p>
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="iv_url">URL</Label>
+                      <Input
+                        id="iv_url"
+                        type="url"
+                        placeholder="https://meet.example.com/abc"
+                        value={interviewUrl}
+                        onChange={(e) => setInterviewUrl(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="iv_when">Agendada para (opcional)</Label>
+                      <Input
+                        id="iv_when"
+                        type="datetime-local"
+                        value={interviewScheduledAt}
+                        onChange={(e) => setInterviewScheduledAt(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                  <Button
+                    type="button"
+                    size="sm"
+                    disabled={interviewUrl.trim().length === 0 || interviewMut.isPending}
+                    onClick={() => interviewMut.mutate(currentStage.id)}
+                  >
+                    Guardar link
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Estado macro</CardTitle>
+              <CardDescription>
+                Transições de status entre `APPLIED`, `IN_PROGRESS`, `HIRED`, `REJECTED` e
+                `WITHDRAWN`.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
               {next.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
                   Este processo já está fechado na ferramenta.
@@ -204,37 +342,13 @@ export default function TenantApplicationDetailPage() {
                       type="button"
                       variant="outline"
                       disabled={moveMut.isPending}
-                      onClick={() =>
-                        moveMut.mutate({
-                          status: s,
-                          stage: stageNote.trim() || undefined,
-                        })
-                      }
+                      onClick={() => moveMut.mutate({ status: s })}
                     >
                       Para {applicationStatusLabel(s)}
                     </Button>
                   ))}
                 </div>
               )}
-              {row.status !== 'REJECTED' &&
-                row.status !== 'WITHDRAWN' &&
-                row.status !== 'HIRED' && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="mt-2"
-                    disabled={moveMut.isPending}
-                    onClick={() =>
-                      moveMut.mutate({
-                        status: row.status,
-                        stage: stageNote.trim() || undefined,
-                      })
-                    }
-                  >
-                    Gravar só a nota de etapa
-                  </Button>
-                )}
             </CardContent>
           </Card>
 

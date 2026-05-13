@@ -24,7 +24,21 @@ O candidato tem um único perfil global; alterações propagam para todas as can
 
 ### Candidaturas e pipeline
 
-O candidato candidata-se com o UUID do tenant na URL e pode desistir (`WITHDRAWN`). O recrutador faz *sourcing por email* (ver "Sourcing por email"), movimenta o processo entre estados (`IN_PROGRESS`, `REJECTED`, `HIRED`, …) e cada transição é gravada em `ApplicationHistory` com `stage` e utilizador que moveu.
+O candidato candidata-se com o UUID do tenant na URL e pode desistir (`WITHDRAWN`). O recrutador faz *sourcing por email* (ver "Sourcing por email") e movimenta o processo entre dois eixos:
+
+* **Status macro** (`APPLIED`, `IN_PROGRESS`, `HIRED`, `REJECTED`, `WITHDRAWN`) com transições gravadas em `ApplicationHistory`.
+* **Etapa da pipeline** customizável por vaga (`JobStage`) com cursor `Application.currentJobStageId` e auditoria por `ApplicationStageProgress`.
+
+### Pipeline customizável
+
+Cada tenant tem um template padrão (`PipelineTemplate` + `TemplateStage`). Ao criar uma vaga, o template é clonado em `JobStage` e pode ser editado pela empresa enquanto a vaga estiver em `DRAFT`. Cada etapa tem um `kind`:
+
+* `MANUAL`: avaliação interna sem acção do candidato.
+* `QUESTIONNAIRE`: perguntas configuráveis (`TEXT_SHORT`, `TEXT_LONG`, `SINGLE_CHOICE`) que o candidato responde no portal.
+* `INTERVIEW_LINK`: o recrutador partilha um URL (com agendamento opcional) que o candidato vê na sua área.
+* `FILE_UPLOAD`: o candidato submete um ficheiro via S3 pré-assinado (`purpose` `APPLICATION_STAGE_FILE`). A API fixa os tipos permitidos (PDF, DOCX, PNG, JPG, TXT) e o tamanho máximo efectivo (menor entre 10 MiB e `S3_MAX_UPLOAD_BYTES`). A configuração da etapa só pode incluir `instructions`.
+
+Cada submissão fica em `ApplicationStageProgress` (`PENDING` → `COMPLETED`), incluindo dados submetidos e quem completou, para auditoria.
 
 ### Avaliações internas
 
@@ -82,13 +96,14 @@ Estados possíveis: `SOURCED`, `APPLIED`, `IN_PROGRESS`, `REJECTED`, `WITHDRAWN`
 
 Regras de criação:
 
-- **Candidato:** `POST /applications/apply` só funciona para vagas `PUBLISHED` ou `PAUSED`; cria a candidatura em `APPLIED`, define `appliedAt` e regista a entrada inicial em `ApplicationHistory`.
+- **Candidato:** `POST /applications/apply` só funciona para vagas `PUBLISHED` ou `PAUSED`; cria a candidatura em `APPLIED`, atribui a primeira `JobStage` como `currentJobStageId`, abre um `ApplicationStageProgress` em `PENDING` e regista a entrada inicial em `ApplicationHistory`.
 - **Sourcing:** `POST /applications/sourced` não cria candidaturas. Conforme o estado do email envia convite de plataforma (`CANDIDATE_INVITED`), envia link público da vaga (`JOB_LINK_SENT`) ou responde sem efeito (`ALREADY_APPLIED`). A candidatura efectiva acontece quando o candidato submete `apply` a partir da página pública.
 
 Regras de transição:
 
 - Estados terminais (`REJECTED`, `WITHDRAWN`, `HIRED`) não evoluem para outros estados.
-- Toda transição grava entrada em `ApplicationHistory` com `stage` resultante e utilizador autor da mudança.
+- Toda transição de status grava entrada em `ApplicationHistory` com utilizador autor da mudança.
+- Mover etapa via `PATCH /applications/:id/stage` actualiza `currentJobStageId`, garante status `IN_PROGRESS` se vier de `APPLIED`/`SOURCED` e cria/aproveita o `ApplicationStageProgress` da nova etapa.
 - Candidato só pode desistir (`WITHDRAWN`) das próprias candidaturas.
 
 ### Papéis e permissões
@@ -123,6 +138,18 @@ Regras de transição:
 
 - Eventos que disparam envio: submissão de candidatura, contratação (`HIRED`), rejeição (`REJECTED`).
 - O envio é *best-effort*: erros de SMTP são registados mas não revertem a operação principal.
+
+### Pipeline customizável
+
+- Cada tenant tem **um** `PipelineTemplate` com etapas (`TemplateStage`). Caso não exista, o sistema cria automaticamente um template padrão com a etapa `Triagem` (`MANUAL`).
+- Editável em `/empresa/pipeline` apenas pelo `TENANT_ADMIN`. As alterações **não retroagem** a vagas já criadas.
+- Ao criar uma vaga, o template é clonado em `JobStage` (FK `jobId`). Enquanto a vaga estiver em `DRAFT`, o recrutador pode reordenar/adicionar/remover etapas em `/empresa/vagas/:jobId/etapas`. Após `PUBLISHED`/`PAUSED`/`CLOSED` as etapas ficam fixas.
+- Cada etapa tem um `kind` que define a interacção com o candidato: `MANUAL`, `QUESTIONNAIRE`, `INTERVIEW_LINK`, `FILE_UPLOAD`. Configurações específicas vivem em `JobStage.config` (JSON).
+- Movimento entre etapas é por endpoint dedicado `PATCH /applications/:id/stage` (não viaja em `/move`, que continua a tratar de status macro). Cada movimento garante a existência de um `ApplicationStageProgress` `PENDING` para a nova etapa.
+- O candidato vê em `/candidato/candidaturas/:id` apenas a etapa actual e pode submeter:
+  * Para `QUESTIONNAIRE`: respostas validadas contra o `config.questions`.
+  * Para `FILE_UPLOAD`: upload presigned no purpose `APPLICATION_STAGE_FILE`, com chave e metadados em `ApplicationStageProgress.submittedData`; tipos e limite de tamanho são impostos pela API.
+- `INTERVIEW_LINK` é configurado pelo recrutador (`PATCH /applications/:id/stage/:jobStageId/interviewLink`), que armazena URL e agendamento na progress da própria candidatura, ficando visível para o candidato.
 
 ### Convites B2B (admin de tenant e recrutador)
 

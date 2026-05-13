@@ -108,7 +108,7 @@ export interface ApplicationResponse {
   jobId: string
   candidateId: string
   status: ApiApplicationStatus
-  stage: string | null
+  currentJobStageId: string | null
   sourcedByUserId: string | null
   appliedAt: string | null
   createdAt: string
@@ -120,9 +120,17 @@ export interface ApplicationCandidateListItem extends ApplicationResponse {
   tenant: TenantSnippet
 }
 
+export interface ApplicationStageSummary {
+  id: string
+  name: string
+  position: number
+  kind: PipelineStageKind
+}
+
 export interface ApplicationTenantListItem extends ApplicationResponse {
   candidate: CandidateProfileResponse
   job: JobResponse
+  currentStage: ApplicationStageSummary | null
 }
 
 export interface EvaluationResponse {
@@ -193,6 +201,70 @@ export interface SourceCandidateResult {
   outcome: SourceCandidateOutcome
   invitationId?: string
   applicationId?: string
+}
+
+export type PipelineStageKind = 'MANUAL' | 'QUESTIONNAIRE' | 'INTERVIEW_LINK' | 'FILE_UPLOAD'
+
+export type ApplicationStageProgressStatus = 'PENDING' | 'COMPLETED' | 'SKIPPED'
+
+export interface QuestionnaireQuestion {
+  id: string
+  label: string
+  type: 'TEXT_SHORT' | 'TEXT_LONG' | 'SINGLE_CHOICE'
+  options?: string[]
+  required: boolean
+}
+
+export interface QuestionnaireConfig {
+  questions: QuestionnaireQuestion[]
+}
+
+export interface InterviewLinkConfig {
+  instructions?: string
+}
+
+export interface FileUploadConfig {
+  instructions?: string
+}
+
+export interface PipelineStageResponse {
+  id: string
+  position: number
+  kind: PipelineStageKind
+  name: string
+  config: Record<string, unknown>
+  required: boolean
+}
+
+export interface PipelineTemplateResponse {
+  id: string
+  name: string
+  stages: PipelineStageResponse[]
+}
+
+export interface PipelineStageInput {
+  kind: PipelineStageKind
+  name: string
+  config?: Record<string, unknown>
+  required?: boolean
+}
+
+export interface ApplicationStageProgressResponse {
+  id: string
+  applicationId: string
+  jobStageId: string
+  status: ApplicationStageProgressStatus
+  submittedData: Record<string, unknown> | null
+  completedAt: string | null
+  completedByUserId: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface ApplicationCurrentStageResponse {
+  applicationId: string
+  stage: PipelineStageResponse | null
+  progress: ApplicationStageProgressResponse | null
 }
 
 export interface ApiErrorBody {

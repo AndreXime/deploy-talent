@@ -13,6 +13,7 @@ model Job {
   tenant       Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   applications Application[]
   savedBy      SavedJob[]
+  stages       JobStage[]
 
   @@index([tenantId])
   @@map("jobs")

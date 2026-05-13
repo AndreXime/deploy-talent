@@ -1,0 +1,82 @@
+/// Template default de pipeline de recrutamento de cada tenant. Na v1 cada
+/// tenant tem exactamente um (criado on demand). A ordem das etapas é dada
+/// pelo campo `position`.
+model PipelineTemplate {
+  id        String   @id @default(uuid())
+  tenantId  String   @unique
+  name      String   @default("Pipeline default")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  stages TemplateStage[]
+
+  @@map("pipeline_templates")
+}
+
+model TemplateStage {
+  id         String            @id @default(uuid())
+  templateId String
+  position   Int
+  kind       PipelineStageKind
+  name       String
+  /// Configuração específica do `kind` (perguntas do questionário,
+  /// instruções de entrevista, mime types aceites, etc.).
+  config     Json              @default("{}")
+  required   Boolean           @default(true)
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+
+  template PipelineTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  @@unique([templateId, position])
+  @@index([templateId])
+  @@map("pipeline_template_stages")
+}
+
+/// Cópia das etapas para uma vaga concreta. É clonada do template default ao
+/// criar a `Job` e fica editável enquanto a vaga estiver em `DRAFT`.
+model JobStage {
+  id        String            @id @default(uuid())
+  jobId     String
+  position  Int
+  kind      PipelineStageKind
+  name      String
+  config    Json              @default("{}")
+  required  Boolean           @default(true)
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  job              Job                          @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  progresses       ApplicationStageProgress[]
+  currentOf        Application[]                @relation("CurrentJobStage")
+
+  @@unique([jobId, position])
+  @@index([jobId])
+  @@map("job_stages")
+}
+
+/// Progresso de uma candidatura numa etapa concreta da vaga. Inclui a
+/// submissão do candidato (`submittedData`) e o estado de conclusão.
+model ApplicationStageProgress {
+  id                String                         @id @default(uuid())
+  applicationId     String
+  jobStageId        String
+  status            ApplicationStageProgressStatus @default(PENDING)
+  /// Payload submetido pelo candidato (respostas do questionário, chave S3
+  /// do ficheiro, dados da entrevista). Estrutura varia conforme o `kind`.
+  submittedData     Json?
+  completedAt       DateTime?
+  completedByUserId String?
+  createdAt         DateTime                       @default(now())
+  updatedAt         DateTime                       @updatedAt
+
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  jobStage    JobStage    @relation(fields: [jobStageId], references: [id], onDelete: Cascade)
+  completedBy User?       @relation("StageProgressCompletedBy", fields: [completedByUserId], references: [id], onDelete: SetNull)
+
+  @@unique([applicationId, jobStageId])
+  @@index([applicationId])
+  @@index([jobStageId])
+  @@map("application_stage_progress")
+}

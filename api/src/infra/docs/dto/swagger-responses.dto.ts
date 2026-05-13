@@ -90,7 +90,7 @@ export class ApplicationResponseDto {
   @ApiProperty({ format: 'uuid' }) candidateId!: string
   @ApiProperty({ enum: APPLICATION_STATUS_VALUES })
   status!: (typeof APPLICATION_STATUS_VALUES)[number]
-  @ApiProperty({ nullable: true }) stage!: string | null
+  @ApiProperty({ nullable: true, format: 'uuid' }) currentJobStageId!: string | null
   @ApiProperty({ nullable: true, format: 'uuid' }) sourcedByUserId!: string | null
   @ApiProperty({ nullable: true, type: String, format: 'date-time' }) appliedAt!: Date | null
   @ApiProperty({ type: String, format: 'date-time' }) createdAt!: Date
@@ -221,4 +221,49 @@ export class PublicTenantBrandingResponseDto {
 
   @ApiProperty({ nullable: true, type: PublicBrandingSignedAssetDto })
   banner!: PublicBrandingSignedAssetDto | null
+}
+
+export class PipelineStageResponseDto {
+  @ApiProperty({ format: 'uuid' }) id!: string
+  @ApiProperty() position!: number
+  @ApiProperty({ enum: ['MANUAL', 'QUESTIONNAIRE', 'INTERVIEW_LINK', 'FILE_UPLOAD'] })
+  kind!: 'MANUAL' | 'QUESTIONNAIRE' | 'INTERVIEW_LINK' | 'FILE_UPLOAD'
+  @ApiProperty() name!: string
+  @ApiProperty({
+    description:
+      'Configuração específica do kind. Para QUESTIONNAIRE: `{ questions: [...] }`. Para FILE_UPLOAD: apenas `{ instructions?: string }` (tipos PDF, DOCX, PNG, JPG, TXT e tamanho máximo são fixos na API). Para INTERVIEW_LINK: `{ instructions?: string }`. MANUAL é `{}`.',
+  })
+  config!: Record<string, unknown>
+  @ApiProperty() required!: boolean
+}
+
+export class PipelineTemplateResponseDto {
+  @ApiProperty({ format: 'uuid' }) id!: string
+  @ApiProperty() name!: string
+  @ApiProperty({ type: [PipelineStageResponseDto] })
+  stages!: PipelineStageResponseDto[]
+}
+
+export class ApplicationStageProgressResponseDto {
+  @ApiProperty({ format: 'uuid' }) id!: string
+  @ApiProperty({ format: 'uuid' }) applicationId!: string
+  @ApiProperty({ format: 'uuid' }) jobStageId!: string
+  @ApiProperty({ enum: ['PENDING', 'COMPLETED', 'SKIPPED'] })
+  status!: 'PENDING' | 'COMPLETED' | 'SKIPPED'
+  @ApiProperty({ nullable: true, type: Object })
+  submittedData!: Record<string, unknown> | null
+  @ApiProperty({ nullable: true, type: String, format: 'date-time' })
+  completedAt!: Date | null
+  @ApiProperty({ nullable: true, format: 'uuid' })
+  completedByUserId!: string | null
+  @ApiProperty({ type: String, format: 'date-time' }) createdAt!: Date
+  @ApiProperty({ type: String, format: 'date-time' }) updatedAt!: Date
+}
+
+export class ApplicationCurrentStageResponseDto {
+  @ApiProperty({ format: 'uuid' }) applicationId!: string
+  @ApiProperty({ nullable: true, type: PipelineStageResponseDto })
+  stage!: PipelineStageResponseDto | null
+  @ApiProperty({ nullable: true, type: ApplicationStageProgressResponseDto })
+  progress!: ApplicationStageProgressResponseDto | null
 }

@@ -11,12 +11,13 @@ model Tenant {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  recruiters  User[]
-  jobs        Job[]
-  apps        Application[]
-  evaluations Evaluation[]
-  history     ApplicationHistory[]
-  invitations Invitation[]
+  recruiters       User[]
+  jobs             Job[]
+  apps             Application[]
+  evaluations      Evaluation[]
+  history          ApplicationHistory[]
+  invitations      Invitation[]
+  pipelineTemplate PipelineTemplate?
 
   @@map("tenants")
 }

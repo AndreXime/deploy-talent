@@ -74,11 +74,7 @@ export interface ApplicationTenantDetail extends ApplicationResponse {
   evaluations: EvaluationResponse[]
 }
 
-export function moveApplication(
-  token: string,
-  id: string,
-  body: { status: ApiApplicationStatus; stage?: string },
-) {
+export function moveApplication(token: string, id: string, body: { status: ApiApplicationStatus }) {
   return apiRequest<ApplicationResponse>(`/applications/${id}/move`, {
     method: 'PATCH',
     token,

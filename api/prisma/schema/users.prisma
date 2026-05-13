@@ -11,11 +11,12 @@ model User {
 
   tenant Tenant? @relation(fields: [tenantId], references: [id], onDelete: SetNull)
 
-  sourcedApplications Application[]        @relation("SourcedBy")
-  movedApplications   ApplicationHistory[] @relation("MovedBy")
-  createdEvaluations  Evaluation[]         @relation("EvaluationCreatedBy")
-  candidateProfile    Candidate?
-  invitationsCreated  Invitation[]         @relation("InvitationsCreated")
+  sourcedApplications      Application[]              @relation("SourcedBy")
+  movedApplications        ApplicationHistory[]       @relation("MovedBy")
+  createdEvaluations       Evaluation[]               @relation("EvaluationCreatedBy")
+  candidateProfile         Candidate?
+  invitationsCreated       Invitation[]               @relation("InvitationsCreated")
+  completedStageProgresses ApplicationStageProgress[] @relation("StageProgressCompletedBy")
 
   @@index([tenantId])
   @@map("users")

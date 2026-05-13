@@ -37,7 +37,11 @@ export class ListApplicationsForTenantUseCase {
     const [rows, total] = await Promise.all([
       this.prisma.application.findMany({
         where,
-        include: { candidate: true, job: true },
+        include: {
+          candidate: true,
+          job: true,
+          currentStage: { select: { id: true, name: true, position: true, kind: true } },
+        },
         orderBy: { createdAt: 'desc' },
         skip,
         take,

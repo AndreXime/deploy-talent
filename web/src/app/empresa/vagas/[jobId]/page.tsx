@@ -148,9 +148,16 @@ export default function TenantJobDetailPage() {
 
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-8 p-4 lg:p-8">
-      <Button variant="outline" size="sm" className="w-fit" asChild>
-        <Link href="/empresa/vagas">Todas as vagas</Link>
-      </Button>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <Button variant="outline" size="sm" className="w-fit" asChild>
+          <Link href="/empresa/vagas">Todas as vagas</Link>
+        </Button>
+        {valid && (
+          <Button variant="outline" size="sm" asChild>
+            <Link href={`/empresa/vagas/${jobId}/etapas`}>Configurar etapas</Link>
+          </Button>
+        )}
+      </div>
 
       {!valid && (
         <Alert variant="destructive">

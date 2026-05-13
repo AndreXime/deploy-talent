@@ -119,8 +119,10 @@ flowchart TD
     jobOk -- não --> err400[400 Bad Request]
     jobOk -- sim --> dup{Já existe candidatura para esta vaga?}
     dup -- sim --> err409[409 Conflict]
-    dup -- não --> create[Cria Application APPLIED + appliedAt]
-    create --> history[Regista ApplicationHistory inicial]
+    dup -- não --> firstStage[Carrega a primeira JobStage da vaga]
+    firstStage --> create[Cria Application APPLIED com currentJobStageId + appliedAt]
+    create --> progress[Cria ApplicationStageProgress PENDING para a etapa inicial]
+    progress --> history[Regista ApplicationHistory inicial com nome da etapa]
     history --> notify[Email best effort: candidatura submetida]
     notify --> done([201 Application])
 ```
@@ -149,7 +151,9 @@ flowchart TD
 
 ## Transição no pipeline de candidaturas
 
-Cada movimento entre estados (`APPLIED → IN_PROGRESS → HIRED`, por exemplo) passa pelas regras da máquina de estados e regista a entrada de auditoria com o autor.
+A pipeline tem dois eixos independentes: status macro (`/move`) e etapa customizável (`/stage`). O candidato vê e interage apenas com a etapa actual.
+
+### Mudança de status macro
 
 ```mermaid
 flowchart TD
@@ -164,6 +168,46 @@ flowchart TD
     terminal -- intermédio --> done
     emailHired --> done([200 Application])
     emailRej --> done
+```
+
+### Mover etapa da pipeline customizável
+
+```mermaid
+flowchart TD
+    start([RECRUITER ou TENANT_ADMIN: PATCH /applications/:id/stage com jobStageId]) --> own{Application no tenant do JWT?}
+    own -- não --> err403[403 Forbidden]
+    own -- sim --> stageOk{JobStage pertence à mesma vaga?}
+    stageOk -- não --> err400[400 Bad Request]
+    stageOk -- sim --> bumpStatus[Se status era APPLIED ou SOURCED passa a IN_PROGRESS]
+    bumpStatus --> cursor[Actualiza Application.currentJobStageId]
+    cursor --> progress[Upsert ApplicationStageProgress PENDING para a etapa]
+    progress --> history[Regista ApplicationHistory com fromStage e toStage por nome]
+    history --> done([200 ApplicationStageProgress])
+```
+
+### Submissão do candidato na etapa actual
+
+```mermaid
+flowchart TD
+    start([CANDIDATE: POST /applications/me/:id/currentStage/submit]) --> hasStage{currentJobStageId definido?}
+    hasStage -- não --> err400b[400 Bad Request]
+    hasStage -- sim --> alive{Status diferente de HIRED, REJECTED, WITHDRAWN?}
+    alive -- não --> err400c[400 Bad Request]
+    alive -- sim --> validate[validateStageSubmission(kind, config, payload)]
+    validate -- erro --> err400d[400 Bad Request com detalhe]
+    validate -- ok --> upsert[Upsert ApplicationStageProgress COMPLETED com submittedData e completedByUserId]
+    upsert --> doneSubmit([200 ApplicationStageProgress])
+```
+
+### Recrutador define link de entrevista
+
+```mermaid
+flowchart TD
+    startIv([RECRUITER: PATCH /applications/:id/stage/:jobStageId/interviewLink]) --> kindOk{JobStage.kind = INTERVIEW_LINK?}
+    kindOk -- não --> err400e[400 Bad Request]
+    kindOk -- sim --> validateLink[Valida url e scheduledAt opcional]
+    validateLink --> upsertIv[Upsert ApplicationStageProgress com url e scheduledAt em submittedData]
+    upsertIv --> doneIv([200 ApplicationStageProgress])
 ```
 
 ## Remoção de recrutador pelo tenant admin

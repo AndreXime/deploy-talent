@@ -47,7 +47,6 @@ export class MoveApplicationUseCase {
       where: { id: applicationId },
       data: {
         status: input.status,
-        stage: input.stage,
       },
     })
 
@@ -58,8 +57,8 @@ export class MoveApplicationUseCase {
         movedByUserId: actor.userId,
         fromStatus: app.status,
         toStatus: input.status,
-        fromStage: app.stage,
-        toStage: input.stage ?? null,
+        fromStage: null,
+        toStage: null,
       },
     })
 

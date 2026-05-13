@@ -44,6 +44,7 @@ export class ApplyToJobUseCase {
         status: true,
         title: true,
         tenant: { select: { name: true } },
+        stages: { orderBy: { position: 'asc' }, take: 1, select: { id: true, name: true } },
       },
     })
     if (!job) throw new NotFoundException('Job not found')
@@ -51,24 +52,43 @@ export class ApplyToJobUseCase {
       throw new ForbiddenException('Job is not accepting applications')
     }
 
-    const app = await this.prisma.application.create({
-      data: {
-        tenantId,
-        jobId: job.id,
-        candidateId: candidate.id,
-        status: ApplicationStatus.APPLIED,
-        appliedAt: new Date(),
-      },
-    })
+    const firstStage = job.stages[0] ?? null
 
-    await this.prisma.applicationHistory.create({
-      data: {
-        tenantId,
-        applicationId: app.id,
-        movedByUserId: actor.userId,
-        fromStatus: ApplicationStatus.APPLIED,
-        toStatus: ApplicationStatus.APPLIED,
-      },
+    const app = await this.prisma.$transaction(async (tx) => {
+      const created = await tx.application.create({
+        data: {
+          tenantId,
+          jobId: job.id,
+          candidateId: candidate.id,
+          status: ApplicationStatus.APPLIED,
+          appliedAt: new Date(),
+          currentJobStageId: firstStage?.id ?? null,
+        },
+      })
+
+      await tx.applicationHistory.create({
+        data: {
+          tenantId,
+          applicationId: created.id,
+          movedByUserId: actor.userId,
+          fromStatus: ApplicationStatus.APPLIED,
+          toStatus: ApplicationStatus.APPLIED,
+          fromStage: null,
+          toStage: firstStage?.name ?? null,
+        },
+      })
+
+      if (firstStage) {
+        await tx.applicationStageProgress.create({
+          data: {
+            applicationId: created.id,
+            jobStageId: firstStage.id,
+            status: 'PENDING',
+          },
+        })
+      }
+
+      return created
     })
 
     await this.candidateEmails.notifyApplicationSubmitted({

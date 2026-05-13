@@ -4,13 +4,19 @@ import type { PresignedUrlResponse } from '@/lib/api/types'
 export type MediaUploadPurpose =
   | 'CANDIDATE_AVATAR'
   | 'CANDIDATE_RESUME'
+  | 'APPLICATION_STAGE_FILE'
   | 'B2B_USER_AVATAR'
   | 'TENANT_LOGO'
   | 'TENANT_BANNER'
 
 export function presignUpload(
   token: string,
-  body: { purpose: MediaUploadPurpose; contentType: string; fileName?: string },
+  body: {
+    purpose: MediaUploadPurpose
+    contentType: string
+    fileName?: string
+    applicationId?: string
+  },
 ) {
   return apiRequest<PresignedUrlResponse>('/media/presign-upload', {
     method: 'POST',

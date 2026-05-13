@@ -157,7 +157,7 @@ export default function TenantApplicationsPage() {
                     <ApplicationStatusBadge status={row.status} />
                   </TableCell>
                   <TableCell className="text-muted-foreground">
-                    {row.stage ?? <span className="opacity-50">sem etapa</span>}
+                    {row.currentStage?.name ?? <span className="opacity-50">sem etapa</span>}
                   </TableCell>
                   <TableCell className="text-muted-foreground">
                     {formatUpdatedAt(row.updatedAt)}

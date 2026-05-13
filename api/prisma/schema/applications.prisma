@@ -1,27 +1,30 @@
 model Application {
-  id             String            @id @default(uuid())
-  tenantId       String
-  jobId          String
-  candidateId    String
-  status         ApplicationStatus @default(APPLIED)
-  stage          String?
-  sourcedByUserId String?
-  appliedAt      DateTime?
-  createdAt      DateTime          @default(now())
-  updatedAt      DateTime          @updatedAt
+  id                 String            @id @default(uuid())
+  tenantId           String
+  jobId              String
+  candidateId        String
+  status             ApplicationStatus @default(APPLIED)
+  currentJobStageId  String?
+  sourcedByUserId    String?
+  appliedAt          DateTime?
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
 
-  tenant     Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  job        Job       @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  candidate  Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
-  sourcedBy  User?     @relation("SourcedBy", fields: [sourcedByUserId], references: [id], onDelete: SetNull)
-  history    ApplicationHistory[]
-  evaluations Evaluation[]
+  tenant       Tenant                     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  job          Job                        @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  candidate    Candidate                  @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  sourcedBy    User?                      @relation("SourcedBy", fields: [sourcedByUserId], references: [id], onDelete: SetNull)
+  currentStage JobStage?                  @relation("CurrentJobStage", fields: [currentJobStageId], references: [id], onDelete: SetNull)
+  history      ApplicationHistory[]
+  evaluations  Evaluation[]
+  progresses   ApplicationStageProgress[]
 
   @@unique([tenantId, jobId, candidateId])
   @@index([tenantId])
   @@index([jobId])
   @@index([candidateId])
   @@index([sourcedByUserId])
+  @@index([currentJobStageId])
   @@map("applications")
 }
 

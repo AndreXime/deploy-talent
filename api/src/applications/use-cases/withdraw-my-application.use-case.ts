@@ -39,8 +39,8 @@ export class WithdrawMyApplicationUseCase {
         movedByUserId: actor.userId,
         fromStatus: app.status,
         toStatus: ApplicationStatus.WITHDRAWN,
-        fromStage: app.stage,
-        toStage: app.stage,
+        fromStage: null,
+        toStage: null,
       },
     })
 

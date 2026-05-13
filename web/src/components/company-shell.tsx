@@ -1,7 +1,7 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import { Briefcase, Building2, Menu, Palette, UserPlus, Users } from 'lucide-react'
+import { Briefcase, Building2, ListChecks, Menu, Palette, UserPlus, Users } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState } from 'react'
@@ -17,6 +17,7 @@ import { useAuth } from '@/providers/auth-provider'
 const baseLinks = [
   { href: '/empresa/vagas', label: 'Vagas', icon: Briefcase },
   { href: '/empresa/candidaturas', label: 'Candidaturas', icon: Users },
+  { href: '/empresa/pipeline', label: 'Pipeline', icon: ListChecks },
   { href: '/empresa/marca', label: 'Marca', icon: Palette },
   { href: '/empresa/conta', label: 'A minha conta', icon: Building2 },
 ] as const
@@ -28,9 +29,9 @@ function NavLinks({ onNavigate }: Readonly<{ onNavigate?: () => void }>) {
   const links =
     claims?.role === 'TENANT_ADMIN'
       ? [
-          ...baseLinks.slice(0, 3),
+          ...baseLinks.slice(0, 4),
           { href: '/empresa/equipa', label: 'Equipa', icon: UserPlus } as const,
-          ...baseLinks.slice(3),
+          ...baseLinks.slice(4),
         ]
       : baseLinks
 

@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'sonner'
+import { CandidateCurrentStageCard } from '@/components/pipeline/candidate-current-stage-card'
 import { ApplicationStatusBadge, JobStatusBadge } from '@/components/status-badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -125,6 +126,8 @@ export default function CandidateApplicationDetailPage() {
               </p>
             </CardContent>
           </Card>
+
+          <CandidateCurrentStageCard applicationId={applicationId} />
 
           {candidateMayWithdraw(row.status) && (
             <div className="rounded-lg border border-destructive/30 bg-muted/40 p-4">

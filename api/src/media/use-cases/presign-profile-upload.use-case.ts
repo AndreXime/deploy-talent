@@ -1,9 +1,11 @@
 import { randomUUID } from 'node:crypto'
-import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common'
-import { UserRole } from '../../../generated/prisma/client'
+import { BadRequestException, ForbiddenException, Inject, Injectable } from '@nestjs/common'
+import { type PrismaClient, UserRole } from '../../../generated/prisma/client'
 import type { JwtPayload } from '../../auth/jwt-payload'
+import { PRISMA_CLIENT } from '../../infra/prisma/prisma.constants'
 import { buildStorageKey, sanitizeFileName } from '../../infra/storage/storage.constants'
 import { StorageService } from '../../infra/storage/storage.service'
+import { assertPipelineStageFileContentType } from '../../pipelines/stage-config'
 import type { PresignProfileUploadDto } from '../dto/presign-profile-upload.dto'
 import { ProfileMediaUploadPurpose } from '../dto/profile-media-upload-purpose'
 import {
@@ -23,9 +25,17 @@ function resumeObjectFileName(original: string, ext: string): string {
   return `${stem}.${ext}`
 }
 
+function attachmentObjectFileName(original: string): string {
+  const sanitized = sanitizeFileName(original)
+  return sanitized.length > 0 ? sanitized : 'attachment'
+}
+
 @Injectable()
 export class PresignProfileUploadUseCase {
-  constructor(private readonly storage: StorageService) {}
+  constructor(
+    private readonly storage: StorageService,
+    @Inject(PRISMA_CLIENT) private readonly prisma: PrismaClient,
+  ) {}
 
   async execute(user: JwtPayload, input: PresignProfileUploadDto) {
     const objectId = randomUUID()
@@ -45,6 +55,36 @@ export class PresignProfileUploadUseCase {
           ownerId: user.sub,
           namespace: 'resumes',
           fileName: resumeObjectFileName(rawName, ext),
+          uniqueId: objectId,
+        })
+        return this.storage.presignUpload({ key, contentType: input.contentType })
+      }
+      case ProfileMediaUploadPurpose.APPLICATION_STAGE_FILE: {
+        if (role !== UserRole.CANDIDATE) {
+          throw new ForbiddenException('Only candidates can upload stage files')
+        }
+        const applicationId = input.applicationId
+        if (!applicationId) {
+          throw new BadRequestException('applicationId is required for stage file upload')
+        }
+        const rawName = input.fileName?.trim()
+        if (!rawName) throw new BadRequestException('fileName is required for stage file upload')
+        const candidate = await this.prisma.candidate.findFirst({
+          where: { userId: user.sub, deletedAt: null },
+          select: { id: true },
+        })
+        if (!candidate) throw new ForbiddenException('Candidate profile not found')
+        const owns = await this.prisma.application.findFirst({
+          where: { id: applicationId, candidateId: candidate.id },
+          select: { id: true },
+        })
+        if (!owns) throw new ForbiddenException('Application does not belong to candidate')
+        assertPipelineStageFileContentType(input.contentType)
+        const key = buildStorageKey({
+          scope: 'CANDIDATE',
+          ownerId: user.sub,
+          namespace: 'attachments',
+          fileName: attachmentObjectFileName(rawName),
           uniqueId: objectId,
         })
         return this.storage.presignUpload({ key, contentType: input.contentType })

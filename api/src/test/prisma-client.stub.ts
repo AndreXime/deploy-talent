@@ -21,6 +21,19 @@ export const UserRole = {
   CANDIDATE: 'CANDIDATE',
 } as const
 
+export const PipelineStageKind = {
+  MANUAL: 'MANUAL',
+  QUESTIONNAIRE: 'QUESTIONNAIRE',
+  INTERVIEW_LINK: 'INTERVIEW_LINK',
+  FILE_UPLOAD: 'FILE_UPLOAD',
+} as const
+
+export const ApplicationStageProgressStatus = {
+  PENDING: 'PENDING',
+  COMPLETED: 'COMPLETED',
+  SKIPPED: 'SKIPPED',
+} as const
+
 export type PrismaClient = Record<string, unknown>
 
 export const Prisma = {

@@ -25,11 +25,20 @@ import type { JwtPayload } from '../auth/jwt-payload'
 import { Roles } from '../auth/rbac/roles.decorator'
 import {
   ApplicationCandidateListItemDto,
+  ApplicationCurrentStageResponseDto,
   ApplicationResponseDto,
+  ApplicationStageProgressResponseDto,
   EvaluationResponseDto,
   SourceCandidateResultDto,
 } from '../infra/docs/dto/swagger-responses.dto'
 import { ApiJwtAuth, ApiJwtTenantB2b, ApiStandardErrors } from '../infra/docs/swagger-decorators'
+import { MoveApplicationStageDto } from '../pipelines/dto/move-application-stage.dto'
+import { SetInterviewLinkDto } from '../pipelines/dto/set-interview-link.dto'
+import { GetMyCurrentStageUseCase } from '../pipelines/use-cases/get-my-current-stage.use-case'
+import { ListApplicationProgressUseCase } from '../pipelines/use-cases/list-application-progress.use-case'
+import { MoveApplicationStageUseCase } from '../pipelines/use-cases/move-application-stage.use-case'
+import { SetInterviewLinkUseCase } from '../pipelines/use-cases/set-interview-link.use-case'
+import { SubmitCurrentStageUseCase } from '../pipelines/use-cases/submit-current-stage.use-case'
 import { TenantOptional, TenantRequired } from '../tenant-context/tenant.decorators'
 import {
   MyApplicationsListQueryDto,
@@ -74,6 +83,11 @@ export class ApplicationsController {
     private readonly getMyApplication: GetMyApplicationUseCase,
     private readonly withdrawMyApplication: WithdrawMyApplicationUseCase,
     private readonly moveApplication: MoveApplicationUseCase,
+    private readonly moveApplicationStage: MoveApplicationStageUseCase,
+    private readonly listApplicationProgress: ListApplicationProgressUseCase,
+    private readonly getMyCurrentStage: GetMyCurrentStageUseCase,
+    private readonly submitCurrentStage: SubmitCurrentStageUseCase,
+    private readonly setInterviewLink: SetInterviewLinkUseCase,
     private readonly createEvaluationUseCase: CreateEvaluationUseCase,
     private readonly listEvaluationsForApplication: ListEvaluationsForApplicationUseCase,
     private readonly getEvaluation: GetEvaluationUseCase,
@@ -265,5 +279,109 @@ export class ApplicationsController {
   ) {
     const user = requireUser(req)
     return this.moveApplication.execute({ userId: user.sub, role: user.role as UserRole }, id, body)
+  }
+
+  @Patch(':id/stage')
+  @TenantRequired()
+  @Roles(UserRole.TENANT_ADMIN, UserRole.RECRUITER)
+  @ApiJwtTenantB2b()
+  @ApiOperation({
+    summary: 'Mover a etapa actual da candidatura',
+    description:
+      'Define `currentJobStageId`, cria progress em PENDING (idempotente) e regista snapshot em ApplicationHistory.',
+  })
+  @ApiParam({ name: 'id', format: 'uuid' })
+  @ApiBody({ type: MoveApplicationStageDto })
+  @ApiOkResponse({ type: ApplicationStageProgressResponseDto })
+  async moveStage(
+    @Request() req: RequestWithUser,
+    @Param('id') id: string,
+    @Body() body: MoveApplicationStageDto,
+  ) {
+    const user = requireUser(req)
+    return this.moveApplicationStage.execute(
+      { userId: user.sub, role: user.role as UserRole },
+      { applicationId: id, jobStageId: body.jobStageId },
+    )
+  }
+
+  @Get(':id/progress')
+  @TenantRequired()
+  @Roles(UserRole.TENANT_ADMIN, UserRole.RECRUITER)
+  @ApiJwtTenantB2b()
+  @ApiOperation({ summary: 'Progresso por etapa da candidatura (uso B2B)' })
+  @ApiParam({ name: 'id', format: 'uuid' })
+  @ApiOkResponse({ type: [ApplicationStageProgressResponseDto] })
+  async listProgress(@Request() req: RequestWithUser, @Param('id') id: string) {
+    const user = requireUser(req)
+    return this.listApplicationProgress.execute(
+      { userId: user.sub, role: user.role as UserRole },
+      id,
+    )
+  }
+
+  @Patch(':id/stage/:jobStageId/interviewLink')
+  @TenantRequired()
+  @Roles(UserRole.TENANT_ADMIN, UserRole.RECRUITER)
+  @ApiJwtTenantB2b()
+  @ApiOperation({
+    summary: 'Define ou actualiza URL e horário da entrevista para a candidatura',
+  })
+  @ApiParam({ name: 'id', format: 'uuid' })
+  @ApiParam({ name: 'jobStageId', format: 'uuid' })
+  @ApiBody({ type: SetInterviewLinkDto })
+  @ApiOkResponse({ type: ApplicationStageProgressResponseDto })
+  async setInterview(
+    @Request() req: RequestWithUser,
+    @Param('id') id: string,
+    @Param('jobStageId') jobStageId: string,
+    @Body() body: SetInterviewLinkDto,
+  ) {
+    const user = requireUser(req)
+    return this.setInterviewLink.execute(
+      { userId: user.sub, role: user.role as UserRole },
+      id,
+      jobStageId,
+      body,
+    )
+  }
+
+  @Get('me/:applicationId/currentStage')
+  @TenantOptional()
+  @Roles(UserRole.CANDIDATE)
+  @ApiJwtAuth()
+  @ApiOperation({ summary: 'Etapa actual da minha candidatura com a configuração visível' })
+  @ApiParam({ name: 'applicationId', format: 'uuid' })
+  @ApiOkResponse({ type: ApplicationCurrentStageResponseDto })
+  async getMyStage(@Request() req: RequestWithUser, @Param('applicationId') applicationId: string) {
+    const user = requireUser(req)
+    return this.getMyCurrentStage.execute(
+      { userId: user.sub, role: user.role as UserRole },
+      applicationId,
+    )
+  }
+
+  @Post('me/:applicationId/currentStage/submit')
+  @TenantOptional()
+  @Roles(UserRole.CANDIDATE)
+  @ApiJwtAuth()
+  @ApiOperation({
+    summary: 'Submete dados da etapa actual',
+    description:
+      'Validação por kind: QUESTIONNAIRE espera `{ answers }`. FILE_UPLOAD espera `{ fileKey, mimeType, fileSize }` (tipos e limite de tamanho fixos na API). MANUAL e INTERVIEW_LINK não aceitam submissões aqui.',
+  })
+  @ApiParam({ name: 'applicationId', format: 'uuid' })
+  @ApiOkResponse({ type: ApplicationStageProgressResponseDto })
+  async submitMyStage(
+    @Request() req: RequestWithUser,
+    @Param('applicationId') applicationId: string,
+    @Body() body: unknown,
+  ) {
+    const user = requireUser(req)
+    return this.submitCurrentStage.execute(
+      { userId: user.sub, role: user.role as UserRole },
+      applicationId,
+      body,
+    )
   }
 }

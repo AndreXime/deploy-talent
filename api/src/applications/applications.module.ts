@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common'
 import { CandidatesModule } from '../candidates/candidates.module'
 import { InvitationsModule } from '../invitations/invitations.module'
+import { PipelinesModule } from '../pipelines/pipelines.module'
 import { ApplicationsController } from './applications.controller'
 import { CandidateApplicationEmailNotifier } from './candidate-application-email.notifier'
 import { TenantCandidateApplicationsController } from './tenant-candidate-applications.controller'
@@ -18,7 +19,7 @@ import { UpdateEvaluationUseCase } from './use-cases/update-evaluation.use-case'
 import { WithdrawMyApplicationUseCase } from './use-cases/withdraw-my-application.use-case'
 
 @Module({
-  imports: [CandidatesModule, InvitationsModule],
+  imports: [CandidatesModule, InvitationsModule, PipelinesModule],
   controllers: [ApplicationsController, TenantCandidateApplicationsController],
   providers: [
     CandidateApplicationEmailNotifier,

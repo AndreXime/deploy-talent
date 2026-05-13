@@ -21,3 +21,16 @@ enum ApplicationStatus {
   HIRED
 }
 
+enum PipelineStageKind {
+  MANUAL
+  QUESTIONNAIRE
+  INTERVIEW_LINK
+  FILE_UPLOAD
+}
+
+enum ApplicationStageProgressStatus {
+  PENDING
+  COMPLETED
+  SKIPPED
+}
+

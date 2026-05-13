@@ -15,6 +15,7 @@ import { StorageModule } from './infra/storage/storage.module'
 import { InvitationsModule } from './invitations/invitations.module'
 import { JobsModule } from './jobs/jobs.module'
 import { MediaModule } from './media/media.module'
+import { PipelinesModule } from './pipelines/pipelines.module'
 import { TenantContextInterceptor } from './tenant-context/tenant-context.interceptor'
 import { TenantContextModule } from './tenant-context/tenant-context.module'
 import { TenantsModule } from './tenants/tenants.module'
@@ -41,6 +42,7 @@ import { TenantsModule } from './tenants/tenants.module'
     MediaModule,
     EmailModule,
     InvitationsModule,
+    PipelinesModule,
     HealthModule,
   ],
   controllers: [AppController],
