@@ -46,7 +46,7 @@ export default function CandidateApplicationDetailPage() {
   const withdrawMut = useMutation({
     mutationFn: () => withdrawMyApplication(requireSessionToken(token), applicationId),
     onSuccess: () => {
-      toast.success('Manifestou desistência com sucesso.')
+      toast.success('Desistência registrada com sucesso.')
       queryClient.invalidateQueries({ queryKey: ['my-applications'] })
       queryClient.invalidateQueries({ queryKey: ['my-application', token, applicationId] })
       setWithdrawOpen(false)
@@ -133,7 +133,7 @@ export default function CandidateApplicationDetailPage() {
             <div className="rounded-lg border border-destructive/30 bg-muted/40 p-4">
               <p className="text-sm text-muted-foreground">
                 Não vai continuar neste processo? Pode desistir a qualquer momento — o estado será
-                actualizado nesta página.
+                atualizado nesta página.
               </p>
               <Button
                 variant="destructive"
@@ -157,10 +157,10 @@ export default function CandidateApplicationDetailPage() {
               </DialogHeader>
               <DialogFooter className="gap-2 pt-4">
                 <Button type="button" variant="outline" onClick={() => setWithdrawOpen(false)}>
-                  Voltar atrás
+                  Voltar
                 </Button>
                 <Button type="button" variant="destructive" onClick={() => withdrawMut.mutate()}>
-                  {withdrawMut.isPending ? 'A enviar…' : 'Confirmar desistência'}
+                  {withdrawMut.isPending ? 'Enviando…' : 'Confirmar desistência'}
                 </Button>
               </DialogFooter>
             </DialogContent>

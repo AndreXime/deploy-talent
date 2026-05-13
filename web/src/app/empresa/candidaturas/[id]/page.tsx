@@ -83,7 +83,7 @@ export default function TenantApplicationDetailPage() {
     mutationFn: (input: { status: ApiApplicationStatus }) =>
       moveApplication(requireSessionToken(token), id, input),
     onSuccess: () => {
-      toast.success('Funil actualizado.')
+      toast.success('Funil atualizado.')
       qc.invalidateQueries({ queryKey: ['tenant-application', token, id] })
       qc.invalidateQueries({ queryKey: ['tenant-applications', token] })
     },
@@ -97,7 +97,7 @@ export default function TenantApplicationDetailPage() {
     mutationFn: (jobStageId: string) =>
       moveApplicationStage(requireSessionToken(token), id, jobStageId),
     onSuccess: () => {
-      toast.success('Etapa actualizada.')
+      toast.success('Etapa atualizada.')
       qc.invalidateQueries({ queryKey: ['tenant-application', token, id] })
       qc.invalidateQueries({ queryKey: ['application-progress', token, id] })
       setTargetStageId('')
@@ -121,7 +121,7 @@ export default function TenantApplicationDetailPage() {
             : undefined,
       }),
     onSuccess: () => {
-      toast.success('Link de entrevista actualizado.')
+      toast.success('Link de entrevista atualizado.')
       qc.invalidateQueries({ queryKey: ['application-progress', token, id] })
       setInterviewUrl('')
       setInterviewScheduledAt('')
@@ -195,7 +195,7 @@ export default function TenantApplicationDetailPage() {
           <Card>
             <CardHeader>
               <CardTitle className="text-lg">Dados do candidato</CardTitle>
-              <CardDescription>Visíveis apenas à equipa de recrutamento.</CardDescription>
+              <CardDescription>Visíveis apenas à equipe de recrutamento.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
               <p>
@@ -217,7 +217,7 @@ export default function TenantApplicationDetailPage() {
                     target="_blank"
                     rel="noreferrer"
                   >
-                    Abrir ficheiro
+                    Abrir arquivo
                   </a>
                 </p>
               )}
@@ -240,7 +240,7 @@ export default function TenantApplicationDetailPage() {
             <CardHeader>
               <CardTitle className="text-lg">Etapas da pipeline</CardTitle>
               <CardDescription>
-                Mover a candidatura para outra etapa. O candidato vê a etapa actual no portal.
+                Mover a candidatura para outra etapa. O candidato vê a etapa atual no portal.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -285,7 +285,7 @@ export default function TenantApplicationDetailPage() {
               {currentStage?.kind === 'INTERVIEW_LINK' && (
                 <div className="space-y-3 rounded-lg border bg-muted/30 p-3">
                   <p className="text-sm font-medium">
-                    Configurar link da entrevista para a etapa actual ({currentStage.name})
+                    Configurar link da entrevista para a etapa atual ({currentStage.name})
                   </p>
                   <div className="grid gap-2 sm:grid-cols-2">
                     <div className="space-y-1.5">
@@ -355,7 +355,7 @@ export default function TenantApplicationDetailPage() {
           <Card>
             <CardHeader>
               <CardTitle className="text-lg">Avaliações internas</CardTitle>
-              <CardDescription>Não são partilhadas com o candidato.</CardDescription>
+              <CardDescription>Não são compartilhadas com o candidato.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {evalQ.isLoading && <Skeleton className="h-12 w-full" />}

@@ -255,7 +255,7 @@ export default function PublicJobDetailPage() {
                     <User className="size-5" aria-hidden />
                     {token && claims?.role === 'CANDIDATE'
                       ? applyMut.isPending
-                        ? 'A enviar…'
+                        ? 'Enviando…'
                         : 'Enviar candidatura'
                       : 'Iniciar sessão para candidatar-me'}
                   </Button>

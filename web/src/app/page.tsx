@@ -122,7 +122,7 @@ export default function HomePage() {
                   <div>
                     <p className="font-medium text-foreground">Cultura de engenharia</p>
                     <p className="mt-0.5 text-pretty text-xs leading-relaxed text-muted-foreground">
-                      Sinal verificável sobre práticas de equipa — reviews, qualidade e
+                      Sinal verificável sobre práticas de equipe: reviews, qualidade e
                       transparência de engenharia.
                     </p>
                   </div>
@@ -370,8 +370,8 @@ export default function HomePage() {
             </div>
           </div>
           <div className="mx-auto mt-14 max-w-6xl border-t border-border/60 pt-8 text-center text-xs text-muted-foreground">
-            © {new Date().getFullYear()} Deploy Talent — stack escalável começa no primeiro
-            contacto.
+            © {new Date().getFullYear()} Deploy Talent. Stack escalável começa no primeiro
+            contato.
           </div>
         </footer>
       </main>

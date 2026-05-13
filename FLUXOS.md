@@ -10,7 +10,7 @@ Conjunto de diagramas de fluxo (Mermaid `flowchart`) que descrevem os caminhos o
 
 ## Autenticação e contexto B2B
 
-Toda rota protegida valida o JWT, aplica RBAC pelo papel exigido e, quando a operação é *tenant scoped*, garante que o `tenantId` do token existe, está activo e é gravado no `AsyncLocalStorage` antes de chegar ao handler.
+Toda rota protegida valida o JWT, aplica RBAC pelo papel exigido e, quando a operação é *tenant scoped*, garante que o `tenantId` do token existe, está ativo e é gravado no `AsyncLocalStorage` antes de chegar ao handler.
 
 ```mermaid
 flowchart TD
@@ -20,7 +20,7 @@ flowchart TD
     roles -- não --> err403[403 Forbidden]
     roles -- sim --> tenantReq{Handler exige tenant?}
     tenantReq -- não --> handler[Use case executa]
-    tenantReq -- sim --> tenantCheck{tenantId do JWT existe e está activo?}
+    tenantReq -- sim --> tenantCheck{tenantId do JWT existe e está ativo?}
     tenantCheck -- não --> err400[400 Bad Request]
     tenantCheck -- sim --> als[Interceptor grava tenantId em AsyncLocalStorage]
     als --> handler
@@ -29,13 +29,13 @@ flowchart TD
 
 ## Convite de admin de empresa
 
-O `SUPER_ADMIN` provisiona empresas e convida o primeiro `TENANT_ADMIN`. O corpo do pedido nunca aceita palavra passe; o destinatário fá la na ativação.
+O `SUPER_ADMIN` provisiona empresas e convida o primeiro `TENANT_ADMIN`. O corpo do pedido nunca aceita senha; o destinatário fá la na ativação.
 
 ```mermaid
 flowchart TD
-    start([SUPER_ADMIN: POST /invitations/tenant-admin]) --> tenant{Tenant existe e está activo?}
+    start([SUPER_ADMIN: POST /invitations/tenant-admin]) --> tenant{Tenant existe e está ativo?}
     tenant -- não --> err400[400 Bad Request]
-    tenant -- sim --> userClash{Email já é utilizador?}
+    tenant -- sim --> userClash{Email já é usuário?}
     userClash -- sim --> err409[409 Conflict]
     userClash -- não --> revoke[Revoga convites pendentes mesmo email + tenant]
     revoke --> token[Gera token aleatório 32 bytes e SHA 256]
@@ -52,9 +52,9 @@ O `TENANT_ADMIN` repete o mesmo padrão, mas o tenant vem implicitamente do JWT 
 
 ```mermaid
 flowchart TD
-    start([TENANT_ADMIN: POST /invitations/recruiter]) --> tenant{Tenant do JWT activo?}
+    start([TENANT_ADMIN: POST /invitations/recruiter]) --> tenant{Tenant do JWT ativo?}
     tenant -- não --> err400[400 Bad Request]
-    tenant -- sim --> userClash{Email já é utilizador?}
+    tenant -- sim --> userClash{Email já é usuário?}
     userClash -- sim --> err409[409 Conflict]
     userClash -- não --> revoke[Revoga convites RECRUITER pendentes mesmo email + tenant]
     revoke --> token[Gera token e SHA 256]
@@ -65,22 +65,22 @@ flowchart TD
     send -- ok --> created([201 CreatedInvitation])
 ```
 
-## Activação de conta via convite
+## Ativação de conta via convite
 
-A página `/ativar/[token]` no frontend é pública. Faz pré visualização para mostrar nome, empresa (quando B2B) e email, depois aceita a palavra passe escolhida e devolve um JWT pronto. Para convites `CANDIDATE` (sourcing) também é criado o `Candidate` na mesma transação.
+A página `/ativar/[token]` no frontend é pública. Faz prévia para mostrar nome, empresa (quando B2B) e email, depois aceita a senha escolhida e devolve um JWT pronto. Para convites `CANDIDATE` (sourcing) também é criado o `Candidate` na mesma transação.
 
 ```mermaid
 flowchart TD
     open([Destinatário abre /ativar/&lt;token&gt;]) --> preview[GET /invitations/:token]
     preview --> valid{Token válido, não aceite, não revogado e não expirado?}
     valid -- não --> err404[404 Not Found]
-    valid -- sim --> show[Mostra dados do convite e formulário de palavra passe]
+    valid -- sim --> show[Mostra dados do convite e formulário de senha]
     show --> submit([POST /invitations/:token/accept])
     submit --> isB2b{Convite B2B?}
-    isB2b -- sim --> tenantOk{Tenant ainda activo?}
+    isB2b -- sim --> tenantOk{Tenant ainda ativo?}
     tenantOk -- não --> err400[400 Bad Request]
     isB2b -- não --> clash
-    tenantOk -- sim --> clash{Email já é utilizador entretanto?}
+    tenantOk -- sim --> clash{Email já é usuário entretanto?}
     clash -- sim --> err409[409 Conflict]
     clash -- não --> tx[Transação: cria User com role do convite, cria Candidate se role=CANDIDATE, marca aceitação]
     tx --> jwt[LoginUseCase emite access_token]
@@ -89,16 +89,16 @@ flowchart TD
 
 ## Upload com URL pré assinada
 
-Ficheiros (currículos, avatares, logos, banners) entram no S3 por PUT directo com URL pré assinada e TTL curto. A API só guarda a chave do objecto; as leituras geram outra URL assinada de GET.
+Arquivos (currículos, avatares, logos, banners) entram no S3 por PUT direto com URL pré assinada e TTL curto. A API só guarda a chave do objeto; as leituras geram outra URL assinada de GET.
 
 ```mermaid
 flowchart TD
-    pick([Cliente selecciona ficheiro]) --> presign[POST /media/presign-upload com kind, filename, contentType]
+    pick([Cliente selecciona arquivo]) --> presign[POST /media/presign-upload com kind, filename, contentType]
     presign --> auth{Papel autorizado para o kind?}
     auth -- não --> err403[403 Forbidden]
-    auth -- sim --> sign[StorageService gera URL PUT + chave por tenant ou utilizador]
+    auth -- sim --> sign[StorageService gera URL PUT + chave por tenant ou usuário]
     sign --> resp[200 PresignedUrl: url, key, expiresAt]
-    resp --> put[Browser faz PUT directo no S3]
+    resp --> put[Browser faz PUT direto no S3]
     put -- erro --> abort[Cliente aborta sem chave persistida]
     put -- ok --> patch[Cliente envia a key ao PATCH do recurso ex. /tenants/current/branding]
     patch --> persisted[Recurso guarda apenas a key]
@@ -111,7 +111,7 @@ O candidato aplica directamente a partir do site público de carreiras ou do mar
 
 ```mermaid
 flowchart TD
-    browse([Candidato vê vaga em /carreiras ou /vagas]) --> session{Sessão de CANDIDATE activa?}
+    browse([Candidato vê vaga em /carreiras ou /vagas]) --> session{Sessão de CANDIDATE ativa?}
     session -- não --> auth[Login ou registo do candidato]
     auth --> apply
     session -- sim --> apply[POST /tenants/:tenantId/applications/apply com jobId]
@@ -137,7 +137,7 @@ flowchart TD
     jobOk -- não --> err404[404 Not Found]
     jobOk -- sim --> userExists{Email pertence a um User?}
     userExists -- não --> invite[Cria Invitation CANDIDATE com tenantId null]
-    invite --> emailInvite[Email com link de activação ativar/&lt;token&gt;]
+    invite --> emailInvite[Email com link /ativar/&lt;token&gt;]
     emailInvite --> doneInvited([201 CANDIDATE_INVITED])
 
     userExists -- sim --> isCandidate{Role do User é CANDIDATE?}
@@ -151,7 +151,7 @@ flowchart TD
 
 ## Transição no pipeline de candidaturas
 
-A pipeline tem dois eixos independentes: status macro (`/move`) e etapa customizável (`/stage`). O candidato vê e interage apenas com a etapa actual.
+A pipeline tem dois eixos independentes: status macro (`/move`) e etapa customizável (`/stage`). O candidato vê e interage apenas com a etapa atual.
 
 ### Mudança de status macro
 
@@ -161,7 +161,7 @@ flowchart TD
     scope -- não --> err403[403 Forbidden]
     scope -- sim --> rules{Transição permitida pela máquina de estados?}
     rules -- não --> err400[400 Bad Request]
-    rules -- sim --> tx[Transação: actualiza Application.status + grava ApplicationHistory]
+    rules -- sim --> tx[Transação: atualiza Application.status + grava ApplicationHistory]
     tx --> terminal{Estado terminal?}
     terminal -- HIRED --> emailHired[Email best effort: contratado]
     terminal -- REJECTED --> emailRej[Email best effort: rejeitado]
@@ -179,13 +179,13 @@ flowchart TD
     own -- sim --> stageOk{JobStage pertence à mesma vaga?}
     stageOk -- não --> err400[400 Bad Request]
     stageOk -- sim --> bumpStatus[Se status era APPLIED ou SOURCED passa a IN_PROGRESS]
-    bumpStatus --> cursor[Actualiza Application.currentJobStageId]
+    bumpStatus --> cursor[Atualiza Application.currentJobStageId]
     cursor --> progress[Upsert ApplicationStageProgress PENDING para a etapa]
     progress --> history[Regista ApplicationHistory com fromStage e toStage por nome]
     history --> done([200 ApplicationStageProgress])
 ```
 
-### Submissão do candidato na etapa actual
+### Submissão do candidato na etapa atual
 
 ```mermaid
 flowchart TD
@@ -218,7 +218,7 @@ Hard delete justificado pelo schema: as FKs em `applications`, `application_hist
 flowchart TD
     start([TENANT_ADMIN: DELETE /tenants/current/recruiters/:userId]) --> self{userId == ID do requisitante?}
     self -- sim --> err400[400 Bad Request]
-    self -- não --> exists{Utilizador existe?}
+    self -- não --> exists{Usuário existe?}
     exists -- não --> err404[404 Not Found]
     exists -- sim --> scope{Pertence ao tenant e tem papel RECRUITER?}
     scope -- não --> err403[403 Forbidden]

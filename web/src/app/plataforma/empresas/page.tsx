@@ -93,7 +93,7 @@ export default function PlatformTenantsPage() {
       if (action === 'suspend') await suspendTenant(requireSessionToken(token), id)
       else if (action === 'activate') await activateTenant(requireSessionToken(token), id)
       else await softDeleteTenant(requireSessionToken(token), id)
-      toast.success('Estado actualizado.')
+      toast.success('Estado atualizado.')
       qc.invalidateQueries({ queryKey: ['platform-tenants', token] })
     } catch (err: unknown) {
       if (err instanceof ApiRequestError) toast.error(err.message)
@@ -242,7 +242,7 @@ export default function PlatformTenantsPage() {
           </DialogHeader>
           <div className="grid gap-3 pt-2">
             <p className="text-sm text-muted-foreground">
-              Enviamos um link único para o email indicado. O destinatário define a palavra passe ao
+              Enviamos um link único para o email indicado. O destinatário define a senha ao
               aceitar o convite, e o link expira passadas algumas horas.
             </p>
             <div className="space-y-2">

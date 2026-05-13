@@ -51,7 +51,7 @@ export class PrismaConnectionService implements OnModuleInit, OnModuleDestroy {
 
     const reason = lastError instanceof Error ? lastError.message : String(lastError)
     throw new Error(
-      `Não foi possível ligar à base de dados após ${totalAttempts} tentativas: ${reason}`,
+      `Não foi possível conectar ao banco de dados após ${totalAttempts} tentativas: ${reason}`,
     )
   }
 

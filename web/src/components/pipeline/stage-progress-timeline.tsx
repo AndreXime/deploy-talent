@@ -43,7 +43,7 @@ export function StageProgressTimeline({ stages, progress, currentJobStageId }: P
                 <StageKindBadge kind={stage.kind} />
                 {isCurrent && (
                   <Badge variant="default" className="gap-1">
-                    <Circle className="size-2.5 fill-current" /> Etapa actual
+                    <Circle className="size-2.5 fill-current" /> Etapa atual
                   </Badge>
                 )}
                 {completed && (
@@ -105,7 +105,7 @@ function StageSubmissionSummary({
     const fileKey = submission.fileKey as string | undefined
     return (
       <p className="text-sm text-muted-foreground">
-        Ficheiro submetido: <span className="font-mono">{fileKey ?? 'desconhecido'}</span>
+        Arquivo submetido: <span className="font-mono">{fileKey ?? 'desconhecido'}</span>
       </p>
     )
   }

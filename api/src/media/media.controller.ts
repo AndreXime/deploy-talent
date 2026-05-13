@@ -24,7 +24,7 @@ export class MediaController {
 
   @Post('presign-upload')
   @ApiOperation({
-    summary: 'URL pré-assinada para upload (avatar, currículo, logo, banner ou ficheiro de etapa)',
+    summary: 'URL pré-assinada para upload (avatar, currículo, logo, banner ou arquivo de etapa)',
     description:
       'Currículo: `purpose` `CANDIDATE_RESUME`, `contentType` PDF/DOC/DOCX e `fileName`. Após o PUT no S3, envie a `key` no `PATCH /candidates/me`. As leituras (`GET` perfil, candidaturas B2B) devolvem `resumeUrl` / `avatarUrl` já assinadas. Para etapa `FILE_UPLOAD` da pipeline: `purpose` `APPLICATION_STAGE_FILE`, `applicationId`, `fileName` e `contentType` um de PDF, DOCX, PNG, JPEG, TXT (definido pela API).',
   })

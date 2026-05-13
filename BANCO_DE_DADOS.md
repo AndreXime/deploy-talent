@@ -40,7 +40,7 @@ erDiagram
 
     APPLICATION ||--o{ APPLICATION_HISTORY : "histórico"
     APPLICATION ||--o{ EVALUATION          : "avaliações"
-    APPLICATION }|--o| JOB_STAGE           : "etapa actual"
+    APPLICATION }|--o| JOB_STAGE           : "etapa atual"
     APPLICATION ||--o{ APPLICATION_STAGE_PROGRESS : "progresso por etapa"
 
     TENANT {
@@ -200,13 +200,13 @@ erDiagram
 | `users` | `email` único | login global |
 | `users` | FK `tenantId` `ON DELETE SET NULL` | candidato/super admin não têm tenant |
 | `candidates` | `userId` único | `1..1` com `User` (*one profile*) |
-| `candidates` | `email` único | independente do utilizador |
+| `candidates` | `email` único | independente do usuário |
 | `applications` | único `(tenantId, jobId, candidateId)` | impede duplicar candidatura |
 | `applications` | FK `sourcedByUserId` `ON DELETE SET NULL` | autor do *sourcing* opcional |
-| `application_history` | FK `movedByUserId` `ON DELETE SET NULL` | preserva histórico mesmo se o utilizador for removido |
+| `application_history` | FK `movedByUserId` `ON DELETE SET NULL` | preserva histórico mesmo se o usuário for removido |
 | `evaluations` | FK `createdByUserId` `ON DELETE SET NULL` | preserva avaliações órfãs |
 | `saved_jobs` | único `(candidateId, jobId)` | sem duplicados de favoritos |
-| `invitations` | `tokenHash` único | impede colisões e permite lookup directo pelo token recebido por email |
+| `invitations` | `tokenHash` único | impede colisões e permite lookup direto pelo token recebido por email |
 | `invitations` | FK `tenantId` `ON DELETE CASCADE` | apagar a empresa invalida convites pendentes |
 | `invitations` | FK `invitedByUserId` `ON DELETE SET NULL` | mantém auditoria mesmo após remoção do autor |
 | `pipeline_templates` | `tenantId` único | um template por tenant; criado automaticamente quando consultado pela primeira vez |
@@ -214,7 +214,7 @@ erDiagram
 | `job_stages` | único `(jobId, position)` | clonagem do template no momento da criação da vaga |
 | `applications` | FK `currentJobStageId` `ON DELETE SET NULL` | apagar uma etapa não destrói candidaturas; o cursor cai para nulo |
 | `application_stage_progress` | único `(applicationId, jobStageId)` | um único progresso por etapa de cada candidatura |
-| `application_stage_progress` | FK `completedByUserId` `ON DELETE SET NULL` | auditoria preservada após remoção do utilizador |
+| `application_stage_progress` | FK `completedByUserId` `ON DELETE SET NULL` | auditoria preservada após remoção do usuário |
 
 Todas as FKs para `Tenant`, `Job`, `Candidate` e `Application` propagam com `ON DELETE CASCADE`; apagar um tenant remove o seu universo de dados (vagas, candidaturas, histórico, avaliações).
 
@@ -252,7 +252,7 @@ stateDiagram-v2
     HIRED --> [*]
 ```
 
-Toda transição grava entrada em `ApplicationHistory` com `fromStatus`/`toStatus`, `fromStage`/`toStage` (nomes das etapas) e o `movedByUserId` que executou a ação. Estados `REJECTED`, `WITHDRAWN` e `HIRED` são terminais. O cursor da etapa actual vive em `Application.currentJobStageId` e o detalhe por etapa em `ApplicationStageProgress`.
+Toda transição grava entrada em `ApplicationHistory` com `fromStatus`/`toStatus`, `fromStage`/`toStage` (nomes das etapas) e o `movedByUserId` que executou a ação. Estados `REJECTED`, `WITHDRAWN` e `HIRED` são terminais. O cursor da etapa atual vive em `Application.currentJobStageId` e o detalhe por etapa em `ApplicationStageProgress`.
 
 ## Pipeline customizável
 

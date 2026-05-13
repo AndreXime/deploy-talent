@@ -2,7 +2,7 @@
 export const PIPELINE_FILE_UPLOAD_ACCEPT_ATTR =
   '.pdf,.docx,.png,.jpg,.jpeg,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/png,image/jpeg,text/plain'
 
-/** Texto curto para UI (tamanho exacto depende de S3_MAX_UPLOAD_BYTES e tecto de 10 MiB na API). */
+/** Texto curto para UI (tamanho exato depende de S3_MAX_UPLOAD_BYTES e limite máximo de 10 MiB na API). */
 export const PIPELINE_FILE_UPLOAD_HINT =
   'Tipos permitidos: PDF, DOCX, PNG, JPG, TXT. Tamanho máximo: o menor entre 10 MiB e o limite global de upload do servidor.'
 

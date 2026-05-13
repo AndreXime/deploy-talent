@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils'
 type Aspect = 'square' | 'wide'
 
 export interface ImageAssetFieldProps {
-  /** URL GET pré assinada da imagem actual. `null` mostra placeholder. */
+  /** URL GET pré assinada da imagem atual. `null` mostra placeholder. */
   currentUrl: string | null
   /** Forma do preview: quadrado (logo/avatar) ou largo (banner). */
   aspect?: Aspect
@@ -22,9 +22,9 @@ export interface ImageAssetFieldProps {
   uploading?: boolean
   /** Estado de remoção em curso. */
   removing?: boolean
-  /** Disparado quando o utilizador escolhe um ficheiro. */
+  /** Disparado quando o usuário escolhe um arquivo. */
   onUpload: (file: File) => void | Promise<void>
-  /** Disparado quando o utilizador remove a imagem actual. */
+  /** Disparado quando o usuário remove a imagem atual. */
   onRemove: () => void | Promise<void>
 }
 
@@ -82,7 +82,7 @@ export function ImageAssetField({
             disabled={busy}
             onClick={() => inputRef.current?.click()}
           >
-            {uploading ? 'A enviar…' : currentUrl ? 'Atualizar' : 'Enviar imagem'}
+            {uploading ? 'Enviando…' : currentUrl ? 'Atualizar' : 'Enviar imagem'}
           </Button>
           {currentUrl && (
             <Button

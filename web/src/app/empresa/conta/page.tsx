@@ -54,7 +54,7 @@ export default function B2BAccountPage() {
       await patchMut.mutateAsync(presigned.key)
     } catch (err: unknown) {
       if (err instanceof ApiRequestError) toast.error(err.message)
-      else toast.error('Não foi possível enviar o ficheiro.')
+      else toast.error('Não foi possível enviar o arquivo.')
     } finally {
       setUploading(false)
     }
@@ -69,7 +69,7 @@ export default function B2BAccountPage() {
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">A minha conta</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Foto usada internamente na equipa (não confundir com a marca pública da empresa).
+          Foto usada internamente na equipe (não confundir com a marca pública da empresa).
         </p>
       </div>
 

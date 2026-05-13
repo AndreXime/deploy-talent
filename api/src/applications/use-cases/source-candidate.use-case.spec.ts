@@ -156,7 +156,7 @@ describe('SourceCandidateUseCase', () => {
     expect(notifier.notifyCandidateSourcedForJob).not.toHaveBeenCalled()
   })
 
-  it('rejeita quando o email pertence a um utilizador interno', async () => {
+  it('rejeita quando o email pertence a um usuário interno', async () => {
     const prisma = buildPrisma({
       job: {
         findFirst: jest.fn(async () => ({ id: 'j1', title: 'PM', tenantId: 't1' })),

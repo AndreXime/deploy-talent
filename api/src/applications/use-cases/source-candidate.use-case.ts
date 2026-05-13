@@ -71,7 +71,7 @@ export class SourceCandidateUseCase {
     }
 
     if (user.role !== UserRole.CANDIDATE) {
-      throw new ConflictException('Email pertence a um utilizador interno da plataforma')
+      throw new ConflictException('Email pertence a um usuário interno da plataforma')
     }
 
     const candidate = await this.prisma.candidate.findFirst({
@@ -79,7 +79,7 @@ export class SourceCandidateUseCase {
       select: { id: true },
     })
     if (!candidate) {
-      throw new ConflictException('Utilizador candidato sem perfil activo')
+      throw new ConflictException('Usuário candidato sem perfil ativo')
     }
 
     const existingApplication = await this.prisma.application.findFirst({

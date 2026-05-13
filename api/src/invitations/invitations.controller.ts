@@ -54,7 +54,7 @@ export class InvitationsController {
   @ApiOperation({
     summary: 'Convidar admin de uma empresa',
     description:
-      'Apenas `SUPER_ADMIN`. Gera um token único e envia link de ativação por email; o destinatário define a palavra passe ao aceitar o convite.',
+      'Apenas `SUPER_ADMIN`. Gera um token único e envia link de ativação por email; o destinatário define a senha ao aceitar o convite.',
   })
   @ApiBody({ type: InviteTenantAdminDto })
   @ApiCreatedResponse({ type: CreatedInvitationDto })
@@ -78,9 +78,9 @@ export class InvitationsController {
   @Post('recruiter')
   @ApiJwtTenantB2b()
   @ApiOperation({
-    summary: 'Convidar recrutador para a empresa actual',
+    summary: 'Convidar recrutador para a empresa atual',
     description:
-      'Apenas `TENANT_ADMIN`; o tenant vem do JWT. Gera um token único e envia link de ativação por email; o destinatário define a palavra passe ao aceitar o convite.',
+      'Apenas `TENANT_ADMIN`; o tenant vem do JWT. Gera um token único e envia link de ativação por email; o destinatário define a senha ao aceitar o convite.',
   })
   @ApiBody({ type: InviteRecruiterDto })
   @ApiCreatedResponse({ type: CreatedInvitationDto })
@@ -97,9 +97,9 @@ export class InvitationsController {
   @Public()
   @Get(':token')
   @ApiOperation({
-    summary: 'Pré visualizar um convite a partir do token',
+    summary: 'Préviaizar um convite a partir do token',
     description:
-      'Endpoint público usado pela página de ativação para mostrar o email e a empresa associados ao convite. Não devolve nem aceita palavras passe.',
+      'Endpoint público usado pela página de ativação para mostrar o email e a empresa associados ao convite. Não devolve nem aceita senhas.',
   })
   @ApiOkResponse({ type: InvitationPreviewDto })
   async preview(@Param('token') token: string) {
@@ -110,9 +110,9 @@ export class InvitationsController {
   @Post(':token/accept')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
-    summary: 'Aceitar convite e activar a conta',
+    summary: 'Aceitar convite e ativar a conta',
     description:
-      'Endpoint público. Cria o utilizador com a palavra passe definida pelo destinatário, invalida o convite e devolve um JWT pronto a usar.',
+      'Endpoint público. Cria o usuário com a senha definida pelo destinatário, invalida o convite e devolve um JWT pronto a usar.',
   })
   @ApiBody({ type: AcceptInvitationDto })
   @ApiOkResponse({ type: AccessTokenDto })

@@ -87,7 +87,7 @@ export default function TeamPage() {
     mutationFn: (userId: string) =>
       removeCurrentTenantRecruiter(requireSessionToken(token), userId),
     onSuccess: (_data, userId) => {
-      toast.success('Recrutador removido da equipa.')
+      toast.success('Recrutador removido da equipe.')
       queryClient.setQueryData<TenantRecruiterItem[]>(RECRUITERS_QUERY_KEY, (prev) =>
         prev?.filter((rec) => rec.id !== userId),
       )
@@ -116,13 +116,13 @@ export default function TeamPage() {
         <h1 className="text-2xl font-semibold tracking-tight">Equipa</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Veja quem já tem acesso e envie convites para novos recrutadores. O destinatário define a
-          sua própria palavra passe ao aceitar o convite.
+          sua própria senha ao aceitar o convite.
         </p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Recrutadores activos</CardTitle>
+          <CardTitle>Recrutadores ativos</CardTitle>
           <CardDescription>Contas com papel `RECRUITER` no contexto desta empresa.</CardDescription>
         </CardHeader>
         <CardContent>
@@ -130,7 +130,7 @@ export default function TeamPage() {
             <RecruiterListSkeleton />
           ) : recruitersQ.isError ? (
             <p className="text-sm text-destructive">
-              Não foi possível carregar a equipa. Tente recarregar a página.
+              Não foi possível carregar a equipe. Tente recarregar a página.
             </p>
           ) : recruiters.length === 0 ? (
             <p className="text-sm text-muted-foreground">
@@ -153,9 +153,9 @@ export default function TeamPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Convidar à equipa</CardTitle>
+          <CardTitle>Convidar para a equipe</CardTitle>
           <CardDescription>
-            Envie um link único por email. Não definimos nem mostramos palavras passe aqui.
+            Envie um link único por email. Não definimos nem mostramos senhas aqui.
           </CardDescription>
         </CardHeader>
         <form
@@ -182,7 +182,7 @@ export default function TeamPage() {
           </CardContent>
           <CardFooter>
             <Button type="submit" disabled={!canSubmit}>
-              {inviteMut.isPending ? 'A enviar convite…' : 'Enviar convite'}
+              {inviteMut.isPending ? 'Enviando convite…' : 'Enviar convite'}
             </Button>
           </CardFooter>
         </form>
@@ -200,9 +200,9 @@ export default function TeamPage() {
             <DialogDescription>
               {removeTarget ? (
                 <>
-                  A conta de <span className="font-medium">{removeTarget.email}</span> perde acesso
-                  imediato à plataforma. O histórico de candidaturas, transições e avaliações
-                  permanece, sem o nome do autor.
+                  A conta de <span className="font-medium">{removeTarget.email}</span> perde
+                  imediatamente o acesso à plataforma. O histórico de candidaturas, transições e
+                  avaliações permanece, sem o nome do autor.
                 </>
               ) : null}
             </DialogDescription>
@@ -249,7 +249,7 @@ function RecruiterRow({ recruiter, removing, onRequestRemove }: RecruiterRowProp
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-medium">{recruiter.email}</p>
         <p className="text-xs text-muted-foreground">
-          Na equipa desde {formatJoinedAt(recruiter.createdAt)}
+          Na equipe desde {formatJoinedAt(recruiter.createdAt)}
         </p>
       </div>
       <Button

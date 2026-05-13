@@ -22,7 +22,7 @@ export class MarketplaceJobsController {
   @ApiOperation({
     summary: 'Opções de filtro do explorar vagas',
     description:
-      'Valores distintos de modalidade, local e senioridade, e empresas com vagas publicáveis, alinhados às mesmas regras do listado público (tenant activo; `PUBLISHED` ou `PAUSED`).',
+      'Valores distintos de modalidade, local e senioridade, e empresas com vagas publicáveis, alinhados às mesmas regras do listado público (tenant ativo; `PUBLISHED` ou `PAUSED`).',
   })
   @ApiOkResponse({
     description: '`modalities`, `locations`, `seniorities` (strings); `tenants` com `id` e `name`',

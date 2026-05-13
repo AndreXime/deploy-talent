@@ -1,4 +1,4 @@
-/// Convite para um futuro utilizador concluir o registo (ex.: SUPER_ADMIN
+/// Convite para um futuro usuário concluir o registo (ex.: SUPER_ADMIN
 /// convida o admin de um tenant). O token cru é enviado por email; aqui só
 /// guardamos o SHA 256 para mitigar fugas em caso de leitura indevida.
 model Invitation {

@@ -81,7 +81,7 @@ export class InvitationEmailNotifier {
   private renderTenantAdminEmail(ctx: TenantAdminInvitationEmailContext): RenderedInvitationEmail {
     const { tenantName, inviterName, rawToken, expiresAt } = ctx
     const activationUrl = this.buildActivationUrl(rawToken)
-    const inviter = inviterName ?? 'a equipa Deploy Talent'
+    const inviter = inviterName ?? 'a equipe Deploy Talent'
     const expires = this.formatExpiry(expiresAt)
     const safe = {
       tenant: escapeHtml(tenantName),
@@ -97,7 +97,7 @@ export class InvitationEmailNotifier {
         '',
         `${inviter} convidou para administrar a empresa "${tenantName}" no Deploy Talent.`,
         '',
-        'Para activar a conta e definir a sua palavra passe, abra:',
+        'Para ativar a conta e definir a sua senha, abra:',
         activationUrl,
         '',
         `Este link expira a ${expires} e só pode ser usado uma vez.`,
@@ -105,7 +105,7 @@ export class InvitationEmailNotifier {
       ].join('\n'),
       html: `<p>Olá,</p>
 <p><strong>${safe.inviter}</strong> convidou para administrar a empresa <strong>${safe.tenant}</strong> no Deploy Talent.</p>
-<p>Para activar a conta e definir a sua palavra passe, abra o link abaixo:</p>
+<p>Para ativar a conta e definir a sua senha, abra o link abaixo:</p>
 <p><a href="${safe.url}">${safe.url}</a></p>
 <p>Este link expira a <strong>${safe.expires}</strong> e só pode ser usado uma vez.</p>
 <p>Se não esperava este convite, ignore esta mensagem.</p>`,
@@ -115,7 +115,7 @@ export class InvitationEmailNotifier {
   private renderRecruiterEmail(ctx: RecruiterInvitationEmailContext): RenderedInvitationEmail {
     const { tenantName, inviterName, rawToken, expiresAt } = ctx
     const activationUrl = this.buildActivationUrl(rawToken)
-    const inviter = inviterName ?? `a equipa de ${tenantName}`
+    const inviter = inviterName ?? `a equipe de ${tenantName}`
     const expires = this.formatExpiry(expiresAt)
     const safe = {
       tenant: escapeHtml(tenantName),
@@ -125,21 +125,21 @@ export class InvitationEmailNotifier {
     }
 
     return {
-      subject: `Convite para integrar a equipa de ${tenantName} no Deploy Talent`,
+      subject: `Convite para integrar a equipe de ${tenantName} no Deploy Talent`,
       text: [
         'Olá,',
         '',
-        `${inviter} convidou para integrar a equipa de recrutamento da empresa "${tenantName}" no Deploy Talent.`,
+        `${inviter} convidou para integrar a equipe de recrutamento da empresa "${tenantName}" no Deploy Talent.`,
         '',
-        'Para activar a conta de recrutador e definir a sua palavra passe, abra:',
+        'Para ativar a conta de recrutador e definir a sua senha, abra:',
         activationUrl,
         '',
         `Este link expira a ${expires} e só pode ser usado uma vez.`,
         'Se não esperava este convite, ignore esta mensagem.',
       ].join('\n'),
       html: `<p>Olá,</p>
-<p><strong>${safe.inviter}</strong> convidou para integrar a equipa de recrutamento da empresa <strong>${safe.tenant}</strong> no Deploy Talent.</p>
-<p>Para activar a conta de recrutador e definir a sua palavra passe, abra o link abaixo:</p>
+<p><strong>${safe.inviter}</strong> convidou para integrar a equipe de recrutamento da empresa <strong>${safe.tenant}</strong> no Deploy Talent.</p>
+<p>Para ativar a conta de recrutador e definir a sua senha, abra o link abaixo:</p>
 <p><a href="${safe.url}">${safe.url}</a></p>
 <p>Este link expira a <strong>${safe.expires}</strong> e só pode ser usado uma vez.</p>
 <p>Se não esperava este convite, ignore esta mensagem.</p>`,
@@ -157,7 +157,7 @@ export class InvitationEmailNotifier {
       tenant: escapeHtml(tenantName),
       job: escapeHtml(jobTitle),
       jobUrl: escapeHtml(jobUrl),
-      activation: escapeHtml(activationUrl),
+      activationUrl: escapeHtml(activationUrl),
       expires: escapeHtml(expires),
     }
 
@@ -166,24 +166,24 @@ export class InvitationEmailNotifier {
       text: [
         `Olá ${recipientName},`,
         '',
-        `A equipa de recrutamento de "${tenantName}" identificou o seu perfil para a vaga "${jobTitle}" no Deploy Talent.`,
+        `A equipe de recrutamento de "${tenantName}" identificou o seu perfil para a vaga "${jobTitle}" no Deploy Talent.`,
         '',
-        'Para criar conta de candidato e definir a sua palavra passe, abra:',
+        'Para criar conta de candidato e definir a sua senha, abra:',
         activationUrl,
         '',
-        'Depois de activar a conta poderá rever a descrição da vaga em:',
+        'Depois de ativar a conta poderá rever a descrição da vaga em:',
         jobUrl,
         '',
-        `Este link de activação expira a ${expires} e só pode ser usado uma vez.`,
+        `Este link de ativação expira a ${expires} e só pode ser usado uma vez.`,
         'Se não esperava este convite, ignore esta mensagem.',
       ].join('\n'),
       html: `<p>Olá <strong>${safe.name}</strong>,</p>
-<p>A equipa de recrutamento de <strong>${safe.tenant}</strong> identificou o seu perfil para a vaga <strong>${safe.job}</strong> no Deploy Talent.</p>
-<p>Para criar conta de candidato e definir a sua palavra passe, abra o link abaixo:</p>
-<p><a href="${safe.activation}">${safe.activation}</a></p>
-<p>Depois de activar a conta poderá rever a descrição da vaga em:</p>
+<p>A equipe de recrutamento de <strong>${safe.tenant}</strong> identificou o seu perfil para a vaga <strong>${safe.job}</strong> no Deploy Talent.</p>
+<p>Para criar conta de candidato e definir a sua senha, abra o link abaixo:</p>
+<p><a href="${safe.activationUrl}">${safe.activationUrl}</a></p>
+<p>Depois de ativar a conta poderá rever a descrição da vaga em:</p>
 <p><a href="${safe.jobUrl}">${safe.jobUrl}</a></p>
-<p>Este link de activação expira a <strong>${safe.expires}</strong> e só pode ser usado uma vez.</p>
+<p>Este link de ativação expira a <strong>${safe.expires}</strong> e só pode ser usado uma vez.</p>
 <p>Se não esperava este convite, ignore esta mensagem.</p>`,
     }
   }
@@ -201,7 +201,7 @@ export class InvitationEmailNotifier {
       text: [
         'Olá,',
         '',
-        `A equipa de recrutamento de "${tenantName}" identificou o seu perfil para a vaga "${jobTitle}" no Deploy Talent.`,
+        `A equipe de recrutamento de "${tenantName}" identificou o seu perfil para a vaga "${jobTitle}" no Deploy Talent.`,
         '',
         'Como já tem conta de candidato na plataforma, basta abrir o link abaixo e candidatar se directamente:',
         jobUrl,
@@ -209,7 +209,7 @@ export class InvitationEmailNotifier {
         'Se não tem interesse, ignore esta mensagem.',
       ].join('\n'),
       html: `<p>Olá,</p>
-<p>A equipa de recrutamento de <strong>${safe.tenant}</strong> identificou o seu perfil para a vaga <strong>${safe.job}</strong> no Deploy Talent.</p>
+<p>A equipe de recrutamento de <strong>${safe.tenant}</strong> identificou o seu perfil para a vaga <strong>${safe.job}</strong> no Deploy Talent.</p>
 <p>Como já tem conta de candidato na plataforma, basta abrir o link abaixo e candidatar se directamente:</p>
 <p><a href="${safe.jobUrl}">${safe.jobUrl}</a></p>
 <p>Se não tem interesse, ignore esta mensagem.</p>`,

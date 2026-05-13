@@ -113,7 +113,7 @@ export default function TenantPipelinePage() {
         <h1 className="text-2xl font-semibold tracking-tight">Pipeline default</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Define as etapas que cada nova vaga clona ao ser criada. Cada etapa tem um tipo que
-          determina a interacção do candidato.
+          determina a interação do candidato.
         </p>
       </div>
 
@@ -217,7 +217,7 @@ export default function TenantPipelinePage() {
                         <option value="MANUAL">Manual (só recrutador)</option>
                         <option value="QUESTIONNAIRE">Questionário</option>
                         <option value="INTERVIEW_LINK">Entrevista (link)</option>
-                        <option value="FILE_UPLOAD">Envio de ficheiro</option>
+                        <option value="FILE_UPLOAD">Envio de arquivo</option>
                       </select>
                     </div>
                   </div>

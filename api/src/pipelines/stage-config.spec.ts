@@ -8,7 +8,7 @@ import {
 } from './stage-config'
 
 describe('validateStageConfig', () => {
-  it('aceita MANUAL com objecto vazio', () => {
+  it('aceita MANUAL com objeto vazio', () => {
     expect(validateStageConfig(PipelineStageKind.MANUAL, undefined)).toEqual({})
     expect(validateStageConfig(PipelineStageKind.MANUAL, {})).toEqual({})
   })
@@ -179,7 +179,7 @@ describe('validateStageSubmission', () => {
     ).toThrow(BadRequestException)
   })
 
-  it('rejeita FILE_UPLOAD excedendo o limite efectivo (S3 e tecto da pipeline)', () => {
+  it('rejeita FILE_UPLOAD excedendo o limite efetivo (S3 e limite máximo da pipeline)', () => {
     expect(() =>
       validateStageSubmission(
         PipelineStageKind.FILE_UPLOAD,

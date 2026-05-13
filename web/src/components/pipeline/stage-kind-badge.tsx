@@ -7,7 +7,7 @@ const META: Record<PipelineStageKind, { label: string; icon: LucideIcon }> = {
   MANUAL: { label: 'Manual', icon: UserCheck },
   QUESTIONNAIRE: { label: 'Questionário', icon: ClipboardList },
   INTERVIEW_LINK: { label: 'Entrevista', icon: Video },
-  FILE_UPLOAD: { label: 'Ficheiro', icon: FileText },
+  FILE_UPLOAD: { label: 'Arquivo', icon: FileText },
 }
 
 export function StageKindBadge({ kind }: { kind: PipelineStageKind }) {

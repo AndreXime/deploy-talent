@@ -64,7 +64,7 @@ model ApplicationStageProgress {
   jobStageId        String
   status            ApplicationStageProgressStatus @default(PENDING)
   /// Payload submetido pelo candidato (respostas do questionário, chave S3
-  /// do ficheiro, dados da entrevista). Estrutura varia conforme o `kind`.
+  /// do arquivo, dados da entrevista). Estrutura varia conforme o `kind`.
   submittedData     Json?
   completedAt       DateTime?
   completedByUserId String?

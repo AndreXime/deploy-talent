@@ -253,7 +253,7 @@ export function ExploreJobsClient() {
         <div className="space-y-2">
           <h1 className="text-2xl font-semibold tracking-tight lg:text-3xl">Explorar vagas</h1>
           <p className="text-sm text-muted-foreground">
-            Oportunidades publicadas por empresas activas na plataforma.
+            Oportunidades publicadas por empresas ativas na plataforma.
           </p>
         </div>
 

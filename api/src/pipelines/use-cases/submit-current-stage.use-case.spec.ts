@@ -90,7 +90,7 @@ describe('SubmitCurrentStageUseCase', () => {
     )
   })
 
-  it('rejeita submissão sem etapa actual', async () => {
+  it('rejeita submissão sem etapa atual', async () => {
     const prisma = buildPrisma({
       application: {
         findFirst: jest.fn(async () => ({

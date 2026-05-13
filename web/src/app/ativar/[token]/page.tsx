@@ -50,12 +50,12 @@ export default function ActivateInvitationPage() {
     onSuccess: (res) => {
       setSession(res.access_token)
       const claims = parseJwtClaims(res.access_token)
-      toast.success('Conta activada. Bem vindo!')
+      toast.success('Conta ativada. Bem vindo!')
       router.replace(homePathForRole(claims?.role ?? ''))
     },
     onError: (err: unknown) => {
       if (err instanceof ApiRequestError) toast.error(err.message)
-      else toast.error('Não foi possível activar a conta.')
+      else toast.error('Não foi possível ativar a conta.')
     },
   })
 
@@ -67,9 +67,9 @@ export default function ActivateInvitationPage() {
       <main className="flex flex-1 flex-col items-center px-4 py-12">
         <Card className="w-full max-w-md shadow-sm">
           <CardHeader>
-            <CardTitle>Activar conta</CardTitle>
+            <CardTitle>Ativar conta</CardTitle>
             <CardDescription>
-              Defina uma palavra passe para concluir o convite e entrar na plataforma.
+              Defina uma senha para concluir o convite e entrar na plataforma.
             </CardDescription>
           </CardHeader>
 
@@ -128,7 +128,7 @@ export default function ActivateInvitationPage() {
                 </dl>
 
                 <div className="space-y-2">
-                  <Label htmlFor="pw">Nova palavra passe</Label>
+                  <Label htmlFor="pw">Nova senha</Label>
                   <Input
                     id="pw"
                     type="password"
@@ -140,7 +140,7 @@ export default function ActivateInvitationPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="pw2">Repita a palavra passe</Label>
+                  <Label htmlFor="pw2">Repita a senha</Label>
                   <Input
                     id="pw2"
                     type="password"
@@ -152,7 +152,7 @@ export default function ActivateInvitationPage() {
                   />
                   {confirm.length > 0 && !passwordsMatch && (
                     <p className="text-xs text-destructive">
-                      As palavras passe não coincidem ou têm menos de 8 caracteres.
+                      As senhas não coincidem ou têm menos de 8 caracteres.
                     </p>
                   )}
                 </div>
@@ -163,7 +163,7 @@ export default function ActivateInvitationPage() {
                   className="w-full"
                   disabled={!passwordsMatch || acceptMut.isPending}
                 >
-                  {acceptMut.isPending ? 'A activar…' : 'Activar conta'}
+                  {acceptMut.isPending ? 'A ativar…' : 'Ativar conta'}
                 </Button>
               </CardFooter>
             </form>

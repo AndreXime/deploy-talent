@@ -102,7 +102,7 @@ export class ApplicationsController {
     summary: 'Sourcing: nudge por email a um candidato para uma vaga',
     description:
       'Comportamento conforme o estado do email no email indicado:\n' +
-      '- `CANDIDATE_INVITED`: candidato sem conta na plataforma, envia link de activação que cria utilizador `CANDIDATE` ao aceitar.\n' +
+      '- `CANDIDATE_INVITED`: candidato sem conta na plataforma, envia link de ativação que cria usuário `CANDIDATE` ao aceitar.\n' +
       '- `JOB_LINK_SENT`: candidato já tem conta mas ainda não se candidatou a esta vaga, envia email apenas com o link público da vaga.\n' +
       '- `ALREADY_APPLIED`: candidato já tem candidatura para a vaga; nenhum email é enviado.',
   })
@@ -286,7 +286,7 @@ export class ApplicationsController {
   @Roles(UserRole.TENANT_ADMIN, UserRole.RECRUITER)
   @ApiJwtTenantB2b()
   @ApiOperation({
-    summary: 'Mover a etapa actual da candidatura',
+    summary: 'Mover a etapa atual da candidatura',
     description:
       'Define `currentJobStageId`, cria progress em PENDING (idempotente) e regista snapshot em ApplicationHistory.',
   })
@@ -325,7 +325,7 @@ export class ApplicationsController {
   @Roles(UserRole.TENANT_ADMIN, UserRole.RECRUITER)
   @ApiJwtTenantB2b()
   @ApiOperation({
-    summary: 'Define ou actualiza URL e horário da entrevista para a candidatura',
+    summary: 'Define ou atualiza URL e horário da entrevista para a candidatura',
   })
   @ApiParam({ name: 'id', format: 'uuid' })
   @ApiParam({ name: 'jobStageId', format: 'uuid' })
@@ -350,7 +350,7 @@ export class ApplicationsController {
   @TenantOptional()
   @Roles(UserRole.CANDIDATE)
   @ApiJwtAuth()
-  @ApiOperation({ summary: 'Etapa actual da minha candidatura com a configuração visível' })
+  @ApiOperation({ summary: 'Etapa atual da minha candidatura com a configuração visível' })
   @ApiParam({ name: 'applicationId', format: 'uuid' })
   @ApiOkResponse({ type: ApplicationCurrentStageResponseDto })
   async getMyStage(@Request() req: RequestWithUser, @Param('applicationId') applicationId: string) {
@@ -366,7 +366,7 @@ export class ApplicationsController {
   @Roles(UserRole.CANDIDATE)
   @ApiJwtAuth()
   @ApiOperation({
-    summary: 'Submete dados da etapa actual',
+    summary: 'Submete dados da etapa atual',
     description:
       'Validação por kind: QUESTIONNAIRE espera `{ answers }`. FILE_UPLOAD espera `{ fileKey, mimeType, fileSize }` (tipos e limite de tamanho fixos na API). MANUAL e INTERVIEW_LINK não aceitam submissões aqui.',
   })

@@ -133,7 +133,7 @@ export default function TenantApplicationsPage() {
               <TableHead>Vaga</TableHead>
               <TableHead>Estado</TableHead>
               <TableHead>Etapa</TableHead>
-              <TableHead>Última actualização</TableHead>
+              <TableHead>Última atualização</TableHead>
               <TableHead className="text-end">Acções</TableHead>
             </TableRow>
           </TableHeader>

@@ -25,7 +25,7 @@ export function StageConfigEditor({ kind, config, disabled, onChange }: Props) {
     case 'MANUAL':
       return (
         <p className="text-sm text-muted-foreground">
-          Etapa sem acção do candidato. O recrutador avança manualmente quando estiver pronta.
+          Etapa sem ação do candidato. O recrutador avança manualmente quando estiver pronta.
         </p>
       )
     case 'INTERVIEW_LINK':
@@ -73,7 +73,7 @@ function InterviewLinkEditor({
         value={config.instructions ?? ''}
         disabled={disabled}
         onChange={(e) => onChange({ ...config, instructions: e.target.value })}
-        placeholder="Ex: A entrevista é com a equipa técnica. Traz portfolio."
+        placeholder="Ex: A entrevista é com a equipe técnica. Traga um portfolio."
       />
       <p className="text-xs text-muted-foreground">
         O URL e a data são definidos depois pelo recrutador, candidatura a candidatura.
@@ -105,8 +105,8 @@ function FileUploadEditor({
         />
       </div>
       <p className="text-xs text-muted-foreground">
-        Tipos e tamanho máximo do ficheiro são definidos pela plataforma (PDF, DOCX, PNG, JPG, TXT;
-        limite efectivo conforme configuração do servidor).
+        Tipos e tamanho máximo do arquivo são definidos pela plataforma (PDF, DOCX, PNG, JPG, TXT;
+        limite efetivo conforme configuração do servidor).
       </p>
     </div>
   )

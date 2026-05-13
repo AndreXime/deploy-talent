@@ -47,16 +47,16 @@ export function CandidateCurrentStageCard({ applicationId }: Props) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Etapa actual</CardTitle>
+        <CardTitle className="text-base">Etapa atual</CardTitle>
         <CardDescription>
-          O recrutador irá actualizar esta etapa à medida que o processo avança.
+          O recrutador irá atualizar esta etapa à medida que o processo avança.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
         {q.isLoading && <Skeleton className="h-24 w-full" />}
         {q.isError && (
           <Alert variant="destructive">
-            <AlertDescription>Não foi possível carregar a etapa actual.</AlertDescription>
+            <AlertDescription>Não foi possível carregar a etapa atual.</AlertDescription>
           </Alert>
         )}
         {q.data && (
@@ -135,7 +135,7 @@ function CurrentStageBody({
         <p className="text-sm text-muted-foreground">Respostas enviadas. Pode aguardar feedback.</p>
       )}
       {stage.kind === 'FILE_UPLOAD' && isCompleted && (
-        <p className="text-sm text-muted-foreground">Ficheiro enviado com sucesso.</p>
+        <p className="text-sm text-muted-foreground">Arquivo enviado com sucesso.</p>
       )}
     </div>
   )
@@ -156,7 +156,7 @@ function InterviewLinkView({
       {instructions && <p className="whitespace-pre-wrap text-muted-foreground">{instructions}</p>}
       {!url ? (
         <p className="text-muted-foreground">
-          O recrutador ainda não partilhou o link da entrevista.
+          O recrutador ainda não compartilhou o link da entrevista.
         </p>
       ) : (
         <div className="space-y-1">
@@ -264,7 +264,7 @@ function QuestionnaireForm({
         </div>
       ))}
       <Button type="submit" disabled={mut.isPending}>
-        {mut.isPending ? 'A enviar…' : 'Enviar respostas'}
+        {mut.isPending ? 'Enviando…' : 'Enviar respostas'}
       </Button>
     </form>
   )
@@ -284,10 +284,10 @@ function FileUploadForm({
 
   const mut = useMutation({
     mutationFn: async () => {
-      if (!file) throw new Error('Seleccione um ficheiro primeiro.')
+      if (!file) throw new Error('Selecione um arquivo primeiro.')
       const contentType = resolveClientPipelineUploadMimeType(file)
       if (!contentType) {
-        throw new Error('Tipo de ficheiro não suportado. Use PDF, DOCX, PNG, JPG ou TXT.')
+        throw new Error('Tipo de arquivo não suportado. Use PDF, DOCX, PNG, JPG ou TXT.')
       }
       const presign = await presignUpload(requireSessionToken(token), {
         purpose: 'APPLICATION_STAGE_FILE',
@@ -304,13 +304,13 @@ function FileUploadForm({
       })
     },
     onSuccess: () => {
-      toast.success('Ficheiro enviado.')
+      toast.success('Arquivo enviado.')
       setFile(null)
       onSubmitted()
     },
     onError: (err: unknown) => {
       if (err instanceof Error) toast.error(err.message)
-      else toast.error('Não foi possível enviar o ficheiro.')
+      else toast.error('Não foi possível enviar o arquivo.')
     },
   })
 
@@ -326,7 +326,7 @@ function FileUploadForm({
         onChange={(e) => setFile(e.target.files?.[0] ?? null)}
       />
       <Button type="button" disabled={!file || mut.isPending} onClick={() => mut.mutate()}>
-        {mut.isPending ? 'A enviar…' : 'Enviar ficheiro'}
+        {mut.isPending ? 'Enviando…' : 'Enviar arquivo'}
       </Button>
     </div>
   )

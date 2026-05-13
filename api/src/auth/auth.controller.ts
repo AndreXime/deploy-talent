@@ -87,7 +87,7 @@ export class AuthController {
   @Get('me')
   @ApiJwtTenantB2b()
   @ApiOperation({
-    summary: 'Conta B2B do utilizador autenticado',
+    summary: 'Conta B2B do usuário autenticado',
     description: 'Inclui `avatarUrl` (URL GET assinada) em vez da chave S3 crua.',
   })
   @ApiOkResponse({ type: B2BAccountResponseDto })

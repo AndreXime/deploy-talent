@@ -67,7 +67,7 @@ export default function NewJobPage() {
       <Card>
         <CardHeader>
           <CardTitle>Dados principais</CardTitle>
-          <CardDescription>Há texto visível apenas à equipa até publicar.</CardDescription>
+          <CardDescription>Há texto visível apenas à equipe até publicar.</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4">
           <div className="space-y-2">

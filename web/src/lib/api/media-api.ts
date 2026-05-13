@@ -36,6 +36,6 @@ export async function uploadFileToPresignedUrl(
     body: file,
   })
   if (!res.ok) {
-    throw new Error('Falha ao enviar o ficheiro.')
+    throw new Error('Falha ao enviar o arquivo.')
   }
 }

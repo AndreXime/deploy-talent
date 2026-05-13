@@ -96,7 +96,7 @@ export default function TenantJobDetailPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['tenant-job', token, jobId] })
       qc.invalidateQueries({ queryKey: ['tenant-jobs', token] })
-      toast.success('Estado da vaga actualizado.')
+      toast.success('Estado da vaga atualizado.')
     },
     onError: (err: unknown) => {
       if (err instanceof ApiRequestError) toast.error(err.message)

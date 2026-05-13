@@ -30,7 +30,7 @@ function NavLinks({ onNavigate }: Readonly<{ onNavigate?: () => void }>) {
     claims?.role === 'TENANT_ADMIN'
       ? [
           ...baseLinks.slice(0, 4),
-          { href: '/empresa/equipa', label: 'Equipa', icon: UserPlus } as const,
+          { href: '/empresa/equipa', label: 'Equipe', icon: UserPlus } as const,
           ...baseLinks.slice(4),
         ]
       : baseLinks

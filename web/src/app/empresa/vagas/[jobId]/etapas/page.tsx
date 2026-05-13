@@ -231,7 +231,7 @@ export default function JobStagesPage() {
                           <option value="MANUAL">Manual</option>
                           <option value="QUESTIONNAIRE">Questionário</option>
                           <option value="INTERVIEW_LINK">Entrevista</option>
-                          <option value="FILE_UPLOAD">Envio de ficheiro</option>
+                          <option value="FILE_UPLOAD">Envio de arquivo</option>
                         </select>
                       </div>
                     </div>

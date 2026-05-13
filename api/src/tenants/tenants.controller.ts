@@ -77,7 +77,7 @@ export class TenantsController {
   @Roles(UserRole.TENANT_ADMIN, UserRole.RECRUITER)
   @ApiJwtTenantB2b()
   @ApiOperation({
-    summary: 'Empresa do utilizador autenticado',
+    summary: 'Empresa do usuário autenticado',
     description: 'Devolve a empresa correspondente ao `tenantId` do JWT.',
   })
   @ApiOkResponse({ type: TenantResponseDto })
@@ -91,9 +91,9 @@ export class TenantsController {
   @Roles(UserRole.TENANT_ADMIN)
   @ApiJwtTenantB2b()
   @ApiOperation({
-    summary: 'Listar recrutadores da empresa actual',
+    summary: 'Listar recrutadores da empresa atual',
     description:
-      'Apenas `TENANT_ADMIN`. Devolve os utilizadores com papel `RECRUITER` no tenant do JWT, ordenados por antiguidade, com `avatarUrl` assinado.',
+      'Apenas `TENANT_ADMIN`. Devolve os usuárioes com papel `RECRUITER` no tenant do JWT, ordenados por antiguidade, com `avatarUrl` assinado.',
   })
   @ApiOkResponse({ type: TenantRecruiterItemDto, isArray: true })
   async currentRecruiters() {
@@ -107,9 +107,9 @@ export class TenantsController {
   @Roles(UserRole.TENANT_ADMIN)
   @ApiJwtTenantB2b()
   @ApiOperation({
-    summary: 'Remover recrutador da empresa actual',
+    summary: 'Remover recrutador da empresa atual',
     description:
-      'Apenas `TENANT_ADMIN`. Apaga o utilizador. Histórico de candidaturas, transições e avaliações preserva os registos com a referência ao autor a `null` (ON DELETE SET NULL).',
+      'Apenas `TENANT_ADMIN`. Apaga o usuário. Histórico de candidaturas, transições e avaliações preserva os registos com a referência ao autor a `null` (ON DELETE SET NULL).',
   })
   @ApiParam({ name: 'userId', format: 'uuid' })
   @ApiNoContentResponse()

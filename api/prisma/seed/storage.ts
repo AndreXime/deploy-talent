@@ -13,7 +13,7 @@ import {
  * Não seguem o padrão `candidates/{userId}/...` ou `tenants/{id}/...` de propósito:
  * o seed escreve a chave diretamente via Prisma (sem passar pelos validadores dos
  * controllers) e as leituras apenas assinam a chave que estiver na BD. Manter um
- * prefixo `seed/` torna explícito que estes objetos são partilhados por todos os
+ * prefixo `seed/` torna explícito que estes objetos são compartilhados por todos os
  * registos do seed e nunca devem ser apagados pelos `forget-me` / atualizações de
  * branding.
  */

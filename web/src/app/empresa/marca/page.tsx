@@ -63,7 +63,7 @@ export default function TenantBrandingPage() {
     } catch (err: unknown) {
       setBusy(null)
       if (err instanceof ApiRequestError) toast.error(err.message)
-      else toast.error('Não foi possível enviar o ficheiro.')
+      else toast.error('Não foi possível enviar o arquivo.')
     }
   }
 

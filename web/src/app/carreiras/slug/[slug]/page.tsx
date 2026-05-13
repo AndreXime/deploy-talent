@@ -32,7 +32,7 @@ export default function CareerSlugRedirectPage() {
         ) : q.isLoading ? (
           <p>A abrir página da empresa…</p>
         ) : q.isError ? (
-          <p>Empresa não encontrada ou inactiva. Verifique o link.</p>
+          <p>Empresa não encontrada ou inativa. Verifique o link.</p>
         ) : (
           <p>A redirecionar…</p>
         )}

@@ -34,13 +34,13 @@ export class CandidateApplicationEmailNotifier {
       `Olá, ${candidateName},`,
       '',
       `Recebemos a sua candidatura para a vaga "${jobTitle}" na ${companyName}.`,
-      'A equipa de recrutamento irá analisar o seu perfil e entrará em contacto se houver seguimento.',
+      'A equipe de recrutamento irá analisar o seu perfil e entrará em contato se houver seguimento.',
       '',
       'Obrigado pelo seu interesse.',
     ].join('\n')
     const html = `<p>Olá, ${safe.name},</p>
 <p>Recebemos a sua candidatura para a vaga <strong>${safe.job}</strong> na <strong>${safe.company}</strong>.</p>
-<p>A equipa de recrutamento irá analisar o seu perfil e entrará em contacto se houver seguimento.</p>
+<p>A equipe de recrutamento irá analisar o seu perfil e entrará em contato se houver seguimento.</p>
 <p>Obrigado pelo seu interesse.</p>`
     await this.sendSafe({ to: recipientEmail, subject, text, html })
   }
@@ -57,13 +57,13 @@ export class CandidateApplicationEmailNotifier {
       `Olá, ${candidateName},`,
       '',
       `Temos o prazer de informar que foi selecionado(a) para a vaga "${jobTitle}" na ${companyName}.`,
-      'A equipa de recrutamento deverá entrar em contacto em breve com os próximos passos.',
+      'A equipe de recrutamento deverá entrar em contato em breve com os próximos passos.',
       '',
       'Parabéns e boa sorte nesta nova etapa.',
     ].join('\n')
     const html = `<p>Olá, ${safe.name},</p>
 <p>Temos o prazer de informar que foi <strong>selecionado(a)</strong> para a vaga <strong>${safe.job}</strong> na <strong>${safe.company}</strong>.</p>
-<p>A equipa de recrutamento deverá entrar em contacto em breve com os próximos passos.</p>
+<p>A equipe de recrutamento deverá entrar em contato em breve com os próximos passos.</p>
 <p>Parabéns e boa sorte nesta nova etapa.</p>`
     await this.sendSafe({ to: recipientEmail, subject, text, html })
   }

@@ -113,7 +113,7 @@ Todas as contas geradas usam a mesma password.
 - **Candidaturas e pipeline:** o candidato candidata-se com o UUID do tenant na URL e pode desistir (`WITHDRAWN`). Recrutadores fazem *sourcing* (`SOURCED`), movem o processo (`IN_PROGRESS`, `REJECTED`, `HIRED`, …) com histórico de auditoria.
 - **Avaliações internas:** notas/pareceres por candidatura (`Evaluation`), só visíveis no lado da empresa.
 - **E-mail transacional (SMTP):** disparado em submissão, contratação e rejeição. Falhas no envio não bloqueiam a operação principal.
-- **Ficheiros e marca:** upload S3 com URL pré-assinada (avatar do candidato, currículo, logo e banner do tenant). Download autorizado também por URL pré-assinada, segundo o papel e o prefixo da chave. Há recurso público de branding do tenant.
+- **Arquivos e marca:** upload S3 com URL pré-assinada (avatar do candidato, currículo, logo e banner do tenant). Download autorizado também por URL pré-assinada, segundo o papel e o prefixo da chave. Há recurso público de branding do tenant.
 - **Segurança e operação:** JWT + RBAC, CORS configurável, Helmet em produção, throttling global. Fora de `PROD`, Swagger em `/docs`.
 
 ## Variáveis de ambiente
@@ -184,8 +184,8 @@ Transições permitidas pelo use case de mudança de status:
 Estados: `SOURCED`, `APPLIED`, `IN_PROGRESS`, `REJECTED`, `WITHDRAWN`, `HIRED`.
 
 - **Candidato:** `POST /applications/apply` só para vagas `PUBLISHED` ou `PAUSED`; cria `APPLIED` com `appliedAt` e regista entrada inicial em `ApplicationHistory`.
-- **Sourcing:** recrutadores criam candidatura `SOURCED` e podem provisionar candidato + utilizador com password aleatória se o e-mail ainda não existir.
-- **Mover pipeline:** transições validadas (estados terminais não evoluem); histórico gravado com estágios (`stage`) e o utilizador que moveu.
+- **Sourcing:** recrutadores criam candidatura `SOURCED` e podem provisionar candidato + usuário com password aleatória se o e-mail ainda não existir.
+- **Mover pipeline:** transições validadas (estados terminais não evoluem); histórico gravado com estágios (`stage`) e o usuário que moveu.
 
 ## URLs locais
 

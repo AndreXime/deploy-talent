@@ -16,7 +16,7 @@ export interface MoveApplicationStageInput {
 }
 
 /**
- * Move o cursor da etapa actual de uma `Application` para outro `JobStage`
+ * Move o cursor da etapa atual de uma `Application` para outro `JobStage`
  * pertencente à sua vaga. Cria (idempotente) a linha de `ApplicationStageProgress`
  * para a nova etapa em `PENDING` se ainda não existir, e regista a transição
  * em `ApplicationHistory` com os nomes das etapas como snapshot.

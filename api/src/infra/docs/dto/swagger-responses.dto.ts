@@ -130,7 +130,7 @@ export class AccessTokenDto {
   access_token!: string
 }
 
-/** Conta B2B do utilizador autenticado (`GET /auth/me`, `PATCH /auth/me/avatar`). */
+/** Conta B2B do usuário autenticado (`GET /auth/me`, `PATCH /auth/me/avatar`). */
 export class B2BAccountResponseDto {
   @ApiProperty({ format: 'uuid' }) id!: string
   @ApiProperty({ format: 'email' }) email!: string
@@ -158,7 +158,7 @@ export class TenantRecruiterItemDto {
   @ApiProperty({ type: String, format: 'date-time' }) createdAt!: Date
 }
 
-/** Pré visualização pública de um convite (sem expor o token nem o hash). */
+/** Préviaização pública de um convite (sem expor o token nem o hash). */
 export class InvitationPreviewDto {
   @ApiProperty({ format: 'email' }) email!: string
   @ApiProperty({
@@ -186,7 +186,7 @@ export class CreatedInvitationDto {
  * Resultado do sourcing de candidato por um recrutador.
  *
  * - `CANDIDATE_INVITED`: email não estava registado; convite com link de
- *   activação foi enviado e `invitationId` é devolvido.
+ *   ativação foi enviado e `invitationId` é devolvido.
  * - `JOB_LINK_SENT`: candidato já tem conta mas ainda não se candidatou; email
  *   apenas com o link público da vaga foi enviado.
  * - `ALREADY_APPLIED`: candidato já tem candidatura para esta vaga; nenhum

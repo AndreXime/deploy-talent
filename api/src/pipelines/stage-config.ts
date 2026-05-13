@@ -47,7 +47,7 @@ export const PIPELINE_FILE_UPLOAD_ALLOWED_MIME_TYPES = [
   'text/plain',
 ] as const
 
-/** Tecto superior de tamanho por ficheiro na pipeline (além do limite S3). */
+/** Limite superior de tamanho por arquivo na pipeline (além do limite S3). */
 export const PIPELINE_FILE_UPLOAD_MAX_BYTES_CAP = 10 * 1024 * 1024
 
 export function resolvePipelineFileUploadMaxBytes(s3MaxUploadBytes: number): number {
@@ -88,7 +88,7 @@ function asNonEmptyString(value: unknown, field: string): string {
 
 function validateQuestionnaireConfig(raw: unknown): QuestionnaireConfig {
   if (!isObject(raw)) {
-    throw new BadRequestException('Configuração do questionário deve ser um objecto')
+    throw new BadRequestException('Configuração do questionário deve ser um objeto')
   }
   const questions = raw.questions
   if (!Array.isArray(questions) || questions.length === 0) {
@@ -131,7 +131,7 @@ function validateQuestionnaireConfig(raw: unknown): QuestionnaireConfig {
 function validateInterviewLinkConfig(raw: unknown): InterviewLinkConfig {
   if (raw === null || raw === undefined) return {}
   if (!isObject(raw)) {
-    throw new BadRequestException('Configuração de entrevista deve ser um objecto')
+    throw new BadRequestException('Configuração de entrevista deve ser um objeto')
   }
   const instructions = typeof raw.instructions === 'string' ? raw.instructions : undefined
   return { instructions }
@@ -140,7 +140,7 @@ function validateInterviewLinkConfig(raw: unknown): InterviewLinkConfig {
 function validateFileUploadConfig(raw: unknown): FileUploadConfig {
   if (raw === null || raw === undefined) return {}
   if (!isObject(raw)) {
-    throw new BadRequestException('Configuração de upload deve ser um objecto')
+    throw new BadRequestException('Configuração de upload deve ser um objeto')
   }
   const forbidden = Object.keys(raw).filter((k) => k !== 'instructions')
   if (forbidden.length > 0) {
@@ -265,7 +265,7 @@ function validateFileUploadSubmission(
   s3MaxUploadBytes: number,
 ): FileUploadSubmission {
   if (!isObject(payload)) {
-    throw new BadRequestException('Submissão deve ser um objecto')
+    throw new BadRequestException('Submissão deve ser um objeto')
   }
   const fileKey = asNonEmptyString(payload.fileKey, 'fileKey')
   const mimeRaw = typeof payload.mimeType === 'string' ? payload.mimeType.trim() : ''
@@ -280,13 +280,13 @@ function validateFileUploadSubmission(
   const allowed = PIPELINE_FILE_UPLOAD_ALLOWED_MIME_TYPES as readonly string[]
   if (!mimeType || !allowed.includes(mimeType)) {
     throw new BadRequestException(
-      `Tipo de ficheiro não permitido. Aceites na pipeline: PDF, DOCX, PNG, JPG, TXT (${allowed.join(', ')})`,
+      `Tipo de arquivo não permitido. Aceites na pipeline: PDF, DOCX, PNG, JPG, TXT (${allowed.join(', ')})`,
     )
   }
   const maxBytes = resolvePipelineFileUploadMaxBytes(s3MaxUploadBytes)
   if (sizeBytes !== undefined && sizeBytes > maxBytes) {
     throw new BadRequestException(
-      `Ficheiro excede o limite de ${maxBytes} bytes (limite efectivo da pipeline e do armazenamento)`,
+      `Arquivo excede o limite de ${maxBytes} bytes (limite efetivo da pipeline e do armazenamento)`,
     )
   }
   return { fileKey, mimeType, sizeBytes }
@@ -298,7 +298,7 @@ function validateFileUploadSubmission(
  */
 export function validateInterviewLinkRecruiterPayload(raw: unknown): InterviewLinkRecruiterPayload {
   if (!isObject(raw)) {
-    throw new BadRequestException('Payload deve ser um objecto')
+    throw new BadRequestException('Payload deve ser um objeto')
   }
   const url = asNonEmptyString(raw.url, 'url')
   try {

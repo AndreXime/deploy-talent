@@ -133,7 +133,7 @@ export default function CandidateProfilePage() {
       await patchMut.mutateAsync({ avatarKey: presigned.key })
     } catch (err: unknown) {
       if (err instanceof ApiRequestError) toast.error(err.message)
-      else toast.error('Não foi possível enviar o ficheiro.')
+      else toast.error('Não foi possível enviar o arquivo.')
     } finally {
       setUploadingAvatar(false)
     }
@@ -217,7 +217,7 @@ export default function CandidateProfilePage() {
       {profileQ.data && !profileQ.data.anonymizedAt && (
         <Card className="shadow-sm">
           <CardHeader>
-            <CardTitle className="text-lg">Informação de contacto</CardTitle>
+            <CardTitle className="text-lg">Informações de contato</CardTitle>
             <CardDescription>
               E-mail: <span className="font-medium">{profileQ.data.email}</span> (não editável
               aqui).
@@ -253,7 +253,7 @@ export default function CandidateProfilePage() {
                         onClick={() => avatarInputRef.current?.click()}
                       >
                         {uploadingAvatar
-                          ? 'A enviar…'
+                          ? 'Enviando…'
                           : profileQ.data.avatarUrl
                             ? 'Trocar foto'
                             : 'Enviar foto'}
@@ -319,7 +319,7 @@ export default function CandidateProfilePage() {
                       onClick={() => resumeInputRef.current?.click()}
                     >
                       {uploadingResume
-                        ? 'A enviar…'
+                        ? 'Enviando…'
                         : profileQ.data.resumeUrl
                           ? 'Trocar currículo'
                           : 'Enviar currículo'}
@@ -370,7 +370,7 @@ export default function CandidateProfilePage() {
           </DialogHeader>
           <DialogFooter className="gap-2 pt-4 sm:justify-between">
             <Button type="button" variant="outline" onClick={() => setForgetOpen(false)}>
-              Voltar atrás
+              Voltar
             </Button>
             <Button type="button" variant="destructive" onClick={() => forgetMut.mutate()}>
               {forgetMut.isPending ? 'A processar…' : 'Confirmar eliminação'}
