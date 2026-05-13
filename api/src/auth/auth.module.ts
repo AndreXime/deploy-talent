@@ -4,6 +4,7 @@ import { JwtModule } from '@nestjs/jwt'
 import { PassportModule } from '@nestjs/passport'
 import { EnvService } from '../infra/env/env.service'
 import { AuthController } from './auth.controller'
+import { RefreshTokensCleanupTask } from './refresh-tokens-cleanup.task'
 import { JwtAuthGuard } from './guards/jwt-auth.guard'
 import { JwtStrategy } from './strategies/jwt.strategy'
 import { LocalStrategy } from './strategies/local.strategy'
@@ -42,6 +43,7 @@ import { ValidateLocalUserUseCase } from './use-cases/validate-local-user.use-ca
     LocalStrategy,
     JwtStrategy,
     JwtAuthGuard,
+    RefreshTokensCleanupTask,
   ],
   exports: [JwtAuthGuard, LoginUseCase],
 })
