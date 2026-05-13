@@ -154,4 +154,4 @@ Regras de transição:
 - Cada novo convite para o mesmo email, empresa e papel revoga automaticamente os convites pendentes anteriores.
 - Validade configurável por `INVITATION_TTL_HOURS` (1..720, padrão 72h). Convites expirados, já aceites ou revogados deixam de ser utilizáveis.
 - Se o envio SMTP falhar o convite é revogado, garantindo que não fica um token ativo em base de dados sem ter sido entregue.
-- A ativação (`POST /invitations/:token/accept`) cria o usuário com o papel registado no convite, marca o convite como aceite numa única transação, e devolve um `access_token` para login imediato.
+- A ativação (`POST /invitations/:token/accept`) cria o usuário com o papel registado no convite, marca o convite como aceite numa única transação, e devolve `access_token` e `refresh_token` (refresh opaco na base) para login imediato.

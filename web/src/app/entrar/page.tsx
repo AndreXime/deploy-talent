@@ -45,7 +45,7 @@ function LoginForm() {
     setLoading(true)
     try {
       const res = await loginRequest({ email, password })
-      setSession(res.access_token)
+      setSession(res)
       toast.success('Sessão iniciada.')
       const claims = parseJwtClaims(res.access_token)
       const next = redirect?.startsWith('/') ? redirect : homePathForRole(claims?.role ?? '')

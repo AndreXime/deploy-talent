@@ -124,8 +124,10 @@ Todas as contas geradas usam a mesma password.
 | `ENV_MODE` | Sim | `DEV`, `TEST` ou `PROD`. Em `PROD`, Swagger não é exposto. |
 | `PORT` | Sim | Porta HTTP (1–65535). |
 | `DATABASE_URL` | Sim | Connection string PostgreSQL (Prisma). |
-| `JWT_SECRET` | Sim | Segredo de assinatura do JWT. |
-| `JWT_EXPIRES_IN` | Sim | Expiração do token (ex.: `7d`, `15m`). |
+| `JWT_SECRET` | Sim | Segredo de assinatura do access JWT (Bearer). |
+| `JWT_ACCESS_EXPIRES_IN` | Não | TTL do access token (ex.: `10m`). Se omitido, usa `JWT_EXPIRES_IN`; se ambos omitidos, `10m`. |
+| `JWT_EXPIRES_IN` | Não | Legado: TTL do access token quando `JWT_ACCESS_EXPIRES_IN` está vazio. |
+| `JWT_REFRESH_EXPIRES_IN` | Não | TTL do refresh opaco na tabela `refresh_tokens` (ex.: `24h`; padrão `24h`). |
 | `AWS_REGION` | Sim | Região do cliente S3 (e do signer das URLs). |
 | `S3_BUCKET` | Sim | Bucket de armazenamento. |
 | `S3_ENDPOINT` | Não | Endpoint S3-compatível custom (ex.: MinIO). |

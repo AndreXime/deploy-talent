@@ -15,8 +15,9 @@ export interface Paginated<T> {
   limit: number
 }
 
-export interface AccessTokenResponse {
+export interface SessionTokensResponse {
   access_token: string
+  refresh_token: string
 }
 
 export interface TenantResponse {

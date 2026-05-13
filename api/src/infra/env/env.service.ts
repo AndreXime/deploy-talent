@@ -48,12 +48,23 @@ export class EnvService {
     return value
   }
 
-  get jwtExpiresIn(): string {
-    const value = this.config.get<string>('JWT_EXPIRES_IN', { infer: true })
-    if (!value || value.trim().length === 0) {
-      throw new Error('Missing JWT_EXPIRES_IN')
-    }
-    return value
+  /**
+   * Access JWT TTL (Authorization Bearer). Prefer `JWT_ACCESS_EXPIRES_IN`;
+   * `JWT_EXPIRES_IN` mantém compatibilidade com deploys antigos.
+   */
+  get jwtAccessExpiresIn(): string {
+    const primary = this.config.get<string>('JWT_ACCESS_EXPIRES_IN', { infer: true })
+    if (primary && primary.trim().length > 0) return primary.trim()
+    const legacy = this.config.get<string>('JWT_EXPIRES_IN', { infer: true })
+    if (legacy && legacy.trim().length > 0) return legacy.trim()
+    return '10m'
+  }
+
+  /** TTL do refresh opaco persistido em `refresh_tokens` (ex.: `24h`; padrão `24h`). */
+  get jwtRefreshExpiresIn(): string {
+    const value = this.config.get<string>('JWT_REFRESH_EXPIRES_IN', { infer: true })
+    if (!value || value.trim().length === 0) return '24h'
+    return value.trim()
   }
 
   get awsRegion(): string {

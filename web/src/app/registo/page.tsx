@@ -33,7 +33,7 @@ export default function RegisterPage() {
     setLoading(true)
     try {
       const res = await registerCandidateRequest({ name, email, password })
-      setSession(res.access_token)
+      setSession(res)
       toast.success('Conta criada.')
       router.replace('/candidato')
     } catch (err) {

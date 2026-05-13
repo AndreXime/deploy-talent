@@ -18,9 +18,9 @@ import type { JwtPayload } from '../auth/jwt-payload'
 import { Public } from '../auth/public.decorator'
 import { Roles } from '../auth/rbac/roles.decorator'
 import {
-  AccessTokenDto,
   CreatedInvitationDto,
   InvitationPreviewDto,
+  SessionTokensDto,
 } from '../infra/docs/dto/swagger-responses.dto'
 import { ApiJwtAuth, ApiJwtTenantB2b, ApiStandardErrors } from '../infra/docs/swagger-decorators'
 import { TenantOptional, TenantRequired } from '../tenant-context/tenant.decorators'
@@ -115,7 +115,7 @@ export class InvitationsController {
       'Endpoint público. Cria o usuário com a senha definida pelo destinatário, invalida o convite e devolve um JWT pronto a usar.',
   })
   @ApiBody({ type: AcceptInvitationDto })
-  @ApiOkResponse({ type: AccessTokenDto })
+  @ApiOkResponse({ type: SessionTokensDto })
   @ApiStandardErrors(true)
   async accept(@Param('token') token: string, @Body() body: AcceptInvitationDto) {
     return this.acceptInvitation.execute(token, body.password)

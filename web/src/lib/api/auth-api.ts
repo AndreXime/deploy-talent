@@ -1,15 +1,23 @@
 import { apiRequest } from '@/lib/api/client'
-import type { AccessTokenResponse, B2BAccountResponse } from '@/lib/api/types'
+import type { B2BAccountResponse, SessionTokensResponse } from '@/lib/api/types'
 
 export function loginRequest(body: { email: string; password: string }) {
-  return apiRequest<AccessTokenResponse>('/auth/login', {
+  return apiRequest<SessionTokensResponse>('/auth/login', {
     method: 'POST',
     json: body,
   })
 }
 
+export function logoutRequest(token: string, body?: { refresh_token?: string }) {
+  return apiRequest<void>('/auth/logout', {
+    method: 'POST',
+    token,
+    json: body ?? {},
+  })
+}
+
 export function registerCandidateRequest(body: { email: string; password: string; name: string }) {
-  return apiRequest<AccessTokenResponse>('/auth/register/candidate', {
+  return apiRequest<SessionTokensResponse>('/auth/register/candidate', {
     method: 'POST',
     json: body,
   })

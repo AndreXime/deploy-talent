@@ -1,8 +1,8 @@
 import { apiRequest } from '@/lib/api/client'
 import type {
-  AccessTokenResponse,
   CreatedInvitationResponse,
   InvitationPreviewResponse,
+  SessionTokensResponse,
 } from '@/lib/api/types'
 
 export function inviteTenantAdminRequest(token: string, body: { tenantId: string; email: string }) {
@@ -29,7 +29,7 @@ export function getInvitationByTokenRequest(invitationToken: string) {
 }
 
 export function acceptInvitationRequest(invitationToken: string, body: { password: string }) {
-  return apiRequest<AccessTokenResponse>(
+  return apiRequest<SessionTokensResponse>(
     `/invitations/${encodeURIComponent(invitationToken)}/accept`,
     { method: 'POST', json: body },
   )

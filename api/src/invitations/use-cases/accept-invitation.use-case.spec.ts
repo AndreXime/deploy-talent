@@ -9,7 +9,7 @@ jest.mock('bcrypt', () => ({
 
 function buildLoginUseCase(): LoginUseCase {
   return {
-    execute: jest.fn(async () => ({ access_token: 'jwt' })),
+    execute: jest.fn(async () => ({ access_token: 'at', refresh_token: 'rt' })),
   } as unknown as LoginUseCase
 }
 
@@ -77,7 +77,7 @@ describe('AcceptInvitationUseCase', () => {
 
     const result = await useCase.execute('tok', 'password1')
 
-    expect(result).toEqual({ access_token: 'jwt' })
+    expect(result).toEqual({ access_token: 'at', refresh_token: 'rt' })
     expect(tx.user.create).toHaveBeenCalledWith({
       data: expect.objectContaining({
         email: 'a@a.com',
@@ -124,7 +124,7 @@ describe('AcceptInvitationUseCase', () => {
 
     const result = await useCase.execute('tok', 'password1')
 
-    expect(result).toEqual({ access_token: 'jwt' })
+    expect(result).toEqual({ access_token: 'at', refresh_token: 'rt' })
     expect(tx.user.create).toHaveBeenCalledWith({
       data: expect.objectContaining({
         email: 'rec@a.com',
@@ -168,7 +168,7 @@ describe('AcceptInvitationUseCase', () => {
 
     const result = await useCase.execute('tok', 'password1')
 
-    expect(result).toEqual({ access_token: 'jwt' })
+    expect(result).toEqual({ access_token: 'at', refresh_token: 'rt' })
     expect(tx.user.create).toHaveBeenCalledWith({
       data: expect.objectContaining({
         email: 'cand@a.com',

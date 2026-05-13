@@ -16,6 +16,7 @@ model User {
   candidateProfile         Candidate?
   invitationsCreated       Invitation[]               @relation("InvitationsCreated")
   completedStageProgresses ApplicationStageProgress[] @relation("StageProgressCompletedBy")
+  refreshTokens            RefreshToken[]
 
   @@index([tenantId])
   @@map("users")

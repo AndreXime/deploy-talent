@@ -1,11 +1,35 @@
 import type { ApiErrorBody } from '@/lib/api/types'
+import { clearSessionStorage, persistSession, readRefreshToken } from '@/lib/auth-token'
 import { API_BASE_URL } from '@/lib/env'
 
 const UNAUTH_EVENT = 'deploy-talent:unauthorized'
 
 export function dispatchUnauthorized(): void {
   if (typeof window !== 'undefined') {
+    clearSessionStorage()
     window.dispatchEvent(new Event(UNAUTH_EVENT))
+  }
+}
+
+async function tryRefreshAccessToken(): Promise<string | null> {
+  const refresh = readRefreshToken()
+  if (!refresh) return null
+  try {
+    const url = `${API_BASE_URL}/auth/refresh`
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refresh_token: refresh }),
+    })
+    if (!res.ok) return null
+    const data = (await res.json()) as { access_token?: unknown; refresh_token?: unknown }
+    if (typeof data.access_token !== 'string' || typeof data.refresh_token !== 'string') {
+      return null
+    }
+    persistSession({ access_token: data.access_token, refresh_token: data.refresh_token })
+    return data.access_token
+  } catch {
+    return null
   }
 }
 
@@ -40,6 +64,8 @@ function errorMessage(status: number, body: unknown): string {
 
 export interface ApiRequestOptions extends Omit<RequestInit, 'body'> {
   token?: string | null
+  /** Evita loop quando o refresh já foi tentado para este pedido. */
+  skipRefreshRetry?: boolean
   /** Corpo JSON (object serializável) */
   json?: unknown
   query?: Record<string, string | number | boolean | undefined>
@@ -60,7 +86,7 @@ export async function apiRequest<T>(path: string, options: ApiRequestOptions = {
   const headers = new Headers(options.headers)
   headers.set('Accept', 'application/json')
 
-  const { json, token, query: _q, ...rest } = options
+  const { json, token, query: _q, skipRefreshRetry, ...rest } = options
   if (json !== undefined) {
     headers.set('Content-Type', 'application/json')
   }
@@ -74,7 +100,13 @@ export async function apiRequest<T>(path: string, options: ApiRequestOptions = {
     body: json !== undefined ? JSON.stringify(json) : undefined,
   })
 
-  // 401 sem token diz respeito ao recurso (ex.: rota protegida), não à sessão local.
+  if (res.status === 401 && token && !skipRefreshRetry && typeof window !== 'undefined') {
+    const nextAccess = await tryRefreshAccessToken()
+    if (nextAccess) {
+      return apiRequest(path, { ...options, token: nextAccess, skipRefreshRetry: true })
+    }
+  }
+
   if (res.status === 401 && token) {
     dispatchUnauthorized()
   }

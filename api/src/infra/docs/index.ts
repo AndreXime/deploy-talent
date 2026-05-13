@@ -8,7 +8,7 @@ export function buildOpenApiConfig() {
         'API REST multi-tenant (pool compartilhado, isolamento por `tenant_id`).',
         '',
         '### Autenticação',
-        '- **Bearer JWT**: obtido via `POST /auth/login`, `POST /auth/register/candidate` ou provisioning admin.',
+        '- **Bearer JWT (access)**: envie `Authorization: Bearer <access_token>`. Obtido em `POST /auth/login`, `POST /auth/register/candidate`, aceitar convite ou `POST /auth/refresh` com `refresh_token` opaco (persistido na base; TTL por env).',
         '- **Tenant (B2B)**: `RECRUITER`/`TENANT_ADMIN` — o tenant vem do **JWT** (sem header).',
         '- **Candidato em rotas por empresa**: use o **UUID do tenant na URL** (ex.: candidatura a uma vaga).',
         '',

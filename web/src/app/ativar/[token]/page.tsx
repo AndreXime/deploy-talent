@@ -48,7 +48,7 @@ export default function ActivateInvitationPage() {
   const acceptMut = useMutation({
     mutationFn: () => acceptInvitationRequest(token, { password }),
     onSuccess: (res) => {
-      setSession(res.access_token)
+      setSession(res)
       const claims = parseJwtClaims(res.access_token)
       toast.success('Conta ativada. Bem vindo!')
       router.replace(homePathForRole(claims?.role ?? ''))

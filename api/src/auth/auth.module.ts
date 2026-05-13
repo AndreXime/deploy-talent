@@ -9,6 +9,8 @@ import { JwtStrategy } from './strategies/jwt.strategy'
 import { LocalStrategy } from './strategies/local.strategy'
 import { GetMyB2BAccountUseCase } from './use-cases/get-my-b2b-account.use-case'
 import { LoginUseCase } from './use-cases/login.use-case'
+import { LogoutUseCase } from './use-cases/logout.use-case'
+import { RefreshTokensUseCase } from './use-cases/refresh-tokens.use-case'
 import { RegisterCandidateUseCase } from './use-cases/register-candidate.use-case'
 import { UpdateB2BAvatarUseCase } from './use-cases/update-b2b-avatar.use-case'
 import { ValidateLocalUserUseCase } from './use-cases/validate-local-user.use-case'
@@ -22,7 +24,7 @@ import { ValidateLocalUserUseCase } from './use-cases/validate-local-user.use-ca
         return {
           secret: env.jwtSecret,
           signOptions: {
-            expiresIn: env.jwtExpiresIn as JwtSignOptions['expiresIn'],
+            expiresIn: env.jwtAccessExpiresIn as JwtSignOptions['expiresIn'],
           },
         }
       },
@@ -31,6 +33,8 @@ import { ValidateLocalUserUseCase } from './use-cases/validate-local-user.use-ca
   controllers: [AuthController],
   providers: [
     LoginUseCase,
+    RefreshTokensUseCase,
+    LogoutUseCase,
     RegisterCandidateUseCase,
     UpdateB2BAvatarUseCase,
     GetMyB2BAccountUseCase,

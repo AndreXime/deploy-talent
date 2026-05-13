@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  DefaultValuePipe,
   ForbiddenException,
   Get,
   HttpCode,
@@ -14,6 +15,7 @@ import {
   ApiBadRequestResponse,
   ApiBody,
   ApiCreatedResponse,
+  ApiNoContentResponse,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
@@ -22,10 +24,12 @@ import {
 import type { Request as ExpressRequest } from 'express'
 import type { User } from '../../generated/prisma/client'
 import { UserRole } from '../../generated/prisma/client'
-import { AccessTokenDto, B2BAccountResponseDto } from '../infra/docs/dto/swagger-responses.dto'
-import { ApiJwtTenantB2b, ApiStandardErrors } from '../infra/docs/swagger-decorators'
+import { B2BAccountResponseDto, SessionTokensDto } from '../infra/docs/dto/swagger-responses.dto'
+import { ApiJwtAuth, ApiJwtTenantB2b, ApiStandardErrors } from '../infra/docs/swagger-decorators'
 import { TenantOptional, TenantRequired } from '../tenant-context/tenant.decorators'
 import { LoginDto } from './dto/login.dto'
+import { LogoutDto } from './dto/logout.dto'
+import { RefreshTokensDto } from './dto/refresh-tokens.dto'
 import { RegisterCandidateDto } from './dto/register-candidate.dto'
 import { UpdateB2BAvatarDto } from './dto/update-b2b-avatar.dto'
 import { JwtAuthGuard } from './guards/jwt-auth.guard'
@@ -35,6 +39,8 @@ import { Public } from './public.decorator'
 import { Roles } from './rbac/roles.decorator'
 import { GetMyB2BAccountUseCase } from './use-cases/get-my-b2b-account.use-case'
 import { LoginUseCase } from './use-cases/login.use-case'
+import { LogoutUseCase } from './use-cases/logout.use-case'
+import { RefreshTokensUseCase } from './use-cases/refresh-tokens.use-case'
 import { RegisterCandidateUseCase } from './use-cases/register-candidate.use-case'
 import { UpdateB2BAvatarUseCase } from './use-cases/update-b2b-avatar.use-case'
 
@@ -52,6 +58,8 @@ interface RequestWithJwt extends ExpressRequest {
 export class AuthController {
   constructor(
     private readonly loginUseCase: LoginUseCase,
+    private readonly refreshTokens: RefreshTokensUseCase,
+    private readonly logoutUseCase: LogoutUseCase,
     private readonly registerCandidateUseCase: RegisterCandidateUseCase,
     private readonly updateB2BAvatar: UpdateB2BAvatarUseCase,
     private readonly getMyB2BAccount: GetMyB2BAccountUseCase,
@@ -63,17 +71,52 @@ export class AuthController {
   @Post('login')
   @ApiOperation({ summary: 'Login (local strategy)' })
   @ApiBody({ type: LoginDto })
-  @ApiOkResponse({ type: AccessTokenDto, description: 'JWT para uso em rotas protegidas' })
+  @ApiOkResponse({
+    type: SessionTokensDto,
+    description: 'Access (curto) + refresh (24h por padrão)',
+  })
   @ApiUnauthorizedResponse({ description: 'Credenciais inválidas' })
   async login(@Body() _body: LoginDto, @Request() req: RequestWithUser) {
     return this.loginUseCase.execute(req.user)
   }
 
   @Public()
+  @HttpCode(HttpStatus.OK)
+  @Post('refresh')
+  @ApiOperation({ summary: 'Renovar tokens com refresh opaco' })
+  @ApiBody({ type: RefreshTokensDto })
+  @ApiOkResponse({ type: SessionTokensDto })
+  @ApiUnauthorizedResponse({ description: 'Refresh inválido ou expirado' })
+  async refresh(@Body() body: RefreshTokensDto) {
+    return this.refreshTokens.execute(body.refresh_token)
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Post('logout')
+  @ApiJwtAuth()
+  @ApiOperation({
+    summary: 'Logout (revogar refresh na base)',
+    description:
+      'Com `refresh_token` no corpo revoga só essa sessão; sem corpo (ou `{}`) revoga todos os refresh ativos do utilizador. O access JWT continua válido até expirar.',
+  })
+  @ApiBody({ type: LogoutDto, required: false })
+  @ApiNoContentResponse({ description: 'Refresh revogado na base' })
+  @ApiStandardErrors(true)
+  async logout(
+    @Request() req: RequestWithJwt,
+    @Body(new DefaultValuePipe({})) body: LogoutDto,
+  ): Promise<void> {
+    const user = req.user
+    if (!user) throw new ForbiddenException('Missing authentication')
+    await this.logoutUseCase.execute(user.sub, body.refresh_token)
+  }
+
+  @Public()
   @Post('register/candidate')
   @ApiOperation({ summary: 'Cadastro de candidato (one-profile) + JWT' })
   @ApiCreatedResponse({
-    type: AccessTokenDto,
+    type: SessionTokensDto,
     description: 'Conta criada; retorna o mesmo formato do login',
   })
   @ApiBadRequestResponse({ description: 'E-mail já em uso ou validação do corpo' })

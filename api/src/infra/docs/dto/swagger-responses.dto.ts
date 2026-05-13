@@ -118,6 +118,16 @@ export class AccessTokenDto {
   access_token!: string
 }
 
+/** Par access + refresh (login, registo, refresh, aceitar convite). */
+export class SessionTokensDto extends AccessTokenDto {
+  @ApiProperty({
+    description:
+      'Token opaco de refresh (persistido na base como hash; 24h por padrão). Enviar em `POST /auth/refresh` para obter novo par; o anterior deixa de ser válido.',
+    example: 'base64url-opaco',
+  })
+  refresh_token!: string
+}
+
 /** Conta B2B do usuário autenticado (`GET /auth/me`, `PATCH /auth/me/avatar`). */
 export class B2BAccountResponseDto {
   @ApiProperty({ format: 'uuid' }) id!: string

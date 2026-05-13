@@ -80,7 +80,8 @@ services:
       PORT: "3000"
       DATABASE_URL: postgresql://deploy_talent:deploy_talent@postgres:5432/deploy_talent?schema=public
       JWT_SECRET: change-me
-      JWT_EXPIRES_IN: 15m
+      JWT_ACCESS_EXPIRES_IN: 10m
+      JWT_REFRESH_EXPIRES_IN: 24h
       AWS_REGION: us-east-1
       S3_BUCKET: files
       S3_ENDPOINT: http://minio:9000
