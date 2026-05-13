@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common'
+import { CandidateEmailModule } from '../infra/email/candidate-email.module'
 import { JobPipelineController } from './job-pipeline.controller'
 import { TenantPipelineController } from './tenant-pipeline.controller'
 import { GetMyCurrentStageUseCase } from './use-cases/get-my-current-stage.use-case'
@@ -12,6 +13,7 @@ import { SetInterviewLinkUseCase } from './use-cases/set-interview-link.use-case
 import { SubmitCurrentStageUseCase } from './use-cases/submit-current-stage.use-case'
 
 @Module({
+  imports: [CandidateEmailModule],
   controllers: [TenantPipelineController, JobPipelineController],
   providers: [
     GetTenantPipelineTemplateUseCase,

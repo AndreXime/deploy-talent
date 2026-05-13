@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common'
 import { ApplicationStatus, type PrismaClient, UserRole } from '../../../generated/prisma/client'
 import type { Actor } from '../../applications/use-cases/application.actor'
+import { CandidateApplicationEmailNotifier } from '../../infra/email/candidate-application-email.notifier'
 import { PRISMA_CLIENT } from '../../infra/prisma/prisma.constants'
 import { TenantContextService } from '../../tenant-context/tenant-context.service'
 
@@ -26,6 +27,7 @@ export class MoveApplicationStageUseCase {
   constructor(
     @Inject(PRISMA_CLIENT) private readonly prisma: PrismaClient,
     private readonly tenantContext: TenantContextService,
+    private readonly candidateEmails: CandidateApplicationEmailNotifier,
   ) {}
 
   async execute(actor: Actor, input: MoveApplicationStageInput) {
@@ -38,6 +40,9 @@ export class MoveApplicationStageUseCase {
       where: { id: input.applicationId, tenantId },
       include: {
         currentStage: { select: { id: true, name: true } },
+        candidate: { select: { name: true, email: true } },
+        job: { select: { title: true } },
+        tenant: { select: { name: true } },
       },
     })
     if (!application) throw new NotFoundException('Application not found')
@@ -64,7 +69,7 @@ export class MoveApplicationStageUseCase {
 
     const fromStageName = application.currentStage?.name ?? null
 
-    return this.prisma.$transaction(async (tx) => {
+    const progress = await this.prisma.$transaction(async (tx) => {
       await tx.application.update({
         where: { id: application.id },
         data: {
@@ -110,5 +115,16 @@ export class MoveApplicationStageUseCase {
 
       return progress
     })
+
+    await this.candidateEmails.notifyPipelineStageAdvanced({
+      recipientEmail: application.candidate.email,
+      candidateName: application.candidate.name,
+      jobTitle: application.job.title,
+      companyName: application.tenant.name,
+      newStageName: target.name,
+      previousStageName: fromStageName,
+    })
+
+    return progress
   }
 }

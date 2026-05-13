@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common'
 import { CandidatesModule } from '../candidates/candidates.module'
+import { CandidateEmailModule } from '../infra/email/candidate-email.module'
 import { InvitationsModule } from '../invitations/invitations.module'
 import { PipelinesModule } from '../pipelines/pipelines.module'
 import { ApplicationsController } from './applications.controller'
-import { CandidateApplicationEmailNotifier } from './candidate-application-email.notifier'
 import { TenantCandidateApplicationsController } from './tenant-candidate-applications.controller'
 import { ApplyToJobUseCase } from './use-cases/apply-to-job.use-case'
 import { GetApplicationForTenantUseCase } from './use-cases/get-application-for-tenant.use-case'
@@ -15,10 +15,9 @@ import { SourceCandidateUseCase } from './use-cases/source-candidate.use-case'
 import { WithdrawMyApplicationUseCase } from './use-cases/withdraw-my-application.use-case'
 
 @Module({
-  imports: [CandidatesModule, InvitationsModule, PipelinesModule],
+  imports: [CandidatesModule, InvitationsModule, CandidateEmailModule, PipelinesModule],
   controllers: [ApplicationsController, TenantCandidateApplicationsController],
   providers: [
-    CandidateApplicationEmailNotifier,
     ApplyToJobUseCase,
     SourceCandidateUseCase,
     ListApplicationsForTenantUseCase,

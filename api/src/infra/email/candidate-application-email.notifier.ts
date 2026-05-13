@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common'
-import { EmailService } from '../infra/email/email.service'
+import { EmailService } from './email.service'
 
 function escapeHtml(text: string): string {
   return text
@@ -14,6 +14,15 @@ export interface CandidateJobEmailContext {
   candidateName: string
   jobTitle: string
   companyName: string
+}
+
+export interface PipelineStageEmailContext {
+  recipientEmail: string
+  candidateName: string
+  jobTitle: string
+  companyName: string
+  newStageName: string
+  previousStageName: string | null
 }
 
 @Injectable()
@@ -91,6 +100,43 @@ export class CandidateApplicationEmailNotifier {
 <p>Após análise, neste momento <strong>não avançaremos</strong> com o seu perfil para esta posição.</p>
 <p>Valorizamos o tempo que dedicou e desejamos-lhe sucesso na sua procura.</p>
 <p>Com os melhores cumprimentos,<br/>Equipa de recrutamento — ${safe.company}</p>`
+    await this.sendSafe({ to: recipientEmail, subject, text, html })
+  }
+
+  async notifyPipelineStageAdvanced(ctx: PipelineStageEmailContext): Promise<void> {
+    const { recipientEmail, candidateName, jobTitle, companyName, newStageName, previousStageName } =
+      ctx
+    const safe = {
+      name: escapeHtml(candidateName),
+      job: escapeHtml(jobTitle),
+      company: escapeHtml(companyName),
+      stage: escapeHtml(newStageName),
+    }
+    const subject = `Nova etapa na candidatura - ${jobTitle}`
+    const transition =
+      previousStageName !== null && previousStageName.length > 0
+        ? `A sua candidatura passou da etapa "${previousStageName}" para "${newStageName}".`
+        : `A sua candidatura avançou para a etapa "${newStageName}".`
+    const text = [
+      `Olá, ${candidateName},`,
+      '',
+      transition,
+      '',
+      `Vaga: "${jobTitle}" na ${companyName}.`,
+      'Pode acompanhar o que falta fazer na área do candidato na plataforma.',
+      '',
+      'Com os melhores cumprimentos,',
+      `Equipa de recrutamento - ${companyName}`,
+    ].join('\n')
+    const prevHtml =
+      previousStageName !== null && previousStageName.length > 0
+        ? `<p>A sua candidatura passou da etapa <strong>${escapeHtml(previousStageName)}</strong> para <strong>${safe.stage}</strong>.</p>`
+        : `<p>A sua candidatura avançou para a etapa <strong>${safe.stage}</strong>.</p>`
+    const html = `<p>Olá, ${safe.name},</p>
+${prevHtml}
+<p>Vaga: <strong>${safe.job}</strong> na <strong>${safe.company}</strong>.</p>
+<p>Pode acompanhar o que falta fazer na área do candidato na plataforma.</p>
+<p>Com os melhores cumprimentos,<br/>Equipa de recrutamento - ${safe.company}</p>`
     await this.sendSafe({ to: recipientEmail, subject, text, html })
   }
 

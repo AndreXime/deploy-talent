@@ -8,7 +8,7 @@ import {
 import { ApplicationStatus, type PrismaClient, UserRole } from '../../../generated/prisma/client'
 import { PRISMA_CLIENT } from '../../infra/prisma/prisma.constants'
 import { TenantContextService } from '../../tenant-context/tenant-context.service'
-import { CandidateApplicationEmailNotifier } from '../candidate-application-email.notifier'
+import { CandidateApplicationEmailNotifier } from '../../infra/email/candidate-application-email.notifier'
 import type { MoveApplicationDto } from '../dto/move-application.dto'
 import type { Actor } from './application.actor'
 

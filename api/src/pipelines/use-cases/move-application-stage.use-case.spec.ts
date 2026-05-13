@@ -1,9 +1,16 @@
 import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common'
 import { ApplicationStatus, type PrismaClient, UserRole } from '../../../generated/prisma/client'
+import { CandidateApplicationEmailNotifier } from '../../infra/email/candidate-application-email.notifier'
 import { TenantContextService } from '../../tenant-context/tenant-context.service'
 import { MoveApplicationStageUseCase } from './move-application-stage.use-case'
 
 const ctx = { requireTenantId: () => 't1' } as unknown as TenantContextService
+
+function buildNotifier() {
+  return {
+    notifyPipelineStageAdvanced: jest.fn(async () => undefined),
+  } as unknown as CandidateApplicationEmailNotifier
+}
 
 function buildPrisma(overrides: Record<string, unknown> = {}) {
   const tx = {
@@ -21,6 +28,9 @@ function buildPrisma(overrides: Record<string, unknown> = {}) {
         status: ApplicationStatus.APPLIED,
         currentJobStageId: null,
         currentStage: null,
+        candidate: { name: 'Cand', email: 'cand@example.com' },
+        job: { title: 'Engenheiro' },
+        tenant: { name: 'Empresa X' },
       })),
     },
     jobStage: {
@@ -35,7 +45,7 @@ function buildPrisma(overrides: Record<string, unknown> = {}) {
 
 describe('MoveApplicationStageUseCase', () => {
   it('rejeita actor não recrutador', async () => {
-    const uc = new MoveApplicationStageUseCase(buildPrisma(), ctx)
+    const uc = new MoveApplicationStageUseCase(buildPrisma(), ctx, buildNotifier())
     await expect(
       uc.execute(
         { userId: 'u', role: UserRole.CANDIDATE },
@@ -46,7 +56,7 @@ describe('MoveApplicationStageUseCase', () => {
 
   it('rejeita candidatura inexistente', async () => {
     const prisma = buildPrisma({ application: { findFirst: jest.fn(async () => null) } })
-    const uc = new MoveApplicationStageUseCase(prisma, ctx)
+    const uc = new MoveApplicationStageUseCase(prisma, ctx, buildNotifier())
     await expect(
       uc.execute(
         { userId: 'u', role: UserRole.RECRUITER },
@@ -61,7 +71,7 @@ describe('MoveApplicationStageUseCase', () => {
         findUnique: jest.fn(async () => ({ id: 'st1', jobId: 'jOther', name: 'X' })),
       },
     })
-    const uc = new MoveApplicationStageUseCase(prisma, ctx)
+    const uc = new MoveApplicationStageUseCase(prisma, ctx, buildNotifier())
     await expect(
       uc.execute(
         { userId: 'u', role: UserRole.RECRUITER },
@@ -71,8 +81,11 @@ describe('MoveApplicationStageUseCase', () => {
   })
 
   it('movimenta APPLIED para IN_PROGRESS e grava snapshot do nome', async () => {
+    const notifier = {
+      notifyPipelineStageAdvanced: jest.fn(async () => undefined),
+    } as unknown as CandidateApplicationEmailNotifier
     const prisma = buildPrisma()
-    const uc = new MoveApplicationStageUseCase(prisma, ctx)
+    const uc = new MoveApplicationStageUseCase(prisma, ctx, notifier)
 
     await uc.execute(
       { userId: 'rec1', role: UserRole.RECRUITER },
@@ -95,5 +108,45 @@ describe('MoveApplicationStageUseCase', () => {
         toStatus: ApplicationStatus.IN_PROGRESS,
       }),
     })
+    expect(notifier.notifyPipelineStageAdvanced).toHaveBeenCalledWith({
+      recipientEmail: 'cand@example.com',
+      candidateName: 'Cand',
+      jobTitle: 'Engenheiro',
+      companyName: 'Empresa X',
+      newStageName: 'Triagem',
+      previousStageName: null,
+    })
+  })
+
+  it('não envia email quando a etapa já é a atual', async () => {
+    const notifier = {
+      notifyPipelineStageAdvanced: jest.fn(async () => undefined),
+    } as unknown as CandidateApplicationEmailNotifier
+    const prisma = buildPrisma({
+      application: {
+        findFirst: jest.fn(async () => ({
+          id: 'a1',
+          jobId: 'j1',
+          status: ApplicationStatus.IN_PROGRESS,
+          currentJobStageId: 'st1',
+          currentStage: { id: 'st1', name: 'Triagem' },
+          candidate: { name: 'Cand', email: 'cand@example.com' },
+          job: { title: 'Engenheiro' },
+          tenant: { name: 'Empresa X' },
+        })),
+      },
+      applicationStageProgress: {
+        findUniqueOrThrow: jest.fn(async () => ({ id: 'p1', status: 'PENDING' })),
+      },
+    })
+    const uc = new MoveApplicationStageUseCase(prisma, ctx, notifier)
+
+    await uc.execute(
+      { userId: 'rec1', role: UserRole.RECRUITER },
+      { applicationId: 'a1', jobStageId: 'st1' },
+    )
+
+    expect(notifier.notifyPipelineStageAdvanced).not.toHaveBeenCalled()
+    expect(prisma.$transaction).not.toHaveBeenCalled()
   })
 })

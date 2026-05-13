@@ -13,7 +13,7 @@ import {
 } from '../../../generated/prisma/client'
 import { PRISMA_CLIENT } from '../../infra/prisma/prisma.constants'
 import { TenantContextService } from '../../tenant-context/tenant-context.service'
-import { CandidateApplicationEmailNotifier } from '../candidate-application-email.notifier'
+import { CandidateApplicationEmailNotifier } from '../../infra/email/candidate-application-email.notifier'
 import type { ApplyDto } from '../dto/apply.dto'
 import type { Actor } from './application.actor'
 
