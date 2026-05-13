@@ -12,6 +12,9 @@ jobs:
   api:
     name: API (check, build, test)
     runs-on: ubuntu-latest
+    env:
+      # prisma.config.ts exige DATABASE_URL; generate/build não ligam à BD real no CI.
+      DATABASE_URL: postgresql://ci:ci@127.0.0.1:5432/ci?schema=public
     defaults:
       run:
         working-directory: api
