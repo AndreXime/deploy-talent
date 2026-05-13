@@ -13,7 +13,6 @@ model User {
 
   sourcedApplications      Application[]              @relation("SourcedBy")
   movedApplications        ApplicationHistory[]       @relation("MovedBy")
-  createdEvaluations       Evaluation[]               @relation("EvaluationCreatedBy")
   candidateProfile         Candidate?
   invitationsCreated       Invitation[]               @relation("InvitationsCreated")
   completedStageProgresses ApplicationStageProgress[] @relation("StageProgressCompletedBy")

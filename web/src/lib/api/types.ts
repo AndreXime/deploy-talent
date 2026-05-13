@@ -133,17 +133,6 @@ export interface ApplicationTenantListItem extends ApplicationResponse {
   currentStage: ApplicationStageSummary | null
 }
 
-export interface EvaluationResponse {
-  id: string
-  tenantId: string
-  applicationId: string
-  createdByUserId: string | null
-  score: number | null
-  notes: string | null
-  createdAt: string
-  updatedAt: string
-}
-
 export interface PresignedUrlResponse {
   url: string
   key: string

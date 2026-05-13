@@ -13,7 +13,6 @@ export interface PrismaMock {
   job?: Record<string, unknown>
   application?: Record<string, unknown>
   applicationHistory?: Record<string, unknown>
-  evaluation?: Record<string, unknown>
 }
 
 export function providePrismaMock(prisma: PrismaMock) {

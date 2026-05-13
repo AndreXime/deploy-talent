@@ -14,7 +14,6 @@ model Tenant {
   recruiters       User[]
   jobs             Job[]
   apps             Application[]
-  evaluations      Evaluation[]
   history          ApplicationHistory[]
   invitations      Invitation[]
   pipelineTemplate PipelineTemplate?

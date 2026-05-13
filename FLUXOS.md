@@ -212,7 +212,7 @@ flowchart TD
 
 ## Remoção de recrutador pelo tenant admin
 
-Hard delete justificado pelo schema: as FKs em `applications`, `application_history`, `evaluations` e `invitations` usam `ON DELETE SET NULL`, preservando o histórico sem o nome do autor.
+Hard delete justificado pelo schema: as FKs em `applications`, `application_history` e `invitations` usam `ON DELETE SET NULL`, preservando o histórico sem o nome do autor.
 
 ```mermaid
 flowchart TD

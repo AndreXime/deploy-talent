@@ -6,7 +6,7 @@
 > - **Modelo de Dados**
 > - [Fluxos](./FLUXOS.md)
 
-Diagrama do banco de dados PostgreSQL gerido pelo Prisma. O schema vive em `api/prisma/schema/*.prisma` e está particionado por agregado (`tenants`, `users`, `candidates`, `jobs`, `applications`, `evaluations`, `pipelines`).
+Diagrama do banco de dados PostgreSQL gerido pelo Prisma. O schema vive em `api/prisma/schema/*.prisma` e está particionado por agregado (`tenants`, `users`, `candidates`, `jobs`, `applications`, `pipelines`).
 
 ## Diagrama ER
 
@@ -16,7 +16,6 @@ erDiagram
     TENANT ||--o{ JOB                  : "publica"
     TENANT ||--o{ APPLICATION          : "agrega"
     TENANT ||--o{ APPLICATION_HISTORY  : "audita"
-    TENANT ||--o{ EVALUATION           : "armazena"
     TENANT ||--o{ INVITATION           : "convida"
     TENANT ||--o| PIPELINE_TEMPLATE    : "template padrão"
 
@@ -25,7 +24,6 @@ erDiagram
     USER ||--o| CANDIDATE              : "perfil"
     USER ||--o{ APPLICATION            : "sourced_by"
     USER ||--o{ APPLICATION_HISTORY    : "moved_by"
-    USER ||--o{ EVALUATION             : "created_by"
     USER ||--o{ INVITATION             : "convidado_por"
     USER ||--o{ APPLICATION_STAGE_PROGRESS : "concluído_por"
 
@@ -39,7 +37,6 @@ erDiagram
     JOB_STAGE ||--o{ APPLICATION_STAGE_PROGRESS : "progresso"
 
     APPLICATION ||--o{ APPLICATION_HISTORY : "histórico"
-    APPLICATION ||--o{ EVALUATION          : "avaliações"
     APPLICATION }|--o| JOB_STAGE           : "etapa atual"
     APPLICATION ||--o{ APPLICATION_STAGE_PROGRESS : "progresso por etapa"
 
@@ -118,17 +115,6 @@ erDiagram
         datetime createdAt
     }
 
-    EVALUATION {
-        uuid     id PK
-        uuid     tenantId FK
-        uuid     applicationId FK
-        uuid     createdByUserId FK "nullable"
-        int      score "nullable"
-        string   notes "nullable"
-        datetime createdAt
-        datetime updatedAt
-    }
-
     SAVED_JOB {
         uuid     id PK
         uuid     candidateId FK
@@ -204,7 +190,6 @@ erDiagram
 | `applications` | único `(tenantId, jobId, candidateId)` | impede duplicar candidatura |
 | `applications` | FK `sourcedByUserId` `ON DELETE SET NULL` | autor do *sourcing* opcional |
 | `application_history` | FK `movedByUserId` `ON DELETE SET NULL` | preserva histórico mesmo se o usuário for removido |
-| `evaluations` | FK `createdByUserId` `ON DELETE SET NULL` | preserva avaliações órfãs |
 | `saved_jobs` | único `(candidateId, jobId)` | sem duplicados de favoritos |
 | `invitations` | `tokenHash` único | impede colisões e permite lookup direto pelo token recebido por email |
 | `invitations` | FK `tenantId` `ON DELETE CASCADE` | apagar a empresa invalida convites pendentes |
@@ -216,7 +201,7 @@ erDiagram
 | `application_stage_progress` | único `(applicationId, jobStageId)` | um único progresso por etapa de cada candidatura |
 | `application_stage_progress` | FK `completedByUserId` `ON DELETE SET NULL` | auditoria preservada após remoção do usuário |
 
-Todas as FKs para `Tenant`, `Job`, `Candidate` e `Application` propagam com `ON DELETE CASCADE`; apagar um tenant remove o seu universo de dados (vagas, candidaturas, histórico, avaliações).
+Todas as FKs para `Tenant`, `Job`, `Candidate` e `Application` propagam com `ON DELETE CASCADE`; apagar um tenant remove o seu universo de dados (vagas, candidaturas e histórico).
 
 ## Ciclo de vida: Vagas (`Job.status`)
 
@@ -276,4 +261,4 @@ flowchart LR
 
 ## Isolamento por tenant
 
-Além das FKs explícitas, o Prisma client é estendido para injetar/limitar `tenantId` nas queries de `Job`, `Application`, `ApplicationHistory` e `Evaluation` quando o contexto está definido em `AsyncLocalStorage`. Funciona como rede de segurança caso um use case esqueça o filtro.
+Além das FKs explícitas, o Prisma client é estendido para injetar/limitar `tenantId` nas queries de `Job`, `Application` e `ApplicationHistory` quando o contexto está definido em `AsyncLocalStorage`. Funciona como rede de segurança caso um use case esqueça o filtro.

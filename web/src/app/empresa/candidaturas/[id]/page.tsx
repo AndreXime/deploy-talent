@@ -9,25 +9,11 @@ import { StageProgressTimeline } from '@/components/pipeline/stage-progress-time
 import { ApplicationStatusBadge } from '@/components/status-badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Textarea } from '@/components/ui/textarea'
-import {
-  createEvaluation,
-  getTenantApplication,
-  listEvaluations,
-  moveApplication,
-} from '@/lib/api/applications-api'
+import { getTenantApplication, moveApplication } from '@/lib/api/applications-api'
 import { ApiRequestError } from '@/lib/api/client'
 import {
   listApplicationProgress,
@@ -49,20 +35,12 @@ export default function TenantApplicationDetailPage() {
   const qc = useQueryClient()
   const valid = isUuid(id)
 
-  const [evalScore, setEvalScore] = useState('')
-  const [evalNotes, setEvalNotes] = useState('')
   const [targetStageId, setTargetStageId] = useState('')
 
   const appQ = useQuery({
     enabled: !!token && valid,
     queryKey: ['tenant-application', token, id],
     queryFn: () => getTenantApplication(requireSessionToken(token), id),
-  })
-
-  const evalQ = useQuery({
-    enabled: !!token && valid,
-    queryKey: ['evaluations', token, id],
-    queryFn: () => listEvaluations(requireSessionToken(token), id),
   })
 
   const jobId = appQ.data?.jobId
@@ -129,34 +107,6 @@ export default function TenantApplicationDetailPage() {
     onError: (err: unknown) => {
       if (err instanceof ApiRequestError) toast.error(err.message)
       else toast.error('Não foi possível guardar o link.')
-    },
-  })
-
-  const evalMut = useMutation({
-    mutationFn: () => {
-      let score: number | undefined
-      if (evalScore.trim().length > 0) {
-        score = Number.parseInt(evalScore, 10)
-        if (Number.isNaN(score) || score < 1 || score > 5) {
-          throw new Error('Pontuação deve estar entre 1 e 5.')
-        }
-      }
-      return createEvaluation(requireSessionToken(token), {
-        applicationId: id,
-        score,
-        notes: evalNotes.trim() || undefined,
-      })
-    },
-    onSuccess: () => {
-      toast.success('Nota interna registada.')
-      setEvalScore('')
-      setEvalNotes('')
-      qc.invalidateQueries({ queryKey: ['evaluations', token, id] })
-    },
-    onError: (err: unknown) => {
-      if (err instanceof Error && err.message.startsWith('Pontuação')) toast.error(err.message)
-      else if (err instanceof ApiRequestError) toast.error(err.message)
-      else toast.error('Não foi possível guardar a avaliação.')
     },
   })
 
@@ -350,59 +300,6 @@ export default function TenantApplicationDetailPage() {
                 </div>
               )}
             </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Avaliações internas</CardTitle>
-              <CardDescription>Não são compartilhadas com o candidato.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {evalQ.isLoading && <Skeleton className="h-12 w-full" />}
-              <ul className="space-y-3">
-                {evalQ.data?.map((ev) => (
-                  <li key={ev.id} className="rounded-lg border p-3 text-sm">
-                    <p className="font-medium">
-                      {ev.score !== null && ev.score !== undefined
-                        ? `Pontuação ${ev.score}/5`
-                        : 'Sem pontuação'}
-                    </p>
-                    {ev.notes && (
-                      <p className="mt-1 whitespace-pre-wrap text-muted-foreground">{ev.notes}</p>
-                    )}
-                  </li>
-                ))}
-              </ul>
-              <Separator />
-              <div className="grid gap-3">
-                <div className="space-y-2">
-                  <Label htmlFor="es">Pontuação (1–5, opcional)</Label>
-                  <Input
-                    id="es"
-                    type="number"
-                    min={1}
-                    max={5}
-                    value={evalScore}
-                    onChange={(e) => setEvalScore(e.target.value)}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="en">Notas</Label>
-                  <Textarea
-                    id="en"
-                    rows={4}
-                    value={evalNotes}
-                    onChange={(e) => setEvalNotes(e.target.value)}
-                    className="resize-y"
-                  />
-                </div>
-              </div>
-            </CardContent>
-            <CardFooter className="border-t">
-              <Button type="button" disabled={evalMut.isPending} onClick={() => evalMut.mutate()}>
-                Adicionar avaliação
-              </Button>
-            </CardFooter>
           </Card>
         </>
       )}

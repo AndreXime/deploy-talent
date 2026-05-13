@@ -5,7 +5,6 @@ import type {
   ApplicationResponse,
   ApplicationTenantListItem,
   CandidateProfileResponse,
-  EvaluationResponse,
   JobResponse,
   Paginated,
   SourceCandidateResult,
@@ -71,7 +70,6 @@ export function getTenantApplication(token: string, id: string) {
 export interface ApplicationTenantDetail extends ApplicationResponse {
   candidate: CandidateProfileResponse
   job: JobResponse
-  evaluations: EvaluationResponse[]
 }
 
 export function moveApplication(token: string, id: string, body: { status: ApiApplicationStatus }) {
@@ -92,48 +90,6 @@ export function sourceCandidate(
 ) {
   return apiRequest<SourceCandidateResult>('/applications/sourced', {
     method: 'POST',
-    token,
-    json: body,
-  })
-}
-
-export function listEvaluations(token: string, applicationId: string) {
-  return apiRequest<EvaluationResponse[]>('/applications/evaluations', {
-    method: 'GET',
-    token,
-    query: { applicationId },
-  })
-}
-
-export function createEvaluation(
-  token: string,
-  body: {
-    applicationId: string
-    score?: number
-    notes?: string
-  },
-) {
-  return apiRequest<EvaluationResponse>('/applications/evaluations', {
-    method: 'POST',
-    token,
-    json: body,
-  })
-}
-
-export function getEvaluation(token: string, evaluationId: string) {
-  return apiRequest<EvaluationResponse>(`/applications/evaluations/${evaluationId}`, {
-    method: 'GET',
-    token,
-  })
-}
-
-export function patchEvaluation(
-  token: string,
-  evaluationId: string,
-  body: { score?: number | null; notes?: string | null },
-) {
-  return apiRequest<EvaluationResponse>(`/applications/evaluations/${evaluationId}`, {
-    method: 'PATCH',
     token,
     json: body,
   })

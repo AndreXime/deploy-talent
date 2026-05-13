@@ -28,7 +28,6 @@ import {
   ApplicationCurrentStageResponseDto,
   ApplicationResponseDto,
   ApplicationStageProgressResponseDto,
-  EvaluationResponseDto,
   SourceCandidateResultDto,
 } from '../infra/docs/dto/swagger-responses.dto'
 import { ApiJwtAuth, ApiJwtTenantB2b, ApiStandardErrors } from '../infra/docs/swagger-decorators'
@@ -44,21 +43,14 @@ import {
   MyApplicationsListQueryDto,
   TenantApplicationsListQueryDto,
 } from './dto/application-list-query.dto'
-import { CreateEvaluationDto } from './dto/create-evaluation.dto'
-import { ListEvaluationsQueryDto } from './dto/list-evaluations-query.dto'
 import { MoveApplicationDto } from './dto/move-application.dto'
 import { SourceDto } from './dto/source.dto'
-import { UpdateEvaluationDto } from './dto/update-evaluation.dto'
-import { CreateEvaluationUseCase } from './use-cases/create-evaluation.use-case'
 import { GetApplicationForTenantUseCase } from './use-cases/get-application-for-tenant.use-case'
-import { GetEvaluationUseCase } from './use-cases/get-evaluation.use-case'
 import { GetMyApplicationUseCase } from './use-cases/get-my-application.use-case'
 import { ListApplicationsForTenantUseCase } from './use-cases/list-applications-for-tenant.use-case'
-import { ListEvaluationsForApplicationUseCase } from './use-cases/list-evaluations-for-application.use-case'
 import { ListMyApplicationsUseCase } from './use-cases/list-my-applications.use-case'
 import { MoveApplicationUseCase } from './use-cases/move-application.use-case'
 import { SourceCandidateUseCase } from './use-cases/source-candidate.use-case'
-import { UpdateEvaluationUseCase } from './use-cases/update-evaluation.use-case'
 import { WithdrawMyApplicationUseCase } from './use-cases/withdraw-my-application.use-case'
 
 interface RequestWithUser extends ExpressRequest {
@@ -88,10 +80,6 @@ export class ApplicationsController {
     private readonly getMyCurrentStage: GetMyCurrentStageUseCase,
     private readonly submitCurrentStage: SubmitCurrentStageUseCase,
     private readonly setInterviewLink: SetInterviewLinkUseCase,
-    private readonly createEvaluationUseCase: CreateEvaluationUseCase,
-    private readonly listEvaluationsForApplication: ListEvaluationsForApplicationUseCase,
-    private readonly getEvaluation: GetEvaluationUseCase,
-    private readonly updateEvaluationUseCase: UpdateEvaluationUseCase,
   ) {}
 
   @Post('sourced')
@@ -112,74 +100,6 @@ export class ApplicationsController {
   async sourced(@Request() req: RequestWithUser, @Body() body: SourceDto) {
     const user = requireUser(req)
     return this.sourceCandidate.execute({ userId: user.sub, role: user.role as UserRole }, body)
-  }
-
-  @Get('evaluations')
-  @TenantRequired()
-  @Roles(UserRole.TENANT_ADMIN, UserRole.RECRUITER)
-  @ApiJwtTenantB2b()
-  @ApiOperation({ summary: 'Listar avaliações de uma candidatura' })
-  @ApiOkResponse({ type: EvaluationResponseDto, isArray: true })
-  async listEvaluations(@Request() req: RequestWithUser, @Query() query: ListEvaluationsQueryDto) {
-    const user = requireUser(req)
-    return this.listEvaluationsForApplication.execute(
-      { userId: user.sub, role: user.role as UserRole },
-      query.applicationId,
-    )
-  }
-
-  @Get('evaluations/:evaluationId')
-  @TenantRequired()
-  @Roles(UserRole.TENANT_ADMIN, UserRole.RECRUITER)
-  @ApiJwtTenantB2b()
-  @ApiOperation({ summary: 'Obter avaliação por id' })
-  @ApiParam({ name: 'evaluationId', format: 'uuid' })
-  @ApiOkResponse({ type: EvaluationResponseDto })
-  async getEvaluationById(
-    @Request() req: RequestWithUser,
-    @Param('evaluationId') evaluationId: string,
-  ) {
-    const user = requireUser(req)
-    return this.getEvaluation.execute(
-      { userId: user.sub, role: user.role as UserRole },
-      evaluationId,
-    )
-  }
-
-  @Patch('evaluations/:evaluationId')
-  @TenantRequired()
-  @Roles(UserRole.TENANT_ADMIN, UserRole.RECRUITER)
-  @ApiJwtTenantB2b()
-  @ApiOperation({ summary: 'Atualizar notas ou score da avaliação' })
-  @ApiParam({ name: 'evaluationId', format: 'uuid' })
-  @ApiBody({ type: UpdateEvaluationDto })
-  @ApiOkResponse({ type: EvaluationResponseDto })
-  async patchEvaluation(
-    @Request() req: RequestWithUser,
-    @Param('evaluationId') evaluationId: string,
-    @Body() body: UpdateEvaluationDto,
-  ) {
-    const user = requireUser(req)
-    return this.updateEvaluationUseCase.execute(
-      { userId: user.sub, role: user.role as UserRole },
-      evaluationId,
-      body,
-    )
-  }
-
-  @Post('evaluations')
-  @TenantRequired()
-  @Roles(UserRole.TENANT_ADMIN, UserRole.RECRUITER)
-  @ApiJwtTenantB2b()
-  @ApiOperation({ summary: 'Registrar avaliação' })
-  @ApiBody({ type: CreateEvaluationDto })
-  @ApiCreatedResponse({ type: EvaluationResponseDto })
-  async createEvaluation(@Request() req: RequestWithUser, @Body() body: CreateEvaluationDto) {
-    const user = requireUser(req)
-    return this.createEvaluationUseCase.execute(
-      { userId: user.sub, role: user.role as UserRole },
-      body,
-    )
   }
 
   @Get()
@@ -259,7 +179,7 @@ export class ApplicationsController {
   @ApiJwtTenantB2b()
   @ApiOperation({ summary: 'Detalhe de candidatura (tenant)' })
   @ApiParam({ name: 'id', format: 'uuid' })
-  @ApiOkResponse({ description: 'Inclui candidate, job e evaluations' })
+  @ApiOkResponse({ description: 'Inclui candidate e job' })
   async getForTenant(@Request() req: RequestWithUser, @Param('id') id: string) {
     const user = requireUser(req)
     return this.getApplicationForTenant.execute(

@@ -109,18 +109,6 @@ export class ApplicationCandidateListItemDto extends ApplicationResponseDto {
   @ApiProperty({ type: TenantSnippetDto }) tenant!: TenantSnippetDto
 }
 
-/** Avaliação registrada pelo recrutador/admin. */
-export class EvaluationResponseDto {
-  @ApiProperty({ format: 'uuid' }) id!: string
-  @ApiProperty({ format: 'uuid' }) tenantId!: string
-  @ApiProperty({ format: 'uuid' }) applicationId!: string
-  @ApiProperty({ nullable: true, format: 'uuid' }) createdByUserId!: string | null
-  @ApiProperty({ nullable: true }) score!: number | null
-  @ApiProperty({ nullable: true }) notes!: string | null
-  @ApiProperty({ type: String, format: 'date-time' }) createdAt!: Date
-  @ApiProperty({ type: String, format: 'date-time' }) updatedAt!: Date
-}
-
 /** Resposta dos endpoints que retornam session JWT (`access_token`). */
 export class AccessTokenDto {
   @ApiProperty({

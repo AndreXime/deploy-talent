@@ -17,9 +17,6 @@ export async function clearSeedData(prisma: PrismaClient): Promise<void> {
   await prisma.applicationHistory.deleteMany({
     where: { tenant: { slug: { startsWith: 'seed-emp-' } } },
   })
-  await prisma.evaluation.deleteMany({
-    where: { tenant: { slug: { startsWith: 'seed-emp-' } } },
-  })
   await prisma.application.deleteMany({
     where: { tenant: { slug: { startsWith: 'seed-emp-' } } },
   })

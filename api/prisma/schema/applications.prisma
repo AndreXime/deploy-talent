@@ -16,7 +16,6 @@ model Application {
   sourcedBy    User?                      @relation("SourcedBy", fields: [sourcedByUserId], references: [id], onDelete: SetNull)
   currentStage JobStage?                  @relation("CurrentJobStage", fields: [currentJobStageId], references: [id], onDelete: SetNull)
   history      ApplicationHistory[]
-  evaluations  Evaluation[]
   progresses   ApplicationStageProgress[]
 
   @@unique([tenantId, jobId, candidateId])

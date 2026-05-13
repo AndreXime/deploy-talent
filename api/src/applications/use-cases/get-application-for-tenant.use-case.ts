@@ -32,7 +32,6 @@ export class GetApplicationForTenantUseCase {
       include: {
         candidate: true,
         job: true,
-        evaluations: { orderBy: { createdAt: 'desc' } },
       },
     })
     if (!app) throw new NotFoundException('Application not found')

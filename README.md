@@ -110,8 +110,7 @@ Todas as contas geradas usam a mesma password.
 - **Multi-tenant (empresas):** cada organização é um tenant com dados isolados por `tenant_id`. `SUPER_ADMIN` gere o ciclo de vida dos tenants; `TENANT_ADMIN` e `RECRUITER` trabalham apenas no contexto do tenant do JWT.
 - **Vagas e página de carreiras:** criação e edição com ciclo `DRAFT` → `PUBLISHED` / `PAUSED` → `CLOSED`. Endpoints públicos servem o site de empresa (`/carreiras/:tenantId`) e o marketplace agregado (`/vagas`). Candidaturas novas só em vagas `PUBLISHED` ou `PAUSED`.
 - **Perfil único do candidato (*one-profile*):** o candidato tem um perfil global; mudanças propagam a todas as candidaturas ativas. Pode anonimizar a conta (LGPD-style) com remoção dos dados identificáveis.
-- **Candidaturas e pipeline:** o candidato candidata-se com o UUID do tenant na URL e pode desistir (`WITHDRAWN`). Recrutadores fazem *sourcing* (`SOURCED`), movem o processo (`IN_PROGRESS`, `REJECTED`, `HIRED`, …) com histórico de auditoria.
-- **Avaliações internas:** notas/pareceres por candidatura (`Evaluation`), só visíveis no lado da empresa.
+- **Candidaturas e pipeline:** o candidato candidata-se com o UUID do tenant na URL e pode desistir (`WITHDRAWN`). Recrutadores fazem *sourcing* (`SOURCED`), movem o processo (`IN_PROGRESS`, `REJECTED`, `HIRED`, …) com histórico de auditoria e etapas por vaga (`JobStage` / `ApplicationStageProgress`).
 - **E-mail transacional (SMTP):** disparado em submissão, contratação e rejeição. Falhas no envio não bloqueiam a operação principal.
 - **Arquivos e marca:** upload S3 com URL pré-assinada (avatar do candidato, currículo, logo e banner do tenant). Download autorizado também por URL pré-assinada, segundo o papel e o prefixo da chave. Há recurso público de branding do tenant.
 - **Segurança e operação:** JWT + RBAC, CORS configurável, Helmet em produção, throttling global. Fora de `PROD`, Swagger em `/docs`.
@@ -155,7 +154,7 @@ Todas as contas geradas usam a mesma password.
 - **JWT:** `Authorization: Bearer <access_token>`. O payload inclui `sub`, `role` e `tenantId` (pode ser `null`, ex.: candidato ou super admin).
 - **B2B (`RECRUITER` / `TENANT_ADMIN`):** o tenant vem do `tenantId` do **JWT** (não envies header). Um interceptor valida que o tenant existe e está ativo e grava o contexto em `AsyncLocalStorage`.
 - **Candidato em rotas "por empresa":** usa o **UUID do tenant na URL** (ex.: `POST /tenants/:tenantId/applications/apply`), não o header.
-- **Contexto assíncrono:** o Prisma client estende queries de `job`, `application`, `applicationHistory` e `evaluation` para injetar/limitar por `tenantId` quando o contexto está definido, funcionando como camada extra de isolamento além das regras dos use cases.
+- **Contexto assíncrono:** o Prisma client estende queries de `job`, `application` e `applicationHistory` para injetar/limitar por `tenantId` quando o contexto está definido, funcionando como camada extra de isolamento além das regras dos use cases.
 
 ## Papéis
 

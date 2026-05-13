@@ -6,13 +6,13 @@
 > - [Modelo de Dados](./BANCO_DE_DADOS.md)
 > - [Fluxos](./FLUXOS.md)
 
-O **Deploy Talent** é uma plataforma multi-tenant de recrutamento (ATS) que materializa, num só produto, todo o ciclo de aquisição de talento: desde o site público de carreiras de cada empresa, passando pelo marketplace agregado de vagas, até a gestão interna do pipeline de candidaturas. Do lado **B2B**, cada empresa opera como um *tenant* isolado por `tenant_id`, com os seus próprios recrutadores, vagas, candidaturas, avaliações e ativos de marca (logo, banner), sob uma hierarquia de papéis (`SUPER_ADMIN`, `TENANT_ADMIN`, `RECRUITER`) que delimita o que cada usuário vê e faz. Do lado **B2C**, o candidato mantém um perfil único e global (*one-profile*), independente das empresas onde se candidata: edita uma vez, propaga em todas as candidaturas ativas, e pode anonimizar a conta para responder a pedidos no estilo LGPD. As vagas seguem uma máquina de estados explícita (`DRAFT → PUBLISHED → PAUSED → CLOSED`) e as candidaturas percorrem um pipeline auditável (`SOURCED`, `APPLIED`, `IN_PROGRESS`, `REJECTED`, `WITHDRAWN`, `HIRED`), com cada transição gravada em histórico identificando o usuário autor da mudança. À volta deste núcleo, a plataforma trata também das pontas operacionais: arquivos (currículos, avatares, logos, banners) entram e saem do S3 por URLs pré-assinadas com TTL e autorização por papel + prefixo da chave; e-mails transacionais (submissão, contratação, rejeição) são disparados via SMTP em *best-effort* para não bloquear o fluxo principal; e a camada de segurança combina JWT + RBAC, CORS configurável, Helmet em produção, throttling global e uma extensão do Prisma client que injeta `tenantId` automaticamente nas queries de domínio, funcionando como rede de proteção extra para o isolamento entre tenants.
+O **Deploy Talent** é uma plataforma multi-tenant de recrutamento (ATS) que materializa, num só produto, todo o ciclo de aquisição de talento: desde o site público de carreiras de cada empresa, passando pelo marketplace agregado de vagas, até a gestão interna do pipeline de candidaturas. Do lado **B2B**, cada empresa opera como um *tenant* isolado por `tenant_id`, com os seus próprios recrutadores, vagas, candidaturas, pipeline e ativos de marca (logo, banner), sob uma hierarquia de papéis (`SUPER_ADMIN`, `TENANT_ADMIN`, `RECRUITER`) que delimita o que cada usuário vê e faz. Do lado **B2C**, o candidato mantém um perfil único e global (*one-profile*), independente das empresas onde se candidata: edita uma vez, propaga em todas as candidaturas ativas, e pode anonimizar a conta para responder a pedidos no estilo LGPD. As vagas seguem uma máquina de estados explícita (`DRAFT → PUBLISHED → PAUSED → CLOSED`) e as candidaturas percorrem um pipeline auditável (`SOURCED`, `APPLIED`, `IN_PROGRESS`, `REJECTED`, `WITHDRAWN`, `HIRED`), com cada transição gravada em histórico identificando o usuário autor da mudança. À volta deste núcleo, a plataforma trata também das pontas operacionais: arquivos (currículos, avatares, logos, banners) entram e saem do S3 por URLs pré-assinadas com TTL e autorização por papel + prefixo da chave; e-mails transacionais (submissão, contratação, rejeição) são disparados via SMTP em *best-effort* para não bloquear o fluxo principal; e a camada de segurança combina JWT + RBAC, CORS configurável, Helmet em produção, throttling global e uma extensão do Prisma client que injeta `tenantId` automaticamente nas queries de domínio, funcionando como rede de proteção extra para o isolamento entre tenants.
 
 ## Funcionalidades
 
 ### Multi-tenant (empresas)
 
-Cada organização é um tenant com dados isolados por `tenant_id`. O `SUPER_ADMIN` gere o ciclo de vida dos tenants (criar, listar, suspender, ativar, soft-delete); `TENANT_ADMIN` e `RECRUITER` operam apenas no contexto do tenant do JWT. O isolamento é reforçado por uma extensão do Prisma client que injeta/limita por `tenantId` queries de `job`, `application`, `applicationHistory` e `evaluation` quando o contexto está definido em `AsyncLocalStorage`.
+Cada organização é um tenant com dados isolados por `tenant_id`. O `SUPER_ADMIN` gere o ciclo de vida dos tenants (criar, listar, suspender, ativar, soft-delete); `TENANT_ADMIN` e `RECRUITER` operam apenas no contexto do tenant do JWT. O isolamento é reforçado por uma extensão do Prisma client que injeta/limita por `tenantId` queries de `job`, `application` e `applicationHistory` quando o contexto está definido em `AsyncLocalStorage`.
 
 ### Vagas e página de carreiras
 
@@ -39,10 +39,6 @@ Cada tenant tem um template padrão (`PipelineTemplate` + `TemplateStage`). Ao c
 * `FILE_UPLOAD`: o candidato submete um arquivo via S3 pré-assinado (`purpose` `APPLICATION_STAGE_FILE`). A API fixa os tipos permitidos (PDF, DOCX, PNG, JPG, TXT) e o tamanho máximo efetivo (menor entre 10 MiB e `S3_MAX_UPLOAD_BYTES`). A configuração da etapa só pode incluir `instructions`.
 
 Cada submissão fica em `ApplicationStageProgress` (`PENDING` → `COMPLETED`), incluindo dados submetidos e quem completou, para auditoria.
-
-### Avaliações internas
-
-Notas e pareceres por candidatura (entidade `Evaluation`), visíveis apenas no lado da empresa (`TENANT_ADMIN` / `RECRUITER`).
 
 ### E-mail transacional (SMTP)
 
@@ -119,7 +115,7 @@ Regras de transição:
 
 - **B2B (`RECRUITER` / `TENANT_ADMIN`):** o tenant vem do `tenantId` do **JWT**, nunca por header. Um interceptor valida que o tenant existe e está ativo e grava o contexto em `AsyncLocalStorage`.
 - **Candidato em rotas "por empresa":** usa o **UUID do tenant na URL** (ex.: `POST /tenants/:tenantId/applications/apply`).
-- **Isolamento extra:** a extensão do Prisma client aplica filtro/injeção de `tenantId` em `job`, `application`, `applicationHistory` e `evaluation` quando há contexto, mesmo que o use case se esqueça.
+- **Isolamento extra:** a extensão do Prisma client aplica filtro/injeção de `tenantId` em `job`, `application` e `applicationHistory` quando há contexto, mesmo que o use case se esqueça.
 
 ### Perfil único do candidato
 

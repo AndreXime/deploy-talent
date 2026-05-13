@@ -125,28 +125,6 @@ export function tenantPrismaExtension(tenantContext: TenantContextService) {
             return params.query(params.args)
           },
         },
-        evaluation: {
-          async findMany(params: QueryParams<Prisma.EvaluationFindManyArgs>) {
-            const tenantId = getTenantId(tenantContext)
-            if (tenantId) addTenantIdToWhere(params.args, tenantId)
-            return params.query(params.args)
-          },
-          async findFirst(params: QueryParams<Prisma.EvaluationFindFirstArgs>) {
-            const tenantId = getTenantId(tenantContext)
-            if (tenantId) addTenantIdToWhere(params.args, tenantId)
-            return params.query(params.args)
-          },
-          async create(params: QueryParams<Prisma.EvaluationCreateArgs>) {
-            const tenantId = getTenantId(tenantContext)
-            if (tenantId) addTenantIdToData(params.args, tenantId)
-            return params.query(params.args)
-          },
-          async update(params: QueryParams<Prisma.EvaluationUpdateArgs>) {
-            const tenantId = getTenantId(tenantContext)
-            if (tenantId) addTenantIdToWhere(params.args, tenantId)
-            return params.query(params.args)
-          },
-        },
       },
     }),
   )
