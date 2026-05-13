@@ -48,8 +48,7 @@ function buildS3Client(): { client: S3Client; bucket: string } {
     region,
     endpoint,
     forcePathStyle,
-    credentials:
-      accessKeyId && secretAccessKey ? { accessKeyId, secretAccessKey } : undefined,
+    credentials: accessKeyId && secretAccessKey ? { accessKeyId, secretAccessKey } : undefined,
   })
 
   return { client, bucket }

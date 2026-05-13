@@ -1,0 +1,30 @@
+set -e
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+
+run_api=0
+run_web=0
+while IFS= read -r f; do
+  [ -z "$f" ] && continue
+  case "$f" in
+    api/*) run_api=1 ;;
+    web/*) run_web=1 ;;
+    biome.json)
+      run_api=1
+      run_web=1
+      ;;
+  esac
+done <<EOF
+$(git diff --cached --name-only)
+EOF
+
+if [ "$run_api" -eq 0 ] && [ "$run_web" -eq 0 ]; then
+  exit 0
+fi
+
+if [ "$run_api" -eq 1 ]; then
+  (cd "$ROOT/api" && npm run lint && npm run format && npm run test)
+fi
+
+if [ "$run_web" -eq 1 ]; then
+  (cd "$ROOT/web" && npm run lint && npm run format)
+fi

@@ -11,7 +11,9 @@ export class ActivateTenantUseCase {
     if (!tenant) throw new NotFoundException('Tenant not found')
     if (tenant.deletedAt) throw new BadRequestException('Tenant is deleted')
     if (tenant.signupPending) {
-      throw new BadRequestException('Use approve-signup for tenants awaiting self-registration approval')
+      throw new BadRequestException(
+        'Use approve-signup for tenants awaiting self-registration approval',
+      )
     }
     return this.prisma.tenant.update({ where: { id: tenantId }, data: { isActive: true } })
   }

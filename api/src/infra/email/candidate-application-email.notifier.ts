@@ -104,8 +104,14 @@ export class CandidateApplicationEmailNotifier {
   }
 
   async notifyPipelineStageAdvanced(ctx: PipelineStageEmailContext): Promise<void> {
-    const { recipientEmail, candidateName, jobTitle, companyName, newStageName, previousStageName } =
-      ctx
+    const {
+      recipientEmail,
+      candidateName,
+      jobTitle,
+      companyName,
+      newStageName,
+      previousStageName,
+    } = ctx
     const safe = {
       name: escapeHtml(candidateName),
       job: escapeHtml(jobTitle),

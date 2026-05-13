@@ -10,7 +10,8 @@ export class ApproveTenantSignupUseCase {
     const tenant = await this.prisma.tenant.findFirst({ where: { id: tenantId } })
     if (!tenant) throw new NotFoundException('Tenant not found')
     if (tenant.deletedAt) throw new BadRequestException('Tenant is deleted')
-    if (!tenant.signupPending) throw new BadRequestException('Tenant is not awaiting signup approval')
+    if (!tenant.signupPending)
+      throw new BadRequestException('Tenant is not awaiting signup approval')
 
     return this.prisma.tenant.update({
       where: { id: tenantId },

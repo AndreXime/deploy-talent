@@ -167,88 +167,92 @@ export default function PlatformTenantsPage() {
                 {listQ.data?.map((row) => {
                   const pending = Boolean(row.signupPending) && !row.deletedAt
                   return (
-                  <TableRow key={row.id}>
-                    <TableCell className="font-medium">{row.name}</TableCell>
-                    <TableCell>{row.slug}</TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap gap-2">
-                        {row.deletedAt && <Badge variant="outline">Eliminado</Badge>}
-                        {pending && <Badge variant="secondary">Aguarda aprovação</Badge>}
-                        {!row.deletedAt && !pending && row.isActive && (
-                          <Badge variant="outline">Activo</Badge>
-                        )}
-                        {!row.deletedAt && !pending && !row.isActive && (
-                          <Badge variant="outline">Suspenso</Badge>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-end">
-                      <div className="flex flex-wrap justify-end gap-2">
-                        {pending ? (
-                          <>
-                            <Button
-                              variant="default"
-                              size="sm"
-                              type="button"
-                              onClick={() => approveSignup(row.id).catch(() => undefined)}
-                            >
-                              Aprovar registo
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              type="button"
-                              onClick={() => rejectSignup(row.id).catch(() => undefined)}
-                            >
-                              Recusar
-                            </Button>
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              type="button"
-                              onClick={() => mutateTenant(row.id, 'delete').catch(() => undefined)}
-                            >
-                              Eliminar
-                            </Button>
-                          </>
-                        ) : (
-                          <>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              type="button"
-                              disabled={!!row.deletedAt || !row.isActive}
-                              onClick={() => setAdminOpen(row.id)}
-                            >
-                              Convidar admin
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              type="button"
-                              disabled={!!row.deletedAt}
-                              onClick={() =>
-                                mutateTenant(row.id, row.isActive ? 'suspend' : 'activate').catch(
-                                  () => undefined,
-                                )
-                              }
-                            >
-                              {row.deletedAt ? '—' : row.isActive ? 'Suspender' : 'Reativar'}
-                            </Button>
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              type="button"
-                              disabled={!!row.deletedAt}
-                              onClick={() => mutateTenant(row.id, 'delete').catch(() => undefined)}
-                            >
-                              Eliminar
-                            </Button>
-                          </>
-                        )}
-                      </div>
-                    </TableCell>
-                  </TableRow>
+                    <TableRow key={row.id}>
+                      <TableCell className="font-medium">{row.name}</TableCell>
+                      <TableCell>{row.slug}</TableCell>
+                      <TableCell>
+                        <div className="flex flex-wrap gap-2">
+                          {row.deletedAt && <Badge variant="outline">Eliminado</Badge>}
+                          {pending && <Badge variant="secondary">Aguarda aprovação</Badge>}
+                          {!row.deletedAt && !pending && row.isActive && (
+                            <Badge variant="outline">Activo</Badge>
+                          )}
+                          {!row.deletedAt && !pending && !row.isActive && (
+                            <Badge variant="outline">Suspenso</Badge>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-end">
+                        <div className="flex flex-wrap justify-end gap-2">
+                          {pending ? (
+                            <>
+                              <Button
+                                variant="default"
+                                size="sm"
+                                type="button"
+                                onClick={() => approveSignup(row.id).catch(() => undefined)}
+                              >
+                                Aprovar registo
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                type="button"
+                                onClick={() => rejectSignup(row.id).catch(() => undefined)}
+                              >
+                                Recusar
+                              </Button>
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                type="button"
+                                onClick={() =>
+                                  mutateTenant(row.id, 'delete').catch(() => undefined)
+                                }
+                              >
+                                Eliminar
+                              </Button>
+                            </>
+                          ) : (
+                            <>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                type="button"
+                                disabled={!!row.deletedAt || !row.isActive}
+                                onClick={() => setAdminOpen(row.id)}
+                              >
+                                Convidar admin
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                type="button"
+                                disabled={!!row.deletedAt}
+                                onClick={() =>
+                                  mutateTenant(row.id, row.isActive ? 'suspend' : 'activate').catch(
+                                    () => undefined,
+                                  )
+                                }
+                              >
+                                {row.deletedAt ? '—' : row.isActive ? 'Suspender' : 'Reativar'}
+                              </Button>
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                type="button"
+                                disabled={!!row.deletedAt}
+                                onClick={() =>
+                                  mutateTenant(row.id, 'delete').catch(() => undefined)
+                                }
+                              >
+                                Eliminar
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
                   )
                 })}
               </TableBody>
@@ -305,8 +309,8 @@ export default function PlatformTenantsPage() {
           </DialogHeader>
           <div className="grid gap-3 pt-2">
             <p className="text-sm text-muted-foreground">
-              Enviamos um link único para o email indicado. O destinatário define a senha ao
-              aceitar o convite, e o link expira passadas algumas horas.
+              Enviamos um link único para o email indicado. O destinatário define a senha ao aceitar
+              o convite, e o link expira passadas algumas horas.
             </p>
             <div className="space-y-2">
               <Label htmlFor="aem">Email do administrador</Label>
