@@ -1,4 +1,5 @@
 set -e
+# format --write primeiro; check inclui lint + imports ordenados + formato (lint sozinho não chega).
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 
 run_api=0
@@ -22,9 +23,9 @@ if [ "$run_api" -eq 0 ] && [ "$run_web" -eq 0 ]; then
 fi
 
 if [ "$run_api" -eq 1 ]; then
-  (cd "$ROOT/api" && npm run lint && npm run format && npm run test)
+  (cd "$ROOT/api" && npm run format && npm run check && npm run test)
 fi
 
 if [ "$run_web" -eq 1 ]; then
-  (cd "$ROOT/web" && npm run lint && npm run format)
+  (cd "$ROOT/web" && npm run format && npm run check)
 fi
