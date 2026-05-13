@@ -13,6 +13,7 @@ export class CreateTenantUseCase {
         name: input.name,
         slug: input.slug,
         isActive: input.isActive ?? true,
+        signupPending: false,
       },
     })
   }

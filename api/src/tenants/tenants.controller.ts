@@ -33,11 +33,13 @@ import { ApiJwtAuth, ApiJwtTenantB2b, ApiStandardErrors } from '../infra/docs/sw
 import { TenantOptional, TenantRequired } from '../tenant-context/tenant.decorators'
 import { CreateTenantDto } from './dto/create-tenant.dto'
 import { UpdateTenantBrandingDto } from './dto/update-tenant-branding.dto'
+import { ApproveTenantSignupUseCase } from './use-cases/approve-tenant-signup.use-case'
 import { ActivateTenantUseCase } from './use-cases/activate-tenant.use-case'
 import { CreateTenantUseCase } from './use-cases/create-tenant.use-case'
 import { GetCurrentTenantUseCase } from './use-cases/get-current-tenant.use-case'
 import { ListCurrentTenantRecruitersUseCase } from './use-cases/list-current-tenant-recruiters.use-case'
 import { ListTenantsUseCase } from './use-cases/list-tenants.use-case'
+import { RejectTenantSignupUseCase } from './use-cases/reject-tenant-signup.use-case'
 import { RemoveTenantRecruiterUseCase } from './use-cases/remove-tenant-recruiter.use-case'
 import { SoftDeleteTenantUseCase } from './use-cases/soft-delete-tenant.use-case'
 import { SuspendTenantUseCase } from './use-cases/suspend-tenant.use-case'
@@ -64,6 +66,8 @@ export class TenantsController {
     private readonly listTenants: ListTenantsUseCase,
     private readonly suspendTenant: SuspendTenantUseCase,
     private readonly activateTenant: ActivateTenantUseCase,
+    private readonly approveTenantSignup: ApproveTenantSignupUseCase,
+    private readonly rejectTenantSignup: RejectTenantSignupUseCase,
     private readonly softDeleteTenant: SoftDeleteTenantUseCase,
     private readonly updateTenantBranding: UpdateTenantBrandingUseCase,
     private readonly getCurrentTenant: GetCurrentTenantUseCase,
@@ -179,6 +183,33 @@ export class TenantsController {
   @ApiOkResponse({ type: TenantResponseDto })
   async activate(@Param('id') id: string) {
     return this.activateTenant.execute(id)
+  }
+
+  @Patch(':id/approve-signup')
+  @UseGuards(JwtAuthGuard)
+  @Roles(UserRole.SUPER_ADMIN)
+  @ApiOperation({
+    summary: 'Aprovar registo público de empresa',
+    description: 'Activa o tenant e remove `signupPending` (admin já pode entrar em `/entrar`).',
+  })
+  @ApiParam({ name: 'id', format: 'uuid' })
+  @ApiOkResponse({ type: TenantResponseDto })
+  async approveSignup(@Param('id', new ParseUUIDPipe()) id: string) {
+    return this.approveTenantSignup.execute(id)
+  }
+
+  @Patch(':id/reject-signup')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @UseGuards(JwtAuthGuard)
+  @Roles(UserRole.SUPER_ADMIN)
+  @ApiOperation({
+    summary: 'Recusar registo público de empresa',
+    description: 'Apaga o tenant e o utilizador TENANT_ADMIN associado (slug fica livre).',
+  })
+  @ApiParam({ name: 'id', format: 'uuid' })
+  @ApiNoContentResponse()
+  async rejectSignup(@Param('id', new ParseUUIDPipe()) id: string): Promise<void> {
+    await this.rejectTenantSignup.execute(id)
   }
 
   @Patch(':id/delete')

@@ -28,8 +28,10 @@ import { ApiRequestError } from '@/lib/api/client'
 import { inviteTenantAdminRequest } from '@/lib/api/invitations-api'
 import {
   activateTenant,
+  approveTenantSignup,
   createTenant,
   listPlatformTenants,
+  rejectTenantSignup,
   softDeleteTenant,
   suspendTenant,
 } from '@/lib/api/tenants-api'
@@ -101,6 +103,28 @@ export default function PlatformTenantsPage() {
     }
   }
 
+  async function approveSignup(id: string): Promise<void> {
+    try {
+      await approveTenantSignup(requireSessionToken(token), id)
+      toast.success('Registo público aprovado.')
+      qc.invalidateQueries({ queryKey: ['platform-tenants', token] })
+    } catch (err: unknown) {
+      if (err instanceof ApiRequestError) toast.error(err.message)
+      else toast.error('Não foi possível aprovar.')
+    }
+  }
+
+  async function rejectSignup(id: string): Promise<void> {
+    try {
+      await rejectTenantSignup(requireSessionToken(token), id)
+      toast.success('Pedido recusado e removido.')
+      qc.invalidateQueries({ queryKey: ['platform-tenants', token] })
+    } catch (err: unknown) {
+      if (err instanceof ApiRequestError) toast.error(err.message)
+      else toast.error('Não foi possível recusar.')
+    }
+  }
+
   const slugValid = /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(cSlug.trim())
 
   return (
@@ -124,7 +148,9 @@ export default function PlatformTenantsPage() {
           <CardHeader className="pb-2">
             <CardTitle>Listagem</CardTitle>
             <CardDescription>
-              O identificador curto (slug) segue o padrão interno de validação da API.
+              Pedidos de empresa feitos em registo público aparecem com a etiqueta Aguarda aprovação
+              até o administrador da plataforma aprovar ou recusar. Ao criar empresa aqui, o
+              identificador curto (slug) segue o padrão da API.
             </CardDescription>
           </CardHeader>
           <CardContent className="overflow-x-auto px-4">
@@ -138,56 +164,93 @@ export default function PlatformTenantsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {listQ.data?.map((row) => (
+                {listQ.data?.map((row) => {
+                  const pending = Boolean(row.signupPending) && !row.deletedAt
+                  return (
                   <TableRow key={row.id}>
                     <TableCell className="font-medium">{row.name}</TableCell>
                     <TableCell>{row.slug}</TableCell>
                     <TableCell>
                       <div className="flex flex-wrap gap-2">
                         {row.deletedAt && <Badge variant="outline">Eliminado</Badge>}
-                        {!row.deletedAt && row.isActive && <Badge variant="outline">Activo</Badge>}
-                        {!row.deletedAt && !row.isActive && (
+                        {pending && <Badge variant="secondary">Aguarda aprovação</Badge>}
+                        {!row.deletedAt && !pending && row.isActive && (
+                          <Badge variant="outline">Activo</Badge>
+                        )}
+                        {!row.deletedAt && !pending && !row.isActive && (
                           <Badge variant="outline">Suspenso</Badge>
                         )}
                       </div>
                     </TableCell>
                     <TableCell className="text-end">
                       <div className="flex flex-wrap justify-end gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          type="button"
-                          disabled={!!row.deletedAt}
-                          onClick={() => setAdminOpen(row.id)}
-                        >
-                          Convidar admin
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          type="button"
-                          disabled={!!row.deletedAt}
-                          onClick={() =>
-                            mutateTenant(row.id, row.isActive ? 'suspend' : 'activate').catch(
-                              () => undefined,
-                            )
-                          }
-                        >
-                          {row.deletedAt ? '—' : row.isActive ? 'Suspender' : 'Reativar'}
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          type="button"
-                          disabled={!!row.deletedAt}
-                          onClick={() => mutateTenant(row.id, 'delete').catch(() => undefined)}
-                        >
-                          Eliminar
-                        </Button>
+                        {pending ? (
+                          <>
+                            <Button
+                              variant="default"
+                              size="sm"
+                              type="button"
+                              onClick={() => approveSignup(row.id).catch(() => undefined)}
+                            >
+                              Aprovar registo
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              type="button"
+                              onClick={() => rejectSignup(row.id).catch(() => undefined)}
+                            >
+                              Recusar
+                            </Button>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              type="button"
+                              onClick={() => mutateTenant(row.id, 'delete').catch(() => undefined)}
+                            >
+                              Eliminar
+                            </Button>
+                          </>
+                        ) : (
+                          <>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              type="button"
+                              disabled={!!row.deletedAt || !row.isActive}
+                              onClick={() => setAdminOpen(row.id)}
+                            >
+                              Convidar admin
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              type="button"
+                              disabled={!!row.deletedAt}
+                              onClick={() =>
+                                mutateTenant(row.id, row.isActive ? 'suspend' : 'activate').catch(
+                                  () => undefined,
+                                )
+                              }
+                            >
+                              {row.deletedAt ? '—' : row.isActive ? 'Suspender' : 'Reativar'}
+                            </Button>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              type="button"
+                              disabled={!!row.deletedAt}
+                              onClick={() => mutateTenant(row.id, 'delete').catch(() => undefined)}
+                            >
+                              Eliminar
+                            </Button>
+                          </>
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>
-                ))}
+                  )
+                })}
               </TableBody>
             </Table>
           </CardContent>

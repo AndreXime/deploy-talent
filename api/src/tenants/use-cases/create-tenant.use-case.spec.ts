@@ -14,7 +14,7 @@ describe('CreateTenantUseCase', () => {
     const result = await useCase.execute({ name: 'Acme', slug: 'acme' })
 
     expect(prisma.tenant.create).toHaveBeenCalledWith({
-      data: { name: 'Acme', slug: 'acme', isActive: true },
+      data: { name: 'Acme', slug: 'acme', isActive: true, signupPending: false },
     })
     expect(result).toEqual(created)
   })

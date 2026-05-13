@@ -1,0 +1,1 @@
+ALTER TABLE "tenants" ADD COLUMN "signupPending" BOOLEAN NOT NULL DEFAULT false;

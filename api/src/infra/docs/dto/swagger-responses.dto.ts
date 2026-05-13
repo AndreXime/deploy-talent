@@ -16,6 +16,10 @@ export class TenantResponseDto {
   @ApiProperty() name!: string
   @ApiProperty() slug!: string
   @ApiProperty() isActive!: boolean
+  @ApiProperty({
+    description: 'Registo público aguardando aprovação do SUPER_ADMIN',
+  })
+  signupPending!: boolean
   @ApiProperty({ nullable: true, type: String, format: 'date-time' }) deletedAt!: Date | null
   @ApiProperty({ nullable: true, description: 'Chave S3 do logo' }) logoKey!: string | null
   @ApiProperty({ nullable: true, description: 'Chave S3 do banner' }) bannerKey!: string | null
@@ -126,6 +130,12 @@ export class SessionTokensDto extends AccessTokenDto {
     example: 'base64url-opaco',
   })
   refresh_token!: string
+}
+
+/** Resposta de `POST /auth/register/tenant-admin` (sem sessão até aprovação). */
+export class RegisterTenantAdminPendingResponseDto {
+  @ApiProperty({ enum: ['pending_approval'] })
+  status!: 'pending_approval'
 }
 
 /** Conta B2B do usuário autenticado (`GET /auth/me`, `PATCH /auth/me/avatar`). */

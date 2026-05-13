@@ -16,14 +16,18 @@ import {
 } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { registerCandidateRequest } from '@/lib/api/auth-api'
+import { registerCandidateRequest, registerTenantAdminRequest } from '@/lib/api/auth-api'
 import { ApiRequestError } from '@/lib/api/client'
 import { useAuth } from '@/providers/auth-provider'
+
+type RegisterMode = 'candidate' | 'tenant_admin'
 
 export default function RegisterPage() {
   const router = useRouter()
   const { setSession } = useAuth()
+  const [mode, setMode] = useState<RegisterMode>('candidate')
   const [name, setName] = useState('')
+  const [companyName, setCompanyName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -32,15 +36,28 @@ export default function RegisterPage() {
     e.preventDefault()
     setLoading(true)
     try {
-      const res = await registerCandidateRequest({ name, email, password })
-      setSession(res)
-      toast.success('Conta criada.')
-      router.replace('/candidato')
+      if (mode === 'candidate') {
+        const res = await registerCandidateRequest({ name, email, password })
+        setSession(res)
+        toast.success('Conta criada.')
+        router.replace('/candidato')
+        return
+      }
+
+      await registerTenantAdminRequest({
+        companyName: companyName.trim(),
+        email,
+        password,
+      })
+      toast.success(
+        'Pedido enviado. Quando a plataforma aprovar a sua empresa, poderá entrar em Entrar com este email.',
+      )
+      router.replace('/entrar')
     } catch (err) {
       if (err instanceof ApiRequestError) {
         toast.error(err.message)
       } else {
-        toast.error('Não foi possível criar a conta.')
+        toast.error('Não foi possível concluir o registo.')
       }
     } finally {
       setLoading(false)
@@ -53,22 +70,59 @@ export default function RegisterPage() {
       <main className="flex flex-1 flex-col items-center px-4 py-12">
         <Card className="w-full max-w-md shadow-sm">
           <CardHeader>
-            <CardTitle>Criar conta — candidato</CardTitle>
-            <CardDescription>Um só perfil para todas as suas candidaturas.</CardDescription>
+            <CardTitle>Criar conta</CardTitle>
+            <CardDescription>
+              {mode === 'candidate'
+                ? 'Um só perfil para todas as suas candidaturas.'
+                : 'Pedido de empresa na plataforma. A moderação activa a conta antes do primeiro acesso.'}
+            </CardDescription>
+            <div className="flex flex-col gap-2 pt-2 sm:flex-row sm:gap-2">
+              <Button
+                type="button"
+                variant={mode === 'candidate' ? 'default' : 'outline'}
+                className="w-full sm:flex-1"
+                onClick={() => setMode('candidate')}
+              >
+                Candidato
+              </Button>
+              <Button
+                type="button"
+                variant={mode === 'tenant_admin' ? 'default' : 'outline'}
+                className="w-full sm:flex-1"
+                onClick={() => setMode('tenant_admin')}
+              >
+                Empresa
+              </Button>
+            </div>
           </CardHeader>
           <form onSubmit={submitRegister}>
             <CardContent className="grid gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Nome completo</Label>
-                <Input
-                  id="name"
-                  autoComplete="name"
-                  required
-                  minLength={2}
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                />
-              </div>
+              {mode === 'candidate' ? (
+                <div className="space-y-2">
+                  <Label htmlFor="name">Nome completo</Label>
+                  <Input
+                    id="name"
+                    autoComplete="name"
+                    required
+                    minLength={2}
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                  />
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <Label htmlFor="company">Nome da empresa</Label>
+                  <Input
+                    id="company"
+                    autoComplete="organization"
+                    required
+                    minLength={2}
+                    maxLength={120}
+                    value={companyName}
+                    onChange={(e) => setCompanyName(e.target.value)}
+                  />
+                </div>
+              )}
               <div className="space-y-2">
                 <Label htmlFor="email">E-mail</Label>
                 <Input
@@ -96,7 +150,11 @@ export default function RegisterPage() {
             </CardContent>
             <CardFooter className="flex flex-col gap-3 pt-4">
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? 'A criar conta…' : 'Criar conta'}
+                {loading
+                  ? 'A enviar…'
+                  : mode === 'candidate'
+                    ? 'Criar conta'
+                    : 'Pedir registo de empresa'}
               </Button>
               <p className="text-center text-sm text-muted-foreground">
                 Já tem conta?{' '}

@@ -25,6 +25,7 @@ export interface TenantResponse {
   name: string
   slug: string
   isActive: boolean
+  signupPending: boolean
   deletedAt: string | null
   logoKey: string | null
   bannerKey: string | null

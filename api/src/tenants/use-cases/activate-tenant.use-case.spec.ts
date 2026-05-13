@@ -30,4 +30,21 @@ describe('ActivateTenantUseCase', () => {
 
     await expect(useCase.execute('t1')).rejects.toBeInstanceOf(BadRequestException)
   })
+
+  it('throws when tenant awaits self-signup approval', async () => {
+    const prisma = {
+      tenant: {
+        findFirst: jest.fn(async () => ({
+          id: 't1',
+          deletedAt: null,
+          isActive: false,
+          signupPending: true,
+        })),
+        update: jest.fn(),
+      },
+    }
+    const useCase = new ActivateTenantUseCase(prisma as unknown as PrismaClient)
+
+    await expect(useCase.execute('t1')).rejects.toBeInstanceOf(BadRequestException)
+  })
 })

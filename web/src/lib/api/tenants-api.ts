@@ -79,7 +79,21 @@ export function activateTenant(token: string, id: string) {
 }
 
 export function softDeleteTenant(token: string, id: string) {
-  return apiRequest<TenantResponse>(`/tenants/${id}/delete`, {
+  return apiRequest<TenantResponse>(`/tenants/${encodeURIComponent(id)}/delete`, {
+    method: 'PATCH',
+    token,
+  })
+}
+
+export function approveTenantSignup(token: string, id: string) {
+  return apiRequest<TenantResponse>(`/tenants/${encodeURIComponent(id)}/approve-signup`, {
+    method: 'PATCH',
+    token,
+  })
+}
+
+export function rejectTenantSignup(token: string, id: string) {
+  return apiRequest<void>(`/tenants/${encodeURIComponent(id)}/reject-signup`, {
     method: 'PATCH',
     token,
   })

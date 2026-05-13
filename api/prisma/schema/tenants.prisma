@@ -3,6 +3,8 @@ model Tenant {
   name      String
   slug      String   @unique
   isActive  Boolean  @default(true)
+  /// Registo público em `/registo`: empresa aguarda aprovação do SUPER_ADMIN.
+  signupPending Boolean @default(false)
   deletedAt DateTime?
   /** Chave S3: `tenants/{id}/logo/{uuid}.{ext}` */
   logoKey   String?

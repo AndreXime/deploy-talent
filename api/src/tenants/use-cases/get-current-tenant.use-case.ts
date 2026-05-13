@@ -14,12 +14,13 @@ export class GetCurrentTenantUseCase {
     const tenantId = this.tenantContext.requireTenantId()
 
     const tenant = await this.prisma.tenant.findFirst({
-      where: { id: tenantId, deletedAt: null, isActive: true },
+      where: { id: tenantId, deletedAt: null, isActive: true, signupPending: false },
       select: {
         id: true,
         name: true,
         slug: true,
         isActive: true,
+        signupPending: true,
         deletedAt: true,
         logoKey: true,
         bannerKey: true,

@@ -11,6 +11,7 @@ describe('RefreshTokensUseCase', () => {
     tenantId: null,
     role: UserRole.CANDIDATE,
     passwordHash: 'h',
+    tenant: null,
   }
 
   it('rejeita refresh curto demais', async () => {

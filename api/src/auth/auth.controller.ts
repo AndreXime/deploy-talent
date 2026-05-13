@@ -14,6 +14,7 @@ import {
 import {
   ApiBadRequestResponse,
   ApiBody,
+  ApiConflictResponse,
   ApiCreatedResponse,
   ApiNoContentResponse,
   ApiOkResponse,
@@ -24,13 +25,18 @@ import {
 import type { Request as ExpressRequest } from 'express'
 import type { User } from '../../generated/prisma/client'
 import { UserRole } from '../../generated/prisma/client'
-import { B2BAccountResponseDto, SessionTokensDto } from '../infra/docs/dto/swagger-responses.dto'
+import {
+  B2BAccountResponseDto,
+  RegisterTenantAdminPendingResponseDto,
+  SessionTokensDto,
+} from '../infra/docs/dto/swagger-responses.dto'
 import { ApiJwtAuth, ApiJwtTenantB2b, ApiStandardErrors } from '../infra/docs/swagger-decorators'
 import { TenantOptional, TenantRequired } from '../tenant-context/tenant.decorators'
 import { LoginDto } from './dto/login.dto'
 import { LogoutDto } from './dto/logout.dto'
 import { RefreshTokensDto } from './dto/refresh-tokens.dto'
 import { RegisterCandidateDto } from './dto/register-candidate.dto'
+import { RegisterTenantAdminDto } from './dto/register-tenant-admin.dto'
 import { UpdateB2BAvatarDto } from './dto/update-b2b-avatar.dto'
 import { JwtAuthGuard } from './guards/jwt-auth.guard'
 import { LocalAuthGuard } from './guards/local-auth.guard'
@@ -42,6 +48,7 @@ import { LoginUseCase } from './use-cases/login.use-case'
 import { LogoutUseCase } from './use-cases/logout.use-case'
 import { RefreshTokensUseCase } from './use-cases/refresh-tokens.use-case'
 import { RegisterCandidateUseCase } from './use-cases/register-candidate.use-case'
+import { RegisterTenantAdminUseCase } from './use-cases/register-tenant-admin.use-case'
 import { UpdateB2BAvatarUseCase } from './use-cases/update-b2b-avatar.use-case'
 
 interface RequestWithUser extends ExpressRequest {
@@ -61,6 +68,7 @@ export class AuthController {
     private readonly refreshTokens: RefreshTokensUseCase,
     private readonly logoutUseCase: LogoutUseCase,
     private readonly registerCandidateUseCase: RegisterCandidateUseCase,
+    private readonly registerTenantAdminUseCase: RegisterTenantAdminUseCase,
     private readonly updateB2BAvatar: UpdateB2BAvatarUseCase,
     private readonly getMyB2BAccount: GetMyB2BAccountUseCase,
   ) {}
@@ -114,6 +122,7 @@ export class AuthController {
 
   @Public()
   @Post('register/candidate')
+  @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Cadastro de candidato (one-profile) + JWT' })
   @ApiCreatedResponse({
     type: SessionTokensDto,
@@ -122,6 +131,29 @@ export class AuthController {
   @ApiBadRequestResponse({ description: 'E-mail já em uso ou validação do corpo' })
   async registerCandidate(@Body() body: RegisterCandidateDto) {
     return this.registerCandidateUseCase.execute(body)
+  }
+
+  @Public()
+  @Post('register/tenant-admin')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({
+    summary: 'Pedido de registo de empresa (administrador)',
+    description:
+      'Cria tenant inactivo e utilizador TENANT_ADMIN. O slug público deriva-se automaticamente do nome da empresa. O SUPER_ADMIN aprova em `PATCH /tenants/:id/approve-signup` antes do login B2B funcionar.',
+  })
+  @ApiBody({ type: RegisterTenantAdminDto })
+  @ApiCreatedResponse({
+    type: RegisterTenantAdminPendingResponseDto,
+    description: 'Pedido registado; sem tokens até aprovação',
+  })
+  @ApiConflictResponse({ description: 'E-mail já em uso' })
+  @ApiBadRequestResponse({ description: 'Validação do corpo' })
+  async registerTenantAdmin(@Body() body: RegisterTenantAdminDto) {
+    return this.registerTenantAdminUseCase.execute({
+      companyName: body.companyName,
+      email: body.email,
+      password: body.password,
+    })
   }
 
   @UseGuards(JwtAuthGuard)

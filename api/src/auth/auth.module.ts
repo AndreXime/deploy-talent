@@ -13,6 +13,7 @@ import { LoginUseCase } from './use-cases/login.use-case'
 import { LogoutUseCase } from './use-cases/logout.use-case'
 import { RefreshTokensUseCase } from './use-cases/refresh-tokens.use-case'
 import { RegisterCandidateUseCase } from './use-cases/register-candidate.use-case'
+import { RegisterTenantAdminUseCase } from './use-cases/register-tenant-admin.use-case'
 import { UpdateB2BAvatarUseCase } from './use-cases/update-b2b-avatar.use-case'
 import { ValidateLocalUserUseCase } from './use-cases/validate-local-user.use-case'
 
@@ -37,6 +38,7 @@ import { ValidateLocalUserUseCase } from './use-cases/validate-local-user.use-ca
     RefreshTokensUseCase,
     LogoutUseCase,
     RegisterCandidateUseCase,
+    RegisterTenantAdminUseCase,
     UpdateB2BAvatarUseCase,
     GetMyB2BAccountUseCase,
     ValidateLocalUserUseCase,

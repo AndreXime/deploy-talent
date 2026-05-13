@@ -16,6 +16,21 @@ export function logoutRequest(token: string, body?: { refresh_token?: string }) 
   })
 }
 
+export interface RegisterTenantAdminResponse {
+  status: 'pending_approval'
+}
+
+export function registerTenantAdminRequest(body: {
+  companyName: string
+  email: string
+  password: string
+}) {
+  return apiRequest<RegisterTenantAdminResponse>('/auth/register/tenant-admin', {
+    method: 'POST',
+    json: body,
+  })
+}
+
 export function registerCandidateRequest(body: { email: string; password: string; name: string }) {
   return apiRequest<SessionTokensResponse>('/auth/register/candidate', {
     method: 'POST',

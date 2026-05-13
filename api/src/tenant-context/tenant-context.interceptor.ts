@@ -52,7 +52,7 @@ export class TenantContextInterceptor implements NestInterceptor {
     }
 
     const tenant = await this.prisma.tenant.findFirst({
-      where: { id: resolved, deletedAt: null, isActive: true },
+      where: { id: resolved, deletedAt: null, isActive: true, signupPending: false },
       select: { id: true },
     })
     if (!tenant) {
