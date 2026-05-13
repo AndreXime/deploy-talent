@@ -6,9 +6,9 @@ import {
   NotFoundException,
 } from '@nestjs/common'
 import { ApplicationStatus, type PrismaClient, UserRole } from '../../../generated/prisma/client'
+import { CandidateApplicationEmailNotifier } from '../../infra/email/candidate-application-email.notifier'
 import { PRISMA_CLIENT } from '../../infra/prisma/prisma.constants'
 import { TenantContextService } from '../../tenant-context/tenant-context.service'
-import { CandidateApplicationEmailNotifier } from '../../infra/email/candidate-application-email.notifier'
 import type { MoveApplicationDto } from '../dto/move-application.dto'
 import type { Actor } from './application.actor'
 

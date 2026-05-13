@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common'
-import { ScheduleModule } from '@nestjs/schedule'
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core'
+import { ScheduleModule } from '@nestjs/schedule'
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler'
 import { AppController } from './app.controller'
 import { ApplicationsModule } from './applications/applications.module'

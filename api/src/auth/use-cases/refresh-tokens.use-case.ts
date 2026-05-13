@@ -1,8 +1,8 @@
 import { Inject, Injectable, UnauthorizedException } from '@nestjs/common'
 import type { PrismaClient } from '../../../generated/prisma/client'
 import { PRISMA_CLIENT } from '../../infra/prisma/prisma.constants'
-import { hashRefreshToken } from '../refresh-token-crypto'
 import { assertB2bTenantAllowsLogin } from '../b2b-tenant-session'
+import { hashRefreshToken } from '../refresh-token-crypto'
 import { LoginUseCase } from './login.use-case'
 
 @Injectable()
