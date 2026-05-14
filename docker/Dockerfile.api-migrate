@@ -1,0 +1,45 @@
+# Build (raiz do repositório):
+#   docker build -f docker/Dockerfile.api-migrate -t deploy-talent-prisma:local .
+#
+# Migrate (host `postgres` exige rede do Compose, ver .env.example):
+#   docker run --rm --env-file .env --network deploy-talent_default deploy-talent-prisma:local migrate deploy
+#
+# Seed (prisma.config.ts usa `npx tsx ...`; precisa das mesmas env da API, ex. S3_*):
+#   docker run --rm --env-file .env --network deploy-talent_default deploy-talent-prisma:local db seed
+#
+
+ARG NODE_VERSION=22
+ARG PRISMA_VERSION=7.8.0
+
+FROM node:${NODE_VERSION}-alpine
+
+RUN apk add --no-cache libc6-compat openssl python3 make g++
+
+WORKDIR /app
+
+RUN addgroup -S app && adduser -S app -G app \
+  && chown app:app /app
+
+USER app
+
+RUN npm install \
+    prisma@${PRISMA_VERSION} \
+    @prisma/client@${PRISMA_VERSION} \
+    @prisma/adapter-pg@${PRISMA_VERSION} \
+    dotenv@^17.4.2 \
+    tsx@^4.21.0 \
+    bcrypt@^6.0.0 \
+    pg@^8.20.0 \
+    @aws-sdk/client-s3@^3.1045.0 \
+    @aws-sdk/s3-request-presigner@^3.1045.0 \
+  && npm cache clean --force
+
+COPY --chown=app:app api/prisma ./prisma
+COPY --chown=app:app api/prisma.config.ts ./prisma.config.ts
+
+RUN DATABASE_URL="postgresql://build:build@127.0.0.1:5432/build" npx prisma generate
+
+ENV NODE_ENV=production
+
+ENTRYPOINT ["npx", "prisma"]
+CMD ["migrate", "deploy"]
