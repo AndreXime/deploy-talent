@@ -20,6 +20,7 @@ Plataforma multi-tenant de recrutamento (ATS). Backend **NestJS** + frontend **N
 ├── web/                 Next.js 16 (App Router, RSC, React Query)
 ├── docker/              setup do bucket MinIO
 ├── docker-compose.yml   infra local + apps containerizadas (profile)
+├── .env.example         modelo das variáveis usadas pelo Docker Compose (raiz)
 └── README.md
 ```
 
@@ -39,6 +40,12 @@ Plataforma multi-tenant de recrutamento (ATS). Backend **NestJS** + frontend **N
 
 ## Como rodar
 
+Na **raiz do repositório**, cria o ficheiro `.env` a partir do modelo (o Compose interpola estas variáveis no `docker-compose.yml`):
+
+```bash
+cp .env.example .env
+```
+
 Há três caminhos. Escolhe um.
 
 ### A) Mais comum: infra em Docker, apps em modo dev local
@@ -46,6 +53,7 @@ Há três caminhos. Escolhe um.
 Recomendado para desenvolvimento: hot reload, breakpoints, tudo a passar pela tua máquina.
 
 ```bash
+# 0) na raiz: já tens `.env` (ver bloco acima)
 # 1) sobe Postgres + MinIO + Mailpit
 docker compose up -d
 
@@ -67,7 +75,7 @@ npm run dev                     # http://localhost:3000
 
 ### B) Tudo em Docker
 
-Útil para ensaiar prod-like ou validar o build das imagens. Os serviços `api` e `web` estão escondidos atrás de um **profile `app`** para não pesar no fluxo dev habitual.
+Útil para ensaiar prod-like ou validar o build das imagens. Os serviços `api` e `web` estão escondidos atrás de um **profile `app`** para não pesar no fluxo dev habitual. Precisas do `.env` na raiz (`cp .env.example .env`).
 
 ```bash
 docker compose --profile app up -d --build
@@ -116,6 +124,10 @@ Todas as contas geradas usam a mesma password.
 - **Segurança e operação:** JWT + RBAC, CORS configurável, Helmet em produção, throttling global. Fora de `PROD`, Swagger em `/docs`.
 
 ## Variáveis de ambiente
+
+### Docker Compose (`.env` na raiz)
+
+O ficheiro `.env` ao lado de `docker-compose.yml` define Postgres, MinIO, variáveis do serviço `api` e o build arg `NEXT_PUBLIC_API_BASE_URL` da `web`. Não commits o `.env`; usa `cp .env.example .env` e ajusta valores (em produção, injeta segredos no servidor ou no CI).
 
 ### API (`api/.env`)
 
@@ -198,4 +210,4 @@ Estados: `SOURCED`, `APPLIED`, `IN_PROGRESS`, `REJECTED`, `WITHDRAWN`, `HIRED`.
 | OpenAPI JSON | http://localhost:3050/docs-json |
 | MinIO (consola) | http://127.0.0.1:9001 |
 | Mailpit (UI) | http://127.0.0.1:8025 |
-| Postgres | `localhost:5432` (`deploy_talent` / `deploy_talent`) |
+| Postgres | `localhost:5432` (user e base definidos no `.env` da raiz; o exemplo usa `deploy_talent`) |

@@ -4,15 +4,15 @@ services:
     container_name: deploy-talent-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_DB: deploy_talent
-      POSTGRES_USER: deploy_talent
-      POSTGRES_PASSWORD: deploy_talent
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       - "5432:5432"
     volumes:
       - deploy_talent_pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U deploy_talent -d deploy_talent"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 5s
       timeout: 3s
       retries: 10
@@ -26,13 +26,13 @@ services:
       - "127.0.0.1:9000:9000"
       - "127.0.0.1:9001:9001"
     environment:
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: minioadmin
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
     volumes:
       - deploy_talent_minio:/data
     healthcheck:
       test:
-        ["CMD-SHELL", "mc alias set local http://localhost:9000 minioadmin minioadmin >/dev/null 2>&1 && mc ready local >/dev/null 2>&1"]
+        ["CMD-SHELL", "mc alias set local http://localhost:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD} >/dev/null 2>&1 && mc ready local >/dev/null 2>&1"]
       interval: 5s
       timeout: 3s
       retries: 20
@@ -48,10 +48,10 @@ services:
       - ./docker/minio-cors.xml:/config/cors.xml:ro
       - ./docker/setup-minio.sh:/setup-minio.sh:ro
     environment:
-      MINIO_HOST: minio
-      MINIO_PORT: "9000"
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: minioadmin
+      MINIO_HOST: ${MINIO_HOST}
+      MINIO_PORT: ${MINIO_PORT}
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
     entrypoint: ["/bin/sh", "/setup-minio.sh"]
 
   mailpit:
@@ -76,24 +76,24 @@ services:
       minio-setup:
         condition: service_completed_successfully
     environment:
-      ENV_MODE: DEV
-      PORT: "3000"
-      DATABASE_URL: postgresql://deploy_talent:deploy_talent@postgres:5432/deploy_talent?schema=public
-      JWT_SECRET: change-me
-      JWT_ACCESS_EXPIRES_IN: 10m
-      JWT_REFRESH_EXPIRES_IN: 24h
-      AWS_REGION: us-east-1
-      S3_BUCKET: files
-      S3_ENDPOINT: http://minio:9000
-      S3_FORCE_PATH_STYLE: "true"
-      S3_ACCESS_KEY_ID: minioadmin
-      S3_SECRET_ACCESS_KEY: minioadmin
-      EMAIL_FROM: noreply@localhost
-      SMTP_HOST: mailpit
-      SMTP_PORT: "1025"
-      SMTP_SECURE: "false"
-      CORS_ORIGINS: http://localhost:3000
-      WEB_BASE_URL: http://localhost:3000
+      ENV_MODE: ${ENV_MODE}
+      PORT: ${PORT}
+      DATABASE_URL: ${DATABASE_URL}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_ACCESS_EXPIRES_IN: ${JWT_ACCESS_EXPIRES_IN}
+      JWT_REFRESH_EXPIRES_IN: ${JWT_REFRESH_EXPIRES_IN}
+      AWS_REGION: ${AWS_REGION}
+      S3_BUCKET: ${S3_BUCKET}
+      S3_ENDPOINT: ${S3_ENDPOINT}
+      S3_FORCE_PATH_STYLE: ${S3_FORCE_PATH_STYLE}
+      S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID}
+      S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY}
+      EMAIL_FROM: ${EMAIL_FROM}
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT}
+      SMTP_SECURE: ${SMTP_SECURE}
+      CORS_ORIGINS: ${CORS_ORIGINS}
+      WEB_BASE_URL: ${WEB_BASE_URL}
     ports:
       - "3050:3000"
     healthcheck:
@@ -108,7 +108,7 @@ services:
     build:
       context: ./web
       args:
-        NEXT_PUBLIC_API_BASE_URL: http://localhost:3050
+        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL}
     image: deploy-talent-web:local
     container_name: deploy-talent-web
     restart: unless-stopped
