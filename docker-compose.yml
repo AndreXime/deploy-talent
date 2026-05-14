@@ -8,7 +8,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - deploy_talent_pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -95,9 +95,9 @@ services:
       CORS_ORIGINS: ${CORS_ORIGINS}
       WEB_BASE_URL: ${WEB_BASE_URL}
     ports:
-      - "3050:3000"
+      - "3050:3050"
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/health/ready >/dev/null 2>&1 || exit 1"]
+      test: ["CMD-SHELL", "wget -qO- http://localhost:${PORT}/health/ready >/dev/null 2>&1 || exit 1"]
       interval: 10s
       timeout: 3s
       retries: 5

@@ -49,7 +49,7 @@ FROM node:${NODE_VERSION}-alpine AS runner
 RUN apk add --no-cache tini libc6-compat
 WORKDIR /app
 ENV NODE_ENV=production \
-    PORT=3000
+    PORT=3050
 
 RUN addgroup -S app && adduser -S app -G app
 
@@ -60,6 +60,6 @@ COPY --from=builder  --chown=app:app /app/prisma        ./prisma
 COPY --from=builder  --chown=app:app /app/package.json  ./package.json
 
 USER app
-EXPOSE 3000
+EXPOSE 3050
 ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["node", "dist/src/main"]
