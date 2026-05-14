@@ -109,6 +109,7 @@ services:
       context: ./web
       args:
         NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL}
+        IS_DEMO: ${IS_DEMO:-}
     image: deploy-talent-web:local
     container_name: deploy-talent-web
     restart: unless-stopped

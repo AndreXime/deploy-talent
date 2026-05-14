@@ -7,3 +7,5 @@ if (!raw) {
 }
 
 export const API_BASE_URL: string = raw
+
+export const IS_DEMO = process.env.IS_DEMO === 'true'
