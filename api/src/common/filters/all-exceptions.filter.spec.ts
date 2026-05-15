@@ -1,15 +1,23 @@
 import type { ArgumentsHost } from '@nestjs/common'
 import { BadRequestException, HttpStatus } from '@nestjs/common'
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/client.js'
+import type { EnvService } from '../../infra/env/env.service'
 import { AllExceptionsFilter } from './all-exceptions.filter'
 
+function envStub(envMode: 'DEV' | 'TEST' | 'PROD'): EnvService {
+  return { envMode } as EnvService
+}
+
 describe('AllExceptionsFilter', () => {
-  function catchWithMocks(exception: unknown): {
+  function catchWithMocks(
+    exception: unknown,
+    envMode: 'DEV' | 'TEST' | 'PROD' = 'TEST',
+  ): {
     statusCode: number
     statusCalls: number[]
     jsonBody: unknown
   } {
-    const filter = new AllExceptionsFilter()
+    const filter = new AllExceptionsFilter(envStub(envMode))
     const statusCalls: number[] = []
     let jsonBody: unknown
 
@@ -44,6 +52,16 @@ describe('AllExceptionsFilter', () => {
   it('returns HttpException shape', () => {
     const { statusCode } = catchWithMocks(new BadRequestException('Invalid'))
     expect(statusCode).toBe(HttpStatus.BAD_REQUEST)
+  })
+
+  it('does not expose Error detail in PROD', () => {
+    const sensitive = Object.assign(new Error('connection refused host=secret'), {
+      code: 'ECONNREFUSED',
+    })
+    const { jsonBody } = catchWithMocks(sensitive, 'PROD')
+    const body = jsonBody as { error: string; message: string }
+    expect(body.error).toBe('InternalServerError')
+    expect(body.message).toBe('Internal server error.')
   })
 
   it('does not map Node errno-style errors to 409', () => {

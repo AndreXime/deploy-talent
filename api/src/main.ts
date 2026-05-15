@@ -3,7 +3,6 @@ import { NestFactory } from '@nestjs/core'
 import cookieParser from 'cookie-parser'
 import helmet from 'helmet'
 import { AppModule } from './app.module'
-import { AllExceptionsFilter } from './common/filters/all-exceptions.filter'
 import { BootLogger } from './common/middleware/boot-logger'
 import { requestLoggerMiddleware } from './common/middleware/request-logger.middleware'
 import { setupDocs } from './infra/docs/setup-docs'
@@ -44,7 +43,6 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
     }),
   )
-  app.useGlobalFilters(new AllExceptionsFilter())
 
   setupDocs(app, env)
 

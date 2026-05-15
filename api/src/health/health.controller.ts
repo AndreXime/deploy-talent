@@ -6,12 +6,12 @@ import { Public } from '../auth/public.decorator'
 import { PRISMA_CLIENT } from '../infra/prisma/prisma.constants'
 
 @Public()
-@SkipThrottle()
 @Controller('health')
 @ApiTags('Health')
 export class HealthController {
   constructor(@Inject(PRISMA_CLIENT) private readonly prisma: PrismaClient) {}
 
+  @SkipThrottle()
   @Get('live')
   @ApiOperation({ summary: 'Liveness (sem dependências externas)' })
   @ApiOkResponse({ description: 'Processo ativo' })

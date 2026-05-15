@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common'
-import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core'
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core'
 import { ScheduleModule } from '@nestjs/schedule'
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler'
 import { AppController } from './app.controller'
@@ -8,6 +8,7 @@ import { AuthModule } from './auth/auth.module'
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard'
 import { RolesGuard } from './auth/rbac/roles.guard'
 import { CandidatesModule } from './candidates/candidates.module'
+import { AllExceptionsFilter } from './common/filters/all-exceptions.filter'
 import { HealthModule } from './health/health.module'
 import { EmailModule } from './infra/email/email.module'
 import { EnvModule } from './infra/env/env.module'
@@ -49,6 +50,10 @@ import { TenantsModule } from './tenants/tenants.module'
   ],
   controllers: [AppController],
   providers: [
+    {
+      provide: APP_FILTER,
+      useClass: AllExceptionsFilter,
+    },
     {
       provide: APP_INTERCEPTOR,
       useClass: TenantContextInterceptor,

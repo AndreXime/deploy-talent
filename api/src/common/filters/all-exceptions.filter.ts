@@ -4,12 +4,14 @@ import {
   type ExceptionFilter,
   HttpException,
   HttpStatus,
+  Injectable,
 } from '@nestjs/common'
 import {
   PrismaClientKnownRequestError,
   PrismaClientValidationError,
 } from '@prisma/client/runtime/client.js'
 import type { Request, Response } from 'express'
+import { EnvService } from '../../infra/env/env.service'
 
 interface ErrorBody {
   statusCode: number
@@ -20,13 +22,16 @@ interface ErrorBody {
 }
 
 @Catch()
+@Injectable()
 export class AllExceptionsFilter implements ExceptionFilter {
+  constructor(private readonly env: EnvService) {}
+
   catch(exception: unknown, host: ArgumentsHost): void {
     const ctx = host.switchToHttp()
     const response = ctx.getResponse<Response>()
     const request = ctx.getRequest<Request>()
 
-    const { status, error, message } = this.normalize(exception)
+    const { status, error, message } = this.normalize(exception, this.env.envMode)
     const body: ErrorBody = {
       statusCode: status,
       error,
@@ -38,7 +43,10 @@ export class AllExceptionsFilter implements ExceptionFilter {
     response.status(status).json(body)
   }
 
-  private normalize(exception: unknown): {
+  private normalize(
+    exception: unknown,
+    envMode: 'DEV' | 'TEST' | 'PROD',
+  ): {
     status: number
     error: string
     message: string
@@ -69,6 +77,13 @@ export class AllExceptionsFilter implements ExceptionFilter {
     }
 
     if (exception instanceof Error) {
+      if (envMode === 'PROD') {
+        return {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: 'InternalServerError',
+          message: 'Internal server error.',
+        }
+      }
       return {
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         error: exception.name,
