@@ -13,8 +13,15 @@ describe('AppController', () => {
   })
 
   describe('root', () => {
-    it('should return "Hello World!"', () => {
-      expect(appController.getHello()).toBe('Hello World!')
+    it('should return structured root metadata', () => {
+      const body = appController.getRoot()
+
+      expect(body.name).toBe('Deploy Talent API')
+      expect(body.status).toBe('ok')
+      expect(body.version.length).toBeGreaterThan(0)
+      expect(typeof body.uptimeSeconds).toBe('number')
+      expect(Number.isFinite(body.uptimeSeconds)).toBe(true)
+      expect(body.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T/)
     })
   })
 })
