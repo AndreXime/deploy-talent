@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter } from 'next/navigation'
 import { useEffect } from 'react'
-import { CandidateNav } from '@/components/candidate-nav'
+import { PublicHeader } from '@/components/public-header'
 import { Skeleton } from '@/components/ui/skeleton'
 import { homePathForRole } from '@/lib/routes'
 import { useAuth } from '@/providers/auth-provider'
@@ -42,7 +42,7 @@ export default function CandidateLayout({ children }: Readonly<{ children: React
 
   return (
     <div className="flex min-h-full flex-col">
-      <CandidateNav />
+      <PublicHeader />
       <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col">{children}</div>
     </div>
   )
