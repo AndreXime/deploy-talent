@@ -2,21 +2,19 @@ import { apiRequest } from '@/lib/api/client'
 import type {
   CreatedInvitationResponse,
   InvitationPreviewResponse,
-  SessionTokensResponse,
+  SessionClaimsResponse,
 } from '@/lib/api/types'
 
-export function inviteTenantAdminRequest(token: string, body: { tenantId: string; email: string }) {
+export function inviteTenantAdminRequest(body: { tenantId: string; email: string }) {
   return apiRequest<CreatedInvitationResponse>('/invitations/tenant-admin', {
     method: 'POST',
-    token,
     json: body,
   })
 }
 
-export function inviteRecruiterRequest(token: string, body: { email: string }) {
+export function inviteRecruiterRequest(body: { email: string }) {
   return apiRequest<CreatedInvitationResponse>('/invitations/recruiter', {
     method: 'POST',
-    token,
     json: body,
   })
 }
@@ -29,7 +27,7 @@ export function getInvitationByTokenRequest(invitationToken: string) {
 }
 
 export function acceptInvitationRequest(invitationToken: string, body: { password: string }) {
-  return apiRequest<SessionTokensResponse>(
+  return apiRequest<SessionClaimsResponse>(
     `/invitations/${encodeURIComponent(invitationToken)}/accept`,
     { method: 'POST', json: body },
   )

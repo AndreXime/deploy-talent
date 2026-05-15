@@ -25,30 +25,29 @@ import { getMyApplication, withdrawMyApplication } from '@/lib/api/applications-
 import { ApiRequestError } from '@/lib/api/client'
 import { isUuid } from '@/lib/is-uuid'
 import { candidateMayWithdraw } from '@/lib/pipeline-rules'
-import { requireSessionToken } from '@/lib/require-session-token'
 import { useAuth } from '@/providers/auth-provider'
 
 export default function CandidateApplicationDetailPage() {
   const params = useParams<{ applicationId: string }>()
   const applicationId = params?.applicationId?.trim() ?? ''
-  const { token } = useAuth()
+  const { claims } = useAuth()
   const queryClient = useQueryClient()
   const valid = isUuid(applicationId)
 
   const [withdrawOpen, setWithdrawOpen] = useState(false)
 
   const q = useQuery({
-    enabled: !!token && valid,
-    queryKey: ['my-application', token, applicationId],
-    queryFn: () => getMyApplication(requireSessionToken(token), applicationId),
+    enabled: !!claims && valid,
+    queryKey: ['my-application', claims?.sub, applicationId],
+    queryFn: () => getMyApplication(applicationId),
   })
 
   const withdrawMut = useMutation({
-    mutationFn: () => withdrawMyApplication(requireSessionToken(token), applicationId),
+    mutationFn: () => withdrawMyApplication(applicationId),
     onSuccess: () => {
       toast.success('Desistência registrada com sucesso.')
       queryClient.invalidateQueries({ queryKey: ['my-applications'] })
-      queryClient.invalidateQueries({ queryKey: ['my-application', token, applicationId] })
+      queryClient.invalidateQueries({ queryKey: ['my-application', claims?.sub, applicationId] })
       setWithdrawOpen(false)
     },
     onError: (err: unknown) => {

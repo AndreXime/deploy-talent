@@ -1,24 +1,18 @@
 'use client'
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { logoutRequest } from '@/lib/api/auth-api'
+import { getAuthSession, logoutRequest } from '@/lib/api/auth-api'
 import { subscribeUnauthorized } from '@/lib/api/client'
 import type { JwtClaims } from '@/lib/auth-token'
-import {
-  AUTH_REFRESH_STORAGE_KEY,
-  AUTH_STORAGE_KEY,
-  clearSessionStorage,
-  parseJwtClaims,
-  persistSession,
-  type SessionTokens,
-} from '@/lib/auth-token'
+
+const LEGACY_ACCESS_KEY = 'deploy_talent_access_token'
+const LEGACY_REFRESH_KEY = 'deploy_talent_refresh_token'
 
 interface AuthContextValue {
-  /** `true` após ler armazenamento local no cliente (evita redirects antes da sessão). */
+  /** Evita redirects antes da primeira leitura de sessão (`GET /auth/session`). */
   hydrated: boolean
-  token: string | null
   claims: JwtClaims | null
-  setSession: (session: SessionTokens | null) => void
+  setSessionClaims: (claims: JwtClaims | null) => void
   signOut: () => void
 }
 
@@ -26,55 +20,74 @@ const AuthContext = createContext<AuthContextValue | null>(null)
 
 export function AuthProvider({ children }: Readonly<{ children: React.ReactNode }>) {
   const [hydrated, setHydrated] = useState(false)
-  const [token, setTokenState] = useState<string | null>(null)
+  const [claims, setClaims] = useState<JwtClaims | null>(null)
 
   useEffect(() => {
-    setTokenState(localStorage.getItem(AUTH_STORAGE_KEY))
-    setHydrated(true)
+    if (typeof window === 'undefined') return
+    localStorage.removeItem(LEGACY_ACCESS_KEY)
+    localStorage.removeItem(LEGACY_REFRESH_KEY)
   }, [])
 
-  const setSession = useCallback((session: SessionTokens | null) => {
-    if (!session) {
-      clearSessionStorage()
-      setTokenState(null)
-      return
+  useEffect(() => {
+    let cancelled = false
+    void (async () => {
+      try {
+        const data = await getAuthSession()
+        if (cancelled) return
+        if (
+          data.authenticated &&
+          typeof data.sub === 'string' &&
+          typeof data.role === 'string' &&
+          data.sub.length > 0 &&
+          data.role.length > 0
+        ) {
+          const tenantRaw = data.tenantId
+          const tenantId = tenantRaw === null || tenantRaw === undefined ? null : String(tenantRaw)
+          setClaims({ sub: data.sub, role: data.role, tenantId })
+        } else {
+          setClaims(null)
+        }
+      } catch {
+        if (!cancelled) setClaims(null)
+      } finally {
+        if (!cancelled) setHydrated(true)
+      }
+    })()
+    return () => {
+      cancelled = true
     }
-    persistSession(session)
-    setTokenState(session.access_token)
+  }, [])
+
+  const setSessionClaims = useCallback((next: JwtClaims | null) => {
+    setClaims(next)
   }, [])
 
   const signOut = useCallback(() => {
-    if (typeof window !== 'undefined') {
-      const access = localStorage.getItem(AUTH_STORAGE_KEY)
-      const refresh = localStorage.getItem(AUTH_REFRESH_STORAGE_KEY)
-      if (access) {
-        const body = refresh ? { refresh_token: refresh } : {}
-        void logoutRequest(access, body).catch(() => {})
-      }
-    }
-    setSession(null)
-  }, [setSession])
+    void (async () => {
+      await logoutRequest().catch(() => {
+        /* ignora erro de rede / 401 */
+      })
+      setClaims(null)
+      window.location.href = '/entrar'
+    })()
+  }, [])
 
   useEffect(() => {
     const unsub = subscribeUnauthorized(() => {
-      clearSessionStorage()
-      setTokenState(null)
+      setClaims(null)
       window.location.href = '/entrar'
     })
     return unsub
   }, [])
 
-  const claims = useMemo(() => parseJwtClaims(token), [token])
-
   const value = useMemo(
     (): AuthContextValue => ({
       hydrated,
-      token,
       claims,
-      setSession,
+      setSessionClaims,
       signOut,
     }),
-    [hydrated, token, claims, setSession, signOut],
+    [hydrated, claims, setSessionClaims, signOut],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

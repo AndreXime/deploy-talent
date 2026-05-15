@@ -17,7 +17,6 @@ import { ApiRequestError } from '@/lib/api/client'
 import { getPublicJob } from '@/lib/api/jobs-api'
 import { getPublicBranding } from '@/lib/api/tenants-api'
 import { isUuid } from '@/lib/is-uuid'
-import { requireSessionToken } from '@/lib/require-session-token'
 import { useAuth } from '@/providers/auth-provider'
 
 export default function PublicJobDetailPage() {
@@ -25,7 +24,7 @@ export default function PublicJobDetailPage() {
   const pathname = usePathname()
   const router = useRouter()
   const queryClient = useQueryClient()
-  const { token, claims } = useAuth()
+  const { claims } = useAuth()
 
   const tenantId = params?.tenantId?.trim() ?? ''
   const jobId = params?.jobId?.trim() ?? ''
@@ -47,10 +46,10 @@ export default function PublicJobDetailPage() {
   const isCandidate = claims?.role === 'CANDIDATE'
 
   const savedIdsQ = useQuery({
-    enabled: Boolean(token) && isCandidate && validJob,
-    queryKey: ['my-saved-job-ids', token],
+    enabled: Boolean(claims) && isCandidate && validJob,
+    queryKey: ['my-saved-job-ids', claims?.sub],
     queryFn: async () => {
-      const res = await listMySavedJobs(requireSessionToken(token), { page: 1, limit: 100 })
+      const res = await listMySavedJobs({ page: 1, limit: 100 })
       return new Set(res.items.map((row) => row.job.id))
     },
   })
@@ -58,10 +57,10 @@ export default function PublicJobDetailPage() {
   const isSaved = validJob && jobId ? Boolean(savedIdsQ.data?.has(jobId)) : false
 
   const saveMut = useMutation({
-    mutationFn: () => saveJobBookmark(requireSessionToken(token), jobId),
+    mutationFn: () => saveJobBookmark(jobId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['my-saved-job-ids', token] })
-      queryClient.invalidateQueries({ queryKey: ['my-saved-jobs', token] })
+      queryClient.invalidateQueries({ queryKey: ['my-saved-job-ids', claims?.sub] })
+      queryClient.invalidateQueries({ queryKey: ['my-saved-jobs', claims?.sub] })
       toast.success('Vaga guardada na sua lista.')
     },
     onError: (err: unknown) => {
@@ -71,10 +70,10 @@ export default function PublicJobDetailPage() {
   })
 
   const unsaveMut = useMutation({
-    mutationFn: () => unsaveJob(requireSessionToken(token), jobId),
+    mutationFn: () => unsaveJob(jobId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['my-saved-job-ids', token] })
-      queryClient.invalidateQueries({ queryKey: ['my-saved-jobs', token] })
+      queryClient.invalidateQueries({ queryKey: ['my-saved-job-ids', claims?.sub] })
+      queryClient.invalidateQueries({ queryKey: ['my-saved-jobs', claims?.sub] })
       toast.success('Removida das vagas guardadas.')
     },
     onError: (err: unknown) => {
@@ -85,8 +84,8 @@ export default function PublicJobDetailPage() {
 
   const applyMut = useMutation({
     mutationFn: () => {
-      if (!token) throw new Error('Sem sessão.')
-      return applyToJob(token, tenantId, { jobId })
+      if (!claims) throw new Error('Sem sessão.')
+      return applyToJob(tenantId, { jobId })
     },
     onSuccess: () => {
       toast.success('Candidatura enviada com sucesso.')
@@ -107,7 +106,7 @@ export default function PublicJobDetailPage() {
 
   function handleApply() {
     if (!canApply) return
-    if (!token || claims?.role !== 'CANDIDATE') {
+    if (!claims || claims?.role !== 'CANDIDATE') {
       router.push(`/entrar?redirect=${encodeURIComponent(pathname)}`)
       return
     }
@@ -206,7 +205,7 @@ export default function PublicJobDetailPage() {
             </section>
 
             <div className="flex flex-col gap-3 rounded-lg border bg-card p-4">
-              {token && isCandidate && job ? (
+              {claims && isCandidate && job ? (
                 <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
                   {isSaved || job.status === 'PUBLISHED' || job.status === 'PAUSED' ? (
                     <Button
@@ -253,7 +252,7 @@ export default function PublicJobDetailPage() {
                     disabled={applyMut.isPending}
                   >
                     <User className="size-5" aria-hidden />
-                    {token && claims?.role === 'CANDIDATE'
+                    {claims?.role === 'CANDIDATE'
                       ? applyMut.isPending
                         ? 'Enviando…'
                         : 'Enviar candidatura'

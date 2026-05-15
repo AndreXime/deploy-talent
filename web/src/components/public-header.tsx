@@ -18,7 +18,7 @@ import { useAuth } from '@/providers/auth-provider'
 
 export function PublicHeader() {
   const router = useRouter()
-  const { claims, token, signOut } = useAuth()
+  const { claims, signOut } = useAuth()
 
   return (
     <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
@@ -37,7 +37,7 @@ export function PublicHeader() {
               Explorar vagas
             </Link>
           </Button>
-          {!token ? (
+          {!claims ? (
             <>
               <Button variant="ghost" className="gap-2" asChild>
                 <Link href="/entrar">

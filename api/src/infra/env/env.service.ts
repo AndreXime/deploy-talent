@@ -202,6 +202,16 @@ export class EnvService {
     return parsed
   }
 
+  /** `maxAge` em ms dos cookies httpOnly do access JWT (alinha aos env de JWT access). */
+  get jwtAccessTtlMs(): number {
+    return parseDurationToMilliseconds(this.jwtAccessExpiresIn, 'JWT_ACCESS_EXPIRES_IN')
+  }
+
+  /** `maxAge` em ms do cookie httpOnly do refresh opaco (alinha a `JWT_REFRESH_EXPIRES_IN`). */
+  get jwtRefreshTtlMs(): number {
+    return parseDurationToMilliseconds(this.jwtRefreshExpiresIn, 'JWT_REFRESH_EXPIRES_IN')
+  }
+
   /**
    * Origens permitidas para CORS (vírgula). Em PROD, lista vazia = CORS desligado (defina explicitamente).
    * Em DEV/TEST, lista vazia = `true` (qualquer origem).
@@ -219,4 +229,24 @@ export class EnvService {
       .map((s) => s.trim())
       .filter((s) => s.length > 0)
   }
+}
+
+function parseDurationToMilliseconds(expression: string, label: string): number {
+  const s = expression.trim()
+  const m = /^(\d+)\s*(ms|s|m|h|d)$/i.exec(s)
+  if (!m) {
+    throw new Error(
+      `Duração inválida (${label}): "${expression}" (formato exemplo: 10m, 24h, 7d; também ms ou s).`,
+    )
+  }
+  const amount = Number(m[1])
+  const unit = m[2].toLowerCase()
+  const multiplier: Record<string, number> = {
+    ms: 1,
+    s: 1000,
+    m: 60_000,
+    h: 3_600_000,
+    d: 86_400_000,
+  }
+  return amount * multiplier[unit]
 }

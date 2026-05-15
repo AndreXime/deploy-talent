@@ -20,38 +20,36 @@ import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ApiRequestError } from '@/lib/api/client'
 import { acceptInvitationRequest, getInvitationByTokenRequest } from '@/lib/api/invitations-api'
-import { parseJwtClaims } from '@/lib/auth-token'
 import { homePathForRole } from '@/lib/routes'
 import { useAuth } from '@/providers/auth-provider'
 
 function formatExpiry(iso: string): string {
   const date = new Date(iso)
   if (Number.isNaN(date.getTime())) return iso
-  return date.toLocaleString('pt-PT', { dateStyle: 'long', timeStyle: 'short' })
+  return date.toLocaleString('pt-BR', { dateStyle: 'long', timeStyle: 'short' })
 }
 
 export default function ActivateInvitationPage() {
   const params = useParams<{ token: string }>()
-  const token = decodeURIComponent(params?.token ?? '')
+  const invitationToken = decodeURIComponent(params?.token ?? '')
   const router = useRouter()
-  const { setSession } = useAuth()
+  const { setSessionClaims } = useAuth()
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
 
   const previewQ = useQuery({
-    enabled: token.length > 0,
-    queryKey: ['invitation', token],
-    queryFn: () => getInvitationByTokenRequest(token),
+    enabled: invitationToken.length > 0,
+    queryKey: ['invitation', invitationToken],
+    queryFn: () => getInvitationByTokenRequest(invitationToken),
     retry: false,
   })
 
   const acceptMut = useMutation({
-    mutationFn: () => acceptInvitationRequest(token, { password }),
+    mutationFn: () => acceptInvitationRequest(invitationToken, { password }),
     onSuccess: (res) => {
-      setSession(res)
-      const claims = parseJwtClaims(res.access_token)
+      setSessionClaims(res)
       toast.success('Conta ativada. Bem vindo!')
-      router.replace(homePathForRole(claims?.role ?? ''))
+      router.replace(homePathForRole(res.role))
     },
     onError: (err: unknown) => {
       if (err instanceof ApiRequestError) toast.error(err.message)

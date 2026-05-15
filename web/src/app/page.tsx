@@ -1,5 +1,3 @@
-'use client'
-
 import {
   ArrowRight,
   BadgeCheck,
@@ -12,27 +10,16 @@ import {
   Workflow,
 } from 'lucide-react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
 import { HomeFeaturedJobs } from '@/components/home-featured-jobs'
+import { HomeSessionRedirect } from '@/components/home-session-redirect'
 import { PublicHeader } from '@/components/public-header'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { homePathForRole } from '@/lib/routes'
-import { useAuth } from '@/providers/auth-provider'
 
 export default function HomePage() {
-  const { claims, token } = useAuth()
-  const router = useRouter()
-
-  useEffect(() => {
-    if (token && claims?.role) {
-      router.replace(homePathForRole(claims.role))
-    }
-  }, [claims, router, token])
-
   return (
     <div className="flex min-h-full flex-col">
+      <HomeSessionRedirect />
       <PublicHeader />
 
       <main className="flex flex-1 flex-col">

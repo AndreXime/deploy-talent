@@ -10,59 +10,51 @@ import type {
   SourceCandidateResult,
 } from '@/lib/api/types'
 
-export function applyToJob(token: string, tenantId: string, body: { jobId: string }) {
+export function applyToJob(tenantId: string, body: { jobId: string }) {
   return apiRequest<ApplicationResponse>(`/tenants/${tenantId}/applications/apply`, {
     method: 'POST',
-    token,
     json: body,
   })
 }
 
-export function listMyApplications(
-  token: string,
-  query?: { page?: number; limit?: number; status?: ApiApplicationStatus },
-) {
+export function listMyApplications(query?: {
+  page?: number
+  limit?: number
+  status?: ApiApplicationStatus
+}) {
   return apiRequest<Paginated<ApplicationCandidateListItem>>('/applications/me', {
     method: 'GET',
-    token,
     query: query as Record<string, string | number | undefined>,
   })
 }
 
-export function getMyApplication(token: string, applicationId: string) {
+export function getMyApplication(applicationId: string) {
   return apiRequest<ApplicationCandidateListItem>(`/applications/me/${applicationId}`, {
     method: 'GET',
-    token,
   })
 }
 
-export function withdrawMyApplication(token: string, applicationId: string) {
+export function withdrawMyApplication(applicationId: string) {
   return apiRequest<ApplicationResponse>(`/applications/me/${applicationId}/withdraw`, {
     method: 'POST',
-    token,
   })
 }
 
-export function listTenantApplications(
-  token: string,
-  query?: {
-    page?: number
-    limit?: number
-    status?: ApiApplicationStatus
-    jobId?: string
-  },
-) {
+export function listTenantApplications(query?: {
+  page?: number
+  limit?: number
+  status?: ApiApplicationStatus
+  jobId?: string
+}) {
   return apiRequest<Paginated<ApplicationTenantListItem>>('/applications', {
     method: 'GET',
-    token,
     query: query as Record<string, string | number | undefined>,
   })
 }
 
-export function getTenantApplication(token: string, id: string) {
+export function getTenantApplication(id: string) {
   return apiRequest<ApplicationTenantDetail>(`/applications/${id}`, {
     method: 'GET',
-    token,
   })
 }
 
@@ -72,25 +64,20 @@ export interface ApplicationTenantDetail extends ApplicationResponse {
   job: JobResponse
 }
 
-export function moveApplication(token: string, id: string, body: { status: ApiApplicationStatus }) {
+export function moveApplication(id: string, body: { status: ApiApplicationStatus }) {
   return apiRequest<ApplicationResponse>(`/applications/${id}/move`, {
     method: 'PATCH',
-    token,
     json: body,
   })
 }
 
-export function sourceCandidate(
-  token: string,
-  body: {
-    jobId: string
-    candidateEmail: string
-    candidateName: string
-  },
-) {
+export function sourceCandidate(body: {
+  jobId: string
+  candidateEmail: string
+  candidateName: string
+}) {
   return apiRequest<SourceCandidateResult>('/applications/sourced', {
     method: 'POST',
-    token,
     json: body,
   })
 }

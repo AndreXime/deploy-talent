@@ -19,12 +19,9 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { ApiRequestError } from '@/lib/api/client'
 import { createJob } from '@/lib/api/jobs-api'
-import { requireSessionToken } from '@/lib/require-session-token'
-import { useAuth } from '@/providers/auth-provider'
 
 export default function NewJobPage() {
   const router = useRouter()
-  const { token } = useAuth()
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [modality, setModality] = useState('')
@@ -33,7 +30,7 @@ export default function NewJobPage() {
 
   const mut = useMutation({
     mutationFn: () =>
-      createJob(requireSessionToken(token), {
+      createJob({
         title,
         description,
         modality,

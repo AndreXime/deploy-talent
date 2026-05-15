@@ -26,7 +26,6 @@ import {
   PIPELINE_FILE_UPLOAD_HINT,
   resolveClientPipelineUploadMimeType,
 } from '@/lib/pipeline-file-upload'
-import { requireSessionToken } from '@/lib/require-session-token'
 import { useAuth } from '@/providers/auth-provider'
 import { StageKindBadge } from './stage-kind-badge'
 
@@ -35,13 +34,13 @@ interface Props {
 }
 
 export function CandidateCurrentStageCard({ applicationId }: Props) {
-  const { token } = useAuth()
+  const { claims } = useAuth()
   const qc = useQueryClient()
 
   const q = useQuery({
-    enabled: !!token,
-    queryKey: ['my-current-stage', token, applicationId],
-    queryFn: () => getMyCurrentStage(requireSessionToken(token), applicationId),
+    enabled: !!claims,
+    queryKey: ['my-current-stage', claims?.sub, applicationId],
+    queryFn: () => getMyCurrentStage(applicationId),
   })
 
   return (
@@ -63,7 +62,7 @@ export function CandidateCurrentStageCard({ applicationId }: Props) {
           <CurrentStageBody
             data={q.data}
             onSubmitted={() =>
-              qc.invalidateQueries({ queryKey: ['my-current-stage', token, applicationId] })
+              qc.invalidateQueries({ queryKey: ['my-current-stage', claims?.sub, applicationId] })
             }
             applicationId={applicationId}
           />
@@ -192,7 +191,6 @@ function QuestionnaireForm({
   config: QuestionnaireConfig
   onSubmitted: () => void
 }) {
-  const { token } = useAuth()
   const initial = useMemo(
     () => Object.fromEntries(config.questions.map((q) => [q.id, ''])),
     [config.questions],
@@ -207,7 +205,7 @@ function QuestionnaireForm({
           value: answers[q.id] ?? '',
         })),
       }
-      return submitCurrentStage(requireSessionToken(token), applicationId, payload)
+      return submitCurrentStage(applicationId, payload)
     },
     onSuccess: () => {
       toast.success('Respostas enviadas.')
@@ -279,7 +277,6 @@ function FileUploadForm({
   config: FileUploadConfig
   onSubmitted: () => void
 }) {
-  const { token } = useAuth()
   const [file, setFile] = useState<File | null>(null)
 
   const mut = useMutation({
@@ -289,14 +286,14 @@ function FileUploadForm({
       if (!contentType) {
         throw new Error('Tipo de arquivo não suportado. Use PDF, DOCX, PNG, JPG ou TXT.')
       }
-      const presign = await presignUpload(requireSessionToken(token), {
+      const presign = await presignUpload({
         purpose: 'APPLICATION_STAGE_FILE',
         contentType,
         fileName: file.name,
         applicationId,
       })
       await uploadFileToPresignedUrl(presign.url, file, contentType)
-      return submitCurrentStage(requireSessionToken(token), applicationId, {
+      return submitCurrentStage(applicationId, {
         fileKey: presign.key,
         fileName: file.name,
         fileSize: file.size,

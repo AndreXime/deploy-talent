@@ -9,18 +9,14 @@ export type MediaUploadPurpose =
   | 'TENANT_LOGO'
   | 'TENANT_BANNER'
 
-export function presignUpload(
-  token: string,
-  body: {
-    purpose: MediaUploadPurpose
-    contentType: string
-    fileName?: string
-    applicationId?: string
-  },
-) {
+export function presignUpload(body: {
+  purpose: MediaUploadPurpose
+  contentType: string
+  fileName?: string
+  applicationId?: string
+}) {
   return apiRequest<PresignedUrlResponse>('/media/presign-upload', {
     method: 'POST',
-    token,
     json: body,
   })
 }

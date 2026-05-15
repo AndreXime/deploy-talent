@@ -8,11 +8,14 @@ import {
   Param,
   Post,
   Request,
+  Res,
   UseGuards,
 } from '@nestjs/common'
 import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger'
-import type { Request as ExpressRequest } from 'express'
+import type { Request as ExpressRequest, Response } from 'express'
 import { UserRole } from '../../generated/prisma/client'
+import { AuthCookiesService } from '../auth/auth-cookies.service'
+import { AuthSessionService } from '../auth/auth-session.service'
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
 import type { JwtPayload } from '../auth/jwt-payload'
 import { Public } from '../auth/public.decorator'
@@ -20,7 +23,7 @@ import { Roles } from '../auth/rbac/roles.decorator'
 import {
   CreatedInvitationDto,
   InvitationPreviewDto,
-  SessionTokensDto,
+  SessionClaimsResponseDto,
 } from '../infra/docs/dto/swagger-responses.dto'
 import { ApiJwtAuth, ApiJwtTenantB2b, ApiStandardErrors } from '../infra/docs/swagger-decorators'
 import { TenantOptional, TenantRequired } from '../tenant-context/tenant.decorators'
@@ -45,6 +48,8 @@ export class InvitationsController {
     private readonly inviteRecruiter: InviteRecruiterUseCase,
     private readonly getInvitation: GetInvitationByTokenUseCase,
     private readonly acceptInvitation: AcceptInvitationUseCase,
+    private readonly authCookies: AuthCookiesService,
+    private readonly authSession: AuthSessionService,
   ) {}
 
   @UseGuards(JwtAuthGuard)
@@ -112,12 +117,18 @@ export class InvitationsController {
   @ApiOperation({
     summary: 'Aceitar convite e ativar a conta',
     description:
-      'Endpoint público. Cria o usuário com a senha definida pelo destinatário, invalida o convite e devolve um JWT pronto a usar.',
+      'Endpoint público. Cria o usuário com a senha definida pelo destinatário, invalida o convite, define cookies httpOnly e devolve dados públicos da sessão.',
   })
   @ApiBody({ type: AcceptInvitationDto })
-  @ApiOkResponse({ type: SessionTokensDto })
+  @ApiOkResponse({ type: SessionClaimsResponseDto })
   @ApiStandardErrors(true)
-  async accept(@Param('token') token: string, @Body() body: AcceptInvitationDto) {
-    return this.acceptInvitation.execute(token, body.password)
+  async accept(
+    @Param('token') token: string,
+    @Body() body: AcceptInvitationDto,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<SessionClaimsResponseDto> {
+    const sessionTokens = await this.acceptInvitation.execute(token, body.password)
+    this.authCookies.attachTokens(res, sessionTokens)
+    return this.authSession.publicClaims(sessionTokens)
   }
 }

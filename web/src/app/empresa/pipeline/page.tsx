@@ -16,7 +16,6 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { ApiRequestError } from '@/lib/api/client'
 import { getTenantPipeline, replaceTenantPipeline } from '@/lib/api/pipelines-api'
 import type { PipelineStageInput, PipelineStageKind } from '@/lib/api/types'
-import { requireSessionToken } from '@/lib/require-session-token'
 import { homePathForRole } from '@/lib/routes'
 import { useAuth } from '@/providers/auth-provider'
 
@@ -39,7 +38,7 @@ function newDraft(kind: PipelineStageKind = 'MANUAL'): DraftStage {
 export default function TenantPipelinePage() {
   const router = useRouter()
   const queryClient = useQueryClient()
-  const { claims, hydrated, token } = useAuth()
+  const { claims, hydrated } = useAuth()
   const [drafts, setDrafts] = useState<DraftStage[]>([])
 
   useEffect(() => {
@@ -54,9 +53,9 @@ export default function TenantPipelinePage() {
   }, [hydrated, claims, router])
 
   const templateQ = useQuery({
-    enabled: !!token,
+    enabled: !!claims,
     queryKey: TEMPLATE_QUERY_KEY,
-    queryFn: () => getTenantPipeline(requireSessionToken(token)),
+    queryFn: () => getTenantPipeline(),
   })
 
   useEffect(() => {
@@ -73,8 +72,7 @@ export default function TenantPipelinePage() {
   }, [templateQ.data])
 
   const replaceMut = useMutation({
-    mutationFn: (stages: PipelineStageInput[]) =>
-      replaceTenantPipeline(requireSessionToken(token), stages),
+    mutationFn: (stages: PipelineStageInput[]) => replaceTenantPipeline(stages),
     onSuccess: (data) => {
       queryClient.setQueryData(TEMPLATE_QUERY_KEY, data)
       toast.success('Pipeline guardada.')

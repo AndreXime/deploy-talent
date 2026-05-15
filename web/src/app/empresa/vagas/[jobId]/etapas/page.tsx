@@ -20,7 +20,6 @@ import { getTenantJob } from '@/lib/api/jobs-api'
 import { listJobStages, replaceJobStages } from '@/lib/api/pipelines-api'
 import type { PipelineStageInput, PipelineStageKind } from '@/lib/api/types'
 import { isUuid } from '@/lib/is-uuid'
-import { requireSessionToken } from '@/lib/require-session-token'
 import { homePathForRole } from '@/lib/routes'
 import { useAuth } from '@/providers/auth-provider'
 
@@ -44,7 +43,7 @@ export default function JobStagesPage() {
   const valid = isUuid(jobId.trim())
   const router = useRouter()
   const queryClient = useQueryClient()
-  const { claims, hydrated, token } = useAuth()
+  const { claims, hydrated } = useAuth()
   const [drafts, setDrafts] = useState<DraftStage[]>([])
 
   useEffect(() => {
@@ -59,15 +58,15 @@ export default function JobStagesPage() {
   }, [hydrated, claims, router])
 
   const jobQ = useQuery({
-    enabled: !!token && valid,
-    queryKey: ['tenant-job', token, jobId],
-    queryFn: () => getTenantJob(requireSessionToken(token), jobId.trim()),
+    enabled: !!claims && valid,
+    queryKey: ['tenant-job', claims?.sub, jobId],
+    queryFn: () => getTenantJob(jobId.trim()),
   })
 
   const stagesQ = useQuery({
-    enabled: !!token && valid,
-    queryKey: ['job-stages', token, jobId],
-    queryFn: () => listJobStages(requireSessionToken(token), jobId.trim()),
+    enabled: !!claims && valid,
+    queryKey: ['job-stages', claims?.sub, jobId],
+    queryFn: () => listJobStages(jobId.trim()),
   })
 
   useEffect(() => {
@@ -84,10 +83,9 @@ export default function JobStagesPage() {
   }, [stagesQ.data])
 
   const replaceMut = useMutation({
-    mutationFn: (stages: PipelineStageInput[]) =>
-      replaceJobStages(requireSessionToken(token), jobId.trim(), stages),
+    mutationFn: (stages: PipelineStageInput[]) => replaceJobStages(jobId.trim(), stages),
     onSuccess: (data) => {
-      queryClient.setQueryData(['job-stages', token, jobId], data)
+      queryClient.setQueryData(['job-stages', claims?.sub, jobId], data)
       toast.success('Etapas guardadas.')
     },
     onError: (err: unknown) => {

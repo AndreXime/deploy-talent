@@ -21,7 +21,6 @@ import { listTenantApplications } from '@/lib/api/applications-api'
 import { getTenantJob } from '@/lib/api/jobs-api'
 import type { ApiApplicationStatus } from '@/lib/api/types'
 import { applicationStatusLabel } from '@/lib/domain-labels'
-import { requireSessionToken } from '@/lib/require-session-token'
 import { useAuth } from '@/providers/auth-provider'
 
 const APPLICATION_STATUS_OPTIONS: ApiApplicationStatus[] = [
@@ -43,14 +42,14 @@ export default function TenantApplicationsPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const jobId = searchParams.get('jobId') ?? undefined
-  const { token } = useAuth()
+  const { claims } = useAuth()
   const [status, setStatus] = useState<ApiApplicationStatus | 'ALL'>('ALL')
 
   const q = useQuery({
-    enabled: !!token,
-    queryKey: ['tenant-applications', token, status, jobId],
+    enabled: !!claims,
+    queryKey: ['tenant-applications', claims?.sub, status, jobId],
     queryFn: () =>
-      listTenantApplications(requireSessionToken(token), {
+      listTenantApplications({
         page: 1,
         limit: 50,
         status: status === 'ALL' ? undefined : status,
@@ -59,9 +58,9 @@ export default function TenantApplicationsPage() {
   })
 
   const jobQ = useQuery({
-    enabled: !!token && !!jobId,
-    queryKey: ['tenant-job', token, jobId],
-    queryFn: () => getTenantJob(requireSessionToken(token), jobId as string),
+    enabled: !!claims && !!jobId,
+    queryKey: ['tenant-job', claims?.sub, jobId],
+    queryFn: () => getTenantJob(jobId as string),
   })
 
   const clearJobFilter = () => {

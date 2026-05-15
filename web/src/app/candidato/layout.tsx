@@ -10,18 +10,18 @@ import { useAuth } from '@/providers/auth-provider'
 export default function CandidateLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const router = useRouter()
   const pathname = usePathname()
-  const { hydrated, token, claims } = useAuth()
+  const { hydrated, claims } = useAuth()
 
   useEffect(() => {
     if (!hydrated) return
-    if (!token) {
+    if (!claims) {
       router.replace(`/entrar?redirect=${encodeURIComponent(pathname)}`)
       return
     }
-    if (claims?.role !== 'CANDIDATE') {
-      router.replace(homePathForRole(claims?.role ?? ''))
+    if (claims.role !== 'CANDIDATE') {
+      router.replace(homePathForRole(claims.role))
     }
-  }, [claims, hydrated, pathname, router, token])
+  }, [claims, hydrated, pathname, router])
 
   if (!hydrated) {
     return (
@@ -32,7 +32,7 @@ export default function CandidateLayout({ children }: Readonly<{ children: React
     )
   }
 
-  if (!token || claims?.role !== 'CANDIDATE') {
+  if (!claims || claims.role !== 'CANDIDATE') {
     return (
       <div className="flex flex-1 items-center justify-center p-8 text-muted-foreground">
         A redirecionar…

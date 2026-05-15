@@ -9,17 +9,16 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { listMySavedJobs } from '@/lib/api/candidates-api'
-import { requireSessionToken } from '@/lib/require-session-token'
 import { useAuth } from '@/providers/auth-provider'
 
 export default function SavedJobsPage() {
-  const { token, claims, hydrated } = useAuth()
+  const { claims, hydrated } = useAuth()
   const isCandidate = claims?.role === 'CANDIDATE'
 
   const listQ = useQuery({
-    enabled: hydrated && !!token && isCandidate,
-    queryKey: ['my-saved-jobs', token],
-    queryFn: () => listMySavedJobs(requireSessionToken(token), { page: 1, limit: 50 }),
+    enabled: hydrated && !!claims && isCandidate,
+    queryKey: ['my-saved-jobs', claims?.sub],
+    queryFn: () => listMySavedJobs({ page: 1, limit: 50 }),
   })
 
   if (!hydrated) {
@@ -30,7 +29,7 @@ export default function SavedJobsPage() {
     )
   }
 
-  if (!token || !isCandidate) {
+  if (!claims || !isCandidate) {
     return (
       <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 px-4 py-10 lg:px-6">
         <Alert>

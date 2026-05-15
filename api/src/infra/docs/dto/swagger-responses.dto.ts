@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger'
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 
 const JOB_STATUS_VALUES = ['DRAFT', 'PUBLISHED', 'PAUSED', 'CLOSED'] as const
 const APPLICATION_STATUS_VALUES = [
@@ -130,6 +130,32 @@ export class SessionTokensDto extends AccessTokenDto {
     example: 'base64url-opaco',
   })
   refresh_token!: string
+}
+
+/** Dados públicos da sessão enviados no JSON; JWT fica só em cookie httpOnly no navegador. */
+export class SessionClaimsResponseDto {
+  @ApiProperty() sub!: string
+  @ApiProperty() role!: string
+  @ApiProperty({
+    nullable: true,
+    description: 'Tenant B2B; `null` para candidatos ou super-admin quando o token assim o define.',
+    type: String,
+  })
+  tenantId!: string | null
+}
+
+/** Corpo devolvido por `GET /auth/session`. */
+export class AuthSessionStatusDto {
+  @ApiProperty({ description: 'Indica `access_token` válido por Bearer ou cookie httpOnly.' })
+  authenticated!: boolean
+  @ApiPropertyOptional({ description: 'Preenchido quando `authenticated === true`' }) sub?: string
+  @ApiPropertyOptional({ description: 'Preenchido quando `authenticated === true`' }) role?: string
+  @ApiPropertyOptional({
+    nullable: true,
+    description: 'Preenchido quando `authenticated === true`',
+    type: String,
+  })
+  tenantId?: string | null
 }
 
 /** Resposta de `POST /auth/register/tenant-admin` (sem sessão até aprovação). */

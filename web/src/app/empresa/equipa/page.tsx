@@ -30,7 +30,6 @@ import { ApiRequestError } from '@/lib/api/client'
 import { inviteRecruiterRequest } from '@/lib/api/invitations-api'
 import { getCurrentTenantRecruiters, removeCurrentTenantRecruiter } from '@/lib/api/tenants-api'
 import type { TenantRecruiterItem } from '@/lib/api/types'
-import { requireSessionToken } from '@/lib/require-session-token'
 import { homePathForRole } from '@/lib/routes'
 import { useAuth } from '@/providers/auth-provider'
 
@@ -53,7 +52,7 @@ function formatJoinedAt(iso: string): string {
 export default function TeamPage() {
   const router = useRouter()
   const queryClient = useQueryClient()
-  const { claims, hydrated, token } = useAuth()
+  const { claims, hydrated } = useAuth()
   const [email, setEmail] = useState('')
   const [removeTarget, setRemoveTarget] = useState<TenantRecruiterItem | null>(null)
 
@@ -65,13 +64,13 @@ export default function TeamPage() {
   }, [claims?.role, hydrated, router])
 
   const recruitersQ = useQuery({
-    enabled: hydrated && claims?.role === 'TENANT_ADMIN' && Boolean(token),
+    enabled: hydrated && claims?.role === 'TENANT_ADMIN' && Boolean(claims),
     queryKey: RECRUITERS_QUERY_KEY,
-    queryFn: () => getCurrentTenantRecruiters(requireSessionToken(token)),
+    queryFn: () => getCurrentTenantRecruiters(),
   })
 
   const inviteMut = useMutation({
-    mutationFn: () => inviteRecruiterRequest(requireSessionToken(token), { email: email.trim() }),
+    mutationFn: () => inviteRecruiterRequest({ email: email.trim() }),
     onSuccess: (res) => {
       toast.success(`Convite enviado para ${res.email}. O link expira em breve.`)
       setEmail('')
@@ -84,8 +83,7 @@ export default function TeamPage() {
   })
 
   const removeMut = useMutation({
-    mutationFn: (userId: string) =>
-      removeCurrentTenantRecruiter(requireSessionToken(token), userId),
+    mutationFn: (userId: string) => removeCurrentTenantRecruiter(userId),
     onSuccess: (_data, userId) => {
       toast.success('Recrutador removido da equipe.')
       queryClient.setQueryData<TenantRecruiterItem[]>(RECRUITERS_QUERY_KEY, (prev) =>

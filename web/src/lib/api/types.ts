@@ -15,9 +15,17 @@ export interface Paginated<T> {
   limit: number
 }
 
-export interface SessionTokensResponse {
-  access_token: string
-  refresh_token: string
+export interface SessionClaimsResponse {
+  sub: string
+  role: string
+  tenantId: string | null
+}
+
+export interface AuthSessionStatusJson {
+  authenticated: boolean
+  sub?: string
+  role?: string
+  tenantId?: string | null
 }
 
 export interface TenantResponse {

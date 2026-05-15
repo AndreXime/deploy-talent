@@ -24,7 +24,7 @@ type RegisterMode = 'candidate' | 'tenant_admin'
 
 export default function RegisterPage() {
   const router = useRouter()
-  const { setSession } = useAuth()
+  const { setSessionClaims } = useAuth()
   const [mode, setMode] = useState<RegisterMode>('candidate')
   const [name, setName] = useState('')
   const [companyName, setCompanyName] = useState('')
@@ -38,7 +38,7 @@ export default function RegisterPage() {
     try {
       if (mode === 'candidate') {
         const res = await registerCandidateRequest({ name, email, password })
-        setSession(res)
+        setSessionClaims(res)
         toast.success('Conta criada.')
         router.replace('/candidato')
         return

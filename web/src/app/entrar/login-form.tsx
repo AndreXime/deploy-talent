@@ -10,7 +10,6 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { loginRequest } from '@/lib/api/auth-api'
 import { ApiRequestError } from '@/lib/api/client'
-import { parseJwtClaims } from '@/lib/auth-token'
 import { homePathForRole } from '@/lib/routes'
 import { useAuth } from '@/providers/auth-provider'
 
@@ -18,7 +17,7 @@ export function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const redirect = searchParams.get('redirect')
-  const { setSession } = useAuth()
+  const { setSessionClaims } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -28,10 +27,9 @@ export function LoginForm() {
     setLoading(true)
     try {
       const res = await loginRequest({ email, password })
-      setSession(res)
+      setSessionClaims(res)
       toast.success('Sessão iniciada.')
-      const claims = parseJwtClaims(res.access_token)
-      const next = redirect?.startsWith('/') ? redirect : homePathForRole(claims?.role ?? '')
+      const next = redirect?.startsWith('/') ? redirect : homePathForRole(res.role)
       router.replace(next)
     } catch (err) {
       if (err instanceof ApiRequestError) {

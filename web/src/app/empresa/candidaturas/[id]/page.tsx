@@ -25,45 +25,43 @@ import type { ApiApplicationStatus } from '@/lib/api/types'
 import { applicationStatusLabel } from '@/lib/domain-labels'
 import { isUuid } from '@/lib/is-uuid'
 import { nextApplicationStatuses } from '@/lib/pipeline-rules'
-import { requireSessionToken } from '@/lib/require-session-token'
 import { useAuth } from '@/providers/auth-provider'
 
 export default function TenantApplicationDetailPage() {
   const params = useParams<{ id: string }>()
   const id = params?.id?.trim() ?? ''
-  const { token } = useAuth()
+  const { claims } = useAuth()
   const qc = useQueryClient()
   const valid = isUuid(id)
 
   const [targetStageId, setTargetStageId] = useState('')
 
   const appQ = useQuery({
-    enabled: !!token && valid,
-    queryKey: ['tenant-application', token, id],
-    queryFn: () => getTenantApplication(requireSessionToken(token), id),
+    enabled: !!claims && valid,
+    queryKey: ['tenant-application', claims?.sub, id],
+    queryFn: () => getTenantApplication(id),
   })
 
   const jobId = appQ.data?.jobId
 
   const stagesQ = useQuery({
-    enabled: !!token && !!jobId,
-    queryKey: ['job-stages', token, jobId],
-    queryFn: () => listJobStages(requireSessionToken(token), jobId as string),
+    enabled: !!claims && !!jobId,
+    queryKey: ['job-stages', claims?.sub, jobId],
+    queryFn: () => listJobStages(jobId as string),
   })
 
   const progressQ = useQuery({
-    enabled: !!token && valid,
-    queryKey: ['application-progress', token, id],
-    queryFn: () => listApplicationProgress(requireSessionToken(token), id),
+    enabled: !!claims && valid,
+    queryKey: ['application-progress', claims?.sub, id],
+    queryFn: () => listApplicationProgress(id),
   })
 
   const moveMut = useMutation({
-    mutationFn: (input: { status: ApiApplicationStatus }) =>
-      moveApplication(requireSessionToken(token), id, input),
+    mutationFn: (input: { status: ApiApplicationStatus }) => moveApplication(id, input),
     onSuccess: () => {
       toast.success('Funil atualizado.')
-      qc.invalidateQueries({ queryKey: ['tenant-application', token, id] })
-      qc.invalidateQueries({ queryKey: ['tenant-applications', token] })
+      qc.invalidateQueries({ queryKey: ['tenant-application', claims?.sub, id] })
+      qc.invalidateQueries({ queryKey: ['tenant-applications', claims?.sub] })
     },
     onError: (err: unknown) => {
       if (err instanceof ApiRequestError) toast.error(err.message)
@@ -72,12 +70,11 @@ export default function TenantApplicationDetailPage() {
   })
 
   const moveStageMut = useMutation({
-    mutationFn: (jobStageId: string) =>
-      moveApplicationStage(requireSessionToken(token), id, jobStageId),
+    mutationFn: (jobStageId: string) => moveApplicationStage(id, jobStageId),
     onSuccess: () => {
       toast.success('Etapa atualizada.')
-      qc.invalidateQueries({ queryKey: ['tenant-application', token, id] })
-      qc.invalidateQueries({ queryKey: ['application-progress', token, id] })
+      qc.invalidateQueries({ queryKey: ['tenant-application', claims?.sub, id] })
+      qc.invalidateQueries({ queryKey: ['application-progress', claims?.sub, id] })
       setTargetStageId('')
     },
     onError: (err: unknown) => {
@@ -91,7 +88,7 @@ export default function TenantApplicationDetailPage() {
 
   const interviewMut = useMutation({
     mutationFn: (jobStageId: string) =>
-      setStageInterviewLink(requireSessionToken(token), id, jobStageId, {
+      setStageInterviewLink(id, jobStageId, {
         url: interviewUrl.trim(),
         scheduledAt:
           interviewScheduledAt.trim().length > 0
@@ -100,7 +97,7 @@ export default function TenantApplicationDetailPage() {
       }),
     onSuccess: () => {
       toast.success('Link de entrevista atualizado.')
-      qc.invalidateQueries({ queryKey: ['application-progress', token, id] })
+      qc.invalidateQueries({ queryKey: ['application-progress', claims?.sub, id] })
       setInterviewUrl('')
       setInterviewScheduledAt('')
     },

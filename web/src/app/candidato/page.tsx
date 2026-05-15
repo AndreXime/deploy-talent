@@ -9,16 +9,15 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { listMyApplications } from '@/lib/api/applications-api'
-import { requireSessionToken } from '@/lib/require-session-token'
 import { useAuth } from '@/providers/auth-provider'
 
 export default function CandidateHomePage() {
-  const { token } = useAuth()
+  const { claims } = useAuth()
 
   const q = useQuery({
-    enabled: !!token,
-    queryKey: ['my-applications', token, 1],
-    queryFn: () => listMyApplications(requireSessionToken(token), { page: 1, limit: 50 }),
+    enabled: !!claims,
+    queryKey: ['my-applications', claims?.sub, 1],
+    queryFn: () => listMyApplications({ page: 1, limit: 50 }),
   })
 
   return (

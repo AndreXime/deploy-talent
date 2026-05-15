@@ -65,11 +65,11 @@ function NavLinks({ onNavigate }: Readonly<{ onNavigate?: () => void }>) {
 }
 
 function CompanyHeading() {
-  const { token } = useAuth()
+  const { claims } = useAuth()
   const tenantQ = useQuery({
-    enabled: !!token,
-    queryKey: ['company-shell-current-tenant', token],
-    queryFn: () => getCurrentTenant(token as string),
+    enabled: !!claims,
+    queryKey: ['company-shell-current-tenant', claims?.sub],
+    queryFn: () => getCurrentTenant(),
     staleTime: 5 * 60 * 1000,
   })
 

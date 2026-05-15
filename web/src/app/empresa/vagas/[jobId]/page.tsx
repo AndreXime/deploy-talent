@@ -35,13 +35,12 @@ import type { ApiJobStatus } from '@/lib/api/types'
 import { jobStatusLabel } from '@/lib/domain-labels'
 import { isUuid } from '@/lib/is-uuid'
 import { canPublishJob, nextJobStatuses } from '@/lib/pipeline-rules'
-import { requireSessionToken } from '@/lib/require-session-token'
 import { useAuth } from '@/providers/auth-provider'
 
 export default function TenantJobDetailPage() {
   const params = useParams<{ jobId: string }>()
   const jobId = params?.jobId ?? ''
-  const { token } = useAuth()
+  const { claims } = useAuth()
   const qc = useQueryClient()
   const valid = isUuid(jobId.trim())
 
@@ -55,9 +54,9 @@ export default function TenantJobDetailPage() {
   const [sName, setSName] = useState('')
 
   const jobQ = useQuery({
-    enabled: !!token && valid,
-    queryKey: ['tenant-job', token, jobId],
-    queryFn: () => getTenantJob(requireSessionToken(token), jobId.trim()),
+    enabled: !!claims && valid,
+    queryKey: ['tenant-job', claims?.sub, jobId],
+    queryFn: () => getTenantJob(jobId.trim()),
   })
 
   useEffect(() => {
@@ -72,7 +71,7 @@ export default function TenantJobDetailPage() {
 
   const patchMut = useMutation({
     mutationFn: () =>
-      patchJob(requireSessionToken(token), jobId.trim(), {
+      patchJob(jobId.trim(), {
         title,
         description,
         modality,
@@ -80,8 +79,8 @@ export default function TenantJobDetailPage() {
         seniority,
       }),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['tenant-job', token, jobId] })
-      qc.invalidateQueries({ queryKey: ['tenant-jobs', token] })
+      qc.invalidateQueries({ queryKey: ['tenant-job', claims?.sub, jobId] })
+      qc.invalidateQueries({ queryKey: ['tenant-jobs', claims?.sub] })
       toast.success('Alterações gravadas.')
     },
     onError: (err: unknown) => {
@@ -91,11 +90,10 @@ export default function TenantJobDetailPage() {
   })
 
   const statusMut = useMutation({
-    mutationFn: (next: ApiJobStatus) =>
-      changeJobStatus(requireSessionToken(token), jobId.trim(), next),
+    mutationFn: (next: ApiJobStatus) => changeJobStatus(jobId.trim(), next),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['tenant-job', token, jobId] })
-      qc.invalidateQueries({ queryKey: ['tenant-jobs', token] })
+      qc.invalidateQueries({ queryKey: ['tenant-job', claims?.sub, jobId] })
+      qc.invalidateQueries({ queryKey: ['tenant-jobs', claims?.sub] })
       toast.success('Estado da vaga atualizado.')
     },
     onError: (err: unknown) => {
@@ -106,7 +104,7 @@ export default function TenantJobDetailPage() {
 
   const sourceMut = useMutation({
     mutationFn: () =>
-      sourceCandidate(requireSessionToken(token), {
+      sourceCandidate({
         jobId: jobId.trim(),
         candidateEmail: sEmail.trim(),
         candidateName: sName.trim(),
@@ -126,7 +124,7 @@ export default function TenantJobDetailPage() {
       setSourceOpen(false)
       setSEmail('')
       setSName('')
-      qc.invalidateQueries({ queryKey: ['tenant-applications', token] })
+      qc.invalidateQueries({ queryKey: ['tenant-applications', claims?.sub] })
     },
     onError: (err: unknown) => {
       if (err instanceof ApiRequestError) toast.error(err.message)

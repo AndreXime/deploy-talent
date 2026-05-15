@@ -9,7 +9,6 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { ApiRequestError } from '@/lib/api/client'
 import { presignUpload, uploadFileToPresignedUrl } from '@/lib/api/media-api'
 import { getCurrentTenant, getPublicBranding, patchCurrentBranding } from '@/lib/api/tenants-api'
-import { requireSessionToken } from '@/lib/require-session-token'
 import { useAuth } from '@/providers/auth-provider'
 
 const IMAGE_ACCEPT = ['image/jpeg', 'image/png', 'image/webp']
@@ -21,14 +20,14 @@ function imageContentType(file: File): string {
 type AssetKind = 'logo' | 'banner'
 
 export default function TenantBrandingPage() {
-  const { token } = useAuth()
+  const { claims } = useAuth()
   const queryClient = useQueryClient()
   const [busy, setBusy] = useState<AssetKind | null>(null)
 
   const tenantQ = useQuery({
-    enabled: !!token,
-    queryKey: ['company-shell-current-tenant', token],
-    queryFn: () => getCurrentTenant(requireSessionToken(token)),
+    enabled: !!claims,
+    queryKey: ['company-shell-current-tenant', claims?.sub],
+    queryFn: () => getCurrentTenant(),
   })
 
   const brandingQ = useQuery({
@@ -38,8 +37,7 @@ export default function TenantBrandingPage() {
   })
 
   const patchMut = useMutation({
-    mutationFn: (body: { logoKey?: string; bannerKey?: string }) =>
-      patchCurrentBranding(requireSessionToken(token), body),
+    mutationFn: (body: { logoKey?: string; bannerKey?: string }) => patchCurrentBranding(body),
     onSuccess: () => {
       toast.success('Marca atualizada.')
       queryClient.invalidateQueries({ queryKey: ['tenant-branding-preview', tenantQ.data?.id] })
@@ -52,12 +50,12 @@ export default function TenantBrandingPage() {
   })
 
   async function upload(kind: AssetKind, file: File): Promise<void> {
-    if (!token) return
+    if (!claims) return
     setBusy(kind)
     try {
       const ct = imageContentType(file)
       const purpose = kind === 'logo' ? 'TENANT_LOGO' : 'TENANT_BANNER'
-      const presigned = await presignUpload(token, { purpose, contentType: ct })
+      const presigned = await presignUpload({ purpose, contentType: ct })
       await uploadFileToPresignedUrl(presigned.url, file, ct)
       patchMut.mutate(kind === 'logo' ? { logoKey: presigned.key } : { bannerKey: presigned.key })
     } catch (err: unknown) {

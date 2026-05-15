@@ -29,7 +29,6 @@ import { forgetMe, getMyProfile, patchMyProfile } from '@/lib/api/candidates-api
 import { ApiRequestError } from '@/lib/api/client'
 import { presignUpload, uploadFileToPresignedUrl } from '@/lib/api/media-api'
 import type { PatchCandidateProfileBody } from '@/lib/api/types'
-import { requireSessionToken } from '@/lib/require-session-token'
 import { useAuth } from '@/providers/auth-provider'
 
 const IMAGE_ACCEPT = ['image/jpeg', 'image/png', 'image/webp'] as const
@@ -66,7 +65,7 @@ function resumeContentType(file: File): string {
 }
 
 export default function CandidateProfilePage() {
-  const { token, signOut } = useAuth()
+  const { claims, signOut } = useAuth()
   const queryClient = useQueryClient()
   const [forgetOpen, setForgetOpen] = useState(false)
 
@@ -78,9 +77,9 @@ export default function CandidateProfilePage() {
   const resumeInputRef = useRef<HTMLInputElement>(null)
 
   const profileQ = useQuery({
-    enabled: !!token,
-    queryKey: ['my-profile', token],
-    queryFn: () => getMyProfile(requireSessionToken(token)),
+    enabled: !!claims,
+    queryKey: ['my-profile', claims?.sub],
+    queryFn: () => getMyProfile(),
   })
 
   useEffect(() => {
@@ -91,10 +90,9 @@ export default function CandidateProfilePage() {
   }, [profileQ.data])
 
   const patchMut = useMutation({
-    mutationFn: (body: PatchCandidateProfileBody) =>
-      patchMyProfile(requireSessionToken(token), body),
+    mutationFn: (body: PatchCandidateProfileBody) => patchMyProfile(body),
     onSuccess: (data) => {
-      queryClient.setQueryData(['my-profile', token], data)
+      queryClient.setQueryData(['my-profile', claims?.sub], data)
       toast.success('Perfil atualizado.')
     },
     onError: (err: unknown) => {
@@ -104,7 +102,7 @@ export default function CandidateProfilePage() {
   })
 
   const forgetMut = useMutation({
-    mutationFn: () => forgetMe(requireSessionToken(token)),
+    mutationFn: () => forgetMe(),
     onSuccess: async () => {
       toast.success('Conta tratada segundo o pedido.')
       queryClient.clear()
@@ -120,12 +118,12 @@ export default function CandidateProfilePage() {
   async function onAvatarPick(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     e.target.value = ''
-    if (!file || !token) return
+    if (!file || !claims) return
 
     setUploadingAvatar(true)
     try {
       const ctype = mimeForFile(file)
-      const presigned = await presignUpload(token, {
+      const presigned = await presignUpload({
         purpose: 'CANDIDATE_AVATAR',
         contentType: ctype,
       })
@@ -140,19 +138,19 @@ export default function CandidateProfilePage() {
   }
 
   async function removeAvatar() {
-    if (!token) return
+    if (!claims) return
     await patchMut.mutateAsync({ avatarKey: '' })
   }
 
   async function onResumePick(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     e.target.value = ''
-    if (!file || !token) return
+    if (!file || !claims) return
 
     setUploadingResume(true)
     try {
       const ctype = resumeContentType(file)
-      const presigned = await presignUpload(token, {
+      const presigned = await presignUpload({
         purpose: 'CANDIDATE_RESUME',
         contentType: ctype,
         fileName: file.name,
@@ -169,7 +167,7 @@ export default function CandidateProfilePage() {
   }
 
   async function removeResume() {
-    if (!token) return
+    if (!claims) return
     await patchMut.mutateAsync({ resumeKey: '' })
   }
 

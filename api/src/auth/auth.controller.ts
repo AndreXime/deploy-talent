@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   DefaultValuePipe,
+  Delete,
   ForbiddenException,
   Get,
   HttpCode,
@@ -9,6 +10,8 @@ import {
   Patch,
   Post,
   Request,
+  Res,
+  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common'
 import {
@@ -22,16 +25,20 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger'
-import type { Request as ExpressRequest } from 'express'
+import type { Request as ExpressRequest, Response } from 'express'
 import type { User } from '../../generated/prisma/client'
 import { UserRole } from '../../generated/prisma/client'
 import {
+  AuthSessionStatusDto,
   B2BAccountResponseDto,
   RegisterTenantAdminPendingResponseDto,
-  SessionTokensDto,
+  SessionClaimsResponseDto,
 } from '../infra/docs/dto/swagger-responses.dto'
 import { ApiJwtAuth, ApiJwtTenantB2b, ApiStandardErrors } from '../infra/docs/swagger-decorators'
 import { TenantOptional, TenantRequired } from '../tenant-context/tenant.decorators'
+import { AUTH_REFRESH_COOKIE_NAME } from './auth-cookies.constants'
+import { AuthCookiesService } from './auth-cookies.service'
+import { AuthSessionService } from './auth-session.service'
 import { LoginDto } from './dto/login.dto'
 import { LogoutDto } from './dto/logout.dto'
 import { RefreshTokensDto } from './dto/refresh-tokens.dto'
@@ -51,12 +58,32 @@ import { RegisterCandidateUseCase } from './use-cases/register-candidate.use-cas
 import { RegisterTenantAdminUseCase } from './use-cases/register-tenant-admin.use-case'
 import { UpdateB2BAvatarUseCase } from './use-cases/update-b2b-avatar.use-case'
 
+const MIN_REFRESH_LEN = 20
+
 interface RequestWithUser extends ExpressRequest {
   user: User
 }
 
 interface RequestWithJwt extends ExpressRequest {
   user?: JwtPayload
+}
+
+function pickOpaqueRefresh(body: RefreshTokensDto, req: ExpressRequest): string {
+  const fromBody = typeof body.refresh_token === 'string' ? body.refresh_token.trim() : ''
+  const cookieJar = req.cookies?.[AUTH_REFRESH_COOKIE_NAME]
+  const fromCookie = typeof cookieJar === 'string' ? cookieJar : ''
+  if (fromBody.length >= MIN_REFRESH_LEN) return fromBody
+  if (fromCookie.length >= MIN_REFRESH_LEN) return fromCookie
+  return ''
+}
+
+function pickLogoutRefresh(body: LogoutDto, req: ExpressRequest): string | undefined {
+  const fromBody = typeof body.refresh_token === 'string' ? body.refresh_token.trim() : ''
+  const cookieJar = req.cookies?.[AUTH_REFRESH_COOKIE_NAME]
+  const fromCookie = typeof cookieJar === 'string' ? cookieJar : ''
+  if (fromBody.length >= MIN_REFRESH_LEN) return fromBody
+  if (fromCookie.length >= MIN_REFRESH_LEN) return fromCookie
+  return undefined
 }
 
 @Controller('auth')
@@ -71,32 +98,94 @@ export class AuthController {
     private readonly registerTenantAdminUseCase: RegisterTenantAdminUseCase,
     private readonly updateB2BAvatar: UpdateB2BAvatarUseCase,
     private readonly getMyB2BAccount: GetMyB2BAccountUseCase,
+    private readonly authCookies: AuthCookiesService,
+    private readonly authSession: AuthSessionService,
   ) {}
+
+  @Public()
+  @Get('session')
+  @ApiOperation({
+    summary: 'Estado da sessão (sem expor JWT no JSON)',
+    description:
+      'Indica access JWT válido lido por `Authorization` ou cookie httpOnly definido pela API nos endpoints de sessão.',
+  })
+  @ApiOkResponse({
+    type: AuthSessionStatusDto,
+  })
+  getSession(@Request() req: ExpressRequest): AuthSessionStatusDto {
+    const user = this.authSession.tryReadAccessPayload(req)
+    if (!user) {
+      return { authenticated: false }
+    }
+    return {
+      authenticated: true,
+      sub: user.sub,
+      role: user.role,
+      tenantId: user.tenantId ?? null,
+    }
+  }
+
+  @Public()
+  @Delete('session/cookies')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({
+    summary: 'Remover apenas cookies da sessão (httpOnly)',
+    description:
+      'Público. Limpa `Set-Cookie` sem revogar refresh na base. Útil após 401 no cliente antes de novo login.',
+  })
+  clearSessionCookies(@Res({ passthrough: true }) res: Response): void {
+    this.authCookies.clear(res)
+  }
 
   @Public()
   @UseGuards(LocalAuthGuard)
   @HttpCode(HttpStatus.OK)
   @Post('login')
-  @ApiOperation({ summary: 'Login (local strategy)' })
+  @ApiOperation({
+    summary: 'Login (local strategy)',
+    description:
+      'Define cookies httpOnly de access + refresh (`SameSite=Lax`). O JSON só traz dados públicos do token.',
+  })
   @ApiBody({ type: LoginDto })
   @ApiOkResponse({
-    type: SessionTokensDto,
-    description: 'Access (curto) + refresh (24h por padrão)',
+    type: SessionClaimsResponseDto,
+    description:
+      'Identidade da sessão. Também aplique Swagger com `Authorize` usando o Bearer do primeiro login se usar esta UI sem navegador.',
   })
   @ApiUnauthorizedResponse({ description: 'Credenciais inválidas' })
-  async login(@Body() _body: LoginDto, @Request() req: RequestWithUser) {
-    return this.loginUseCase.execute(req.user)
+  async login(
+    @Body() _body: LoginDto,
+    @Request() req: RequestWithUser,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<SessionClaimsResponseDto> {
+    const tokens = await this.loginUseCase.execute(req.user)
+    this.authCookies.attachTokens(res, tokens)
+    return this.authSession.publicClaims(tokens)
   }
 
   @Public()
   @HttpCode(HttpStatus.OK)
   @Post('refresh')
-  @ApiOperation({ summary: 'Renovar tokens com refresh opaco' })
-  @ApiBody({ type: RefreshTokensDto })
-  @ApiOkResponse({ type: SessionTokensDto })
+  @ApiOperation({
+    summary: 'Renovar tokens com refresh opaco',
+    description:
+      'Aceita refresh no corpo ou no cookie httpOnly quando `credentials` é enviado no pedido.',
+  })
+  @ApiBody({ type: RefreshTokensDto, required: false })
+  @ApiOkResponse({ type: SessionClaimsResponseDto })
   @ApiUnauthorizedResponse({ description: 'Refresh inválido ou expirado' })
-  async refresh(@Body() body: RefreshTokensDto) {
-    return this.refreshTokens.execute(body.refresh_token)
+  async refresh(
+    @Body(new DefaultValuePipe({})) body: RefreshTokensDto,
+    @Request() req: ExpressRequest,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<SessionClaimsResponseDto> {
+    const refreshToken = pickOpaqueRefresh(body, req)
+    if (refreshToken.length < MIN_REFRESH_LEN) {
+      throw new UnauthorizedException('Missing refresh token')
+    }
+    const tokens = await this.refreshTokens.execute(refreshToken)
+    this.authCookies.attachTokens(res, tokens)
+    return this.authSession.publicClaims(tokens)
   }
 
   @UseGuards(JwtAuthGuard)
@@ -106,31 +195,41 @@ export class AuthController {
   @ApiOperation({
     summary: 'Logout (revogar refresh na base)',
     description:
-      'Com `refresh_token` no corpo revoga só essa sessão; sem corpo (ou `{}`) revoga todos os refresh ativos do utilizador. O access JWT continua válido até expirar.',
+      'Corrige também os cookies da sessão. Com refresh no corpo ou cookie revoga só essa sessão; sem refresh revoga todos os refresh tokens ativos.',
   })
   @ApiBody({ type: LogoutDto, required: false })
-  @ApiNoContentResponse({ description: 'Refresh revogado na base' })
+  @ApiNoContentResponse({ description: 'Refresh revogado na base e cookies limpos.' })
   @ApiStandardErrors(true)
   async logout(
     @Request() req: RequestWithJwt,
     @Body(new DefaultValuePipe({})) body: LogoutDto,
+    @Res({ passthrough: true }) res: Response,
   ): Promise<void> {
     const user = req.user
     if (!user) throw new ForbiddenException('Missing authentication')
-    await this.logoutUseCase.execute(user.sub, body.refresh_token)
+    const refreshOpaque = pickLogoutRefresh(body, req)
+    await this.logoutUseCase.execute(user.sub, refreshOpaque)
+    this.authCookies.clear(res)
   }
 
   @Public()
   @Post('register/candidate')
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Cadastro de candidato (one-profile) + JWT' })
+  @ApiOperation({
+    summary: 'Cadastro de candidato (one-profile) + JWT',
+    description: 'Igual ao login relativamente a cookies httpOnly.',
+  })
   @ApiCreatedResponse({
-    type: SessionTokensDto,
-    description: 'Conta criada; retorna o mesmo formato do login',
+    type: SessionClaimsResponseDto,
   })
   @ApiBadRequestResponse({ description: 'E-mail já em uso ou validação do corpo' })
-  async registerCandidate(@Body() body: RegisterCandidateDto) {
-    return this.registerCandidateUseCase.execute(body)
+  async registerCandidate(
+    @Body() body: RegisterCandidateDto,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<SessionClaimsResponseDto> {
+    const tokens = await this.registerCandidateUseCase.execute(body)
+    this.authCookies.attachTokens(res, tokens)
+    return this.authSession.publicClaims(tokens)
   }
 
   @Public()

@@ -9,7 +9,6 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { getMyB2BAccount, patchB2BAvatar } from '@/lib/api/auth-api'
 import { ApiRequestError } from '@/lib/api/client'
 import { presignUpload, uploadFileToPresignedUrl } from '@/lib/api/media-api'
-import { requireSessionToken } from '@/lib/require-session-token'
 import { useAuth } from '@/providers/auth-provider'
 
 const IMAGE_ACCEPT = ['image/jpeg', 'image/png', 'image/webp']
@@ -19,20 +18,20 @@ function imageContentType(file: File): string {
 }
 
 export default function B2BAccountPage() {
-  const { token } = useAuth()
+  const { claims } = useAuth()
   const queryClient = useQueryClient()
   const [uploading, setUploading] = useState(false)
 
   const accountQ = useQuery({
-    enabled: !!token,
-    queryKey: ['b2b-account', token],
-    queryFn: () => getMyB2BAccount(requireSessionToken(token)),
+    enabled: !!claims,
+    queryKey: ['b2b-account', claims?.sub],
+    queryFn: () => getMyB2BAccount(),
   })
 
   const patchMut = useMutation({
-    mutationFn: (avatarKey: string) => patchB2BAvatar(requireSessionToken(token), avatarKey),
+    mutationFn: (avatarKey: string) => patchB2BAvatar(avatarKey),
     onSuccess: (data) => {
-      queryClient.setQueryData(['b2b-account', token], data)
+      queryClient.setQueryData(['b2b-account', claims?.sub], data)
       toast.success('Foto da conta atualizada.')
     },
     onError: (err: unknown) => {
@@ -42,11 +41,11 @@ export default function B2BAccountPage() {
   })
 
   async function uploadAvatar(file: File): Promise<void> {
-    if (!token) return
+    if (!claims) return
     setUploading(true)
     try {
       const ct = imageContentType(file)
-      const presigned = await presignUpload(token, {
+      const presigned = await presignUpload({
         purpose: 'B2B_USER_AVATAR',
         contentType: ct,
       })

@@ -1,5 +1,6 @@
 import { ValidationPipe } from '@nestjs/common'
 import { NestFactory } from '@nestjs/core'
+import cookieParser from 'cookie-parser'
 import helmet from 'helmet'
 import { AppModule } from './app.module'
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter'
@@ -15,6 +16,7 @@ async function bootstrap() {
   const env = app.get(EnvService)
 
   app.enableShutdownHooks()
+  app.use(cookieParser())
 
   if (env.envMode === 'DEV') {
     app.use(requestLoggerMiddleware)

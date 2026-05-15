@@ -19,20 +19,19 @@ import {
 import { listTenantJobs } from '@/lib/api/jobs-api'
 import type { ApiJobStatus } from '@/lib/api/types'
 import { jobStatusLabel } from '@/lib/domain-labels'
-import { requireSessionToken } from '@/lib/require-session-token'
 import { useAuth } from '@/providers/auth-provider'
 
 const JOB_STATUS_OPTIONS: ApiJobStatus[] = ['DRAFT', 'PUBLISHED', 'PAUSED', 'CLOSED']
 
 export default function TenantJobsPage() {
-  const { token } = useAuth()
+  const { claims } = useAuth()
   const [status, setStatus] = useState<ApiJobStatus | 'ALL'>('ALL')
 
   const q = useQuery({
-    enabled: !!token,
-    queryKey: ['tenant-jobs', token, status],
+    enabled: !!claims,
+    queryKey: ['tenant-jobs', claims?.sub, status],
     queryFn: () =>
-      listTenantJobs(requireSessionToken(token), {
+      listTenantJobs({
         page: 1,
         limit: 50,
         status: status === 'ALL' ? undefined : status,

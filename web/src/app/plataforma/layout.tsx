@@ -13,18 +13,18 @@ import { useAuth } from '@/providers/auth-provider'
 export default function PlatformLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const router = useRouter()
   const pathname = usePathname()
-  const { hydrated, token, claims, signOut } = useAuth()
+  const { hydrated, claims, signOut } = useAuth()
 
   useEffect(() => {
     if (!hydrated) return
-    if (!token) {
+    if (!claims) {
       router.replace(`/entrar?redirect=${encodeURIComponent(pathname)}`)
       return
     }
     if (claims?.role !== 'SUPER_ADMIN') {
       router.replace(homePathForRole(claims?.role ?? ''))
     }
-  }, [claims?.role, hydrated, pathname, router, token])
+  }, [claims, hydrated, pathname, router])
 
   if (!hydrated) {
     return (
@@ -35,7 +35,7 @@ export default function PlatformLayout({ children }: Readonly<{ children: React.
     )
   }
 
-  if (!token || claims?.role !== 'SUPER_ADMIN') {
+  if (!claims || claims?.role !== 'SUPER_ADMIN') {
     return (
       <div className="flex flex-1 items-center justify-center text-muted-foreground">
         A redirecionar…

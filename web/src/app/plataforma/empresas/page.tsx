@@ -35,11 +35,10 @@ import {
   softDeleteTenant,
   suspendTenant,
 } from '@/lib/api/tenants-api'
-import { requireSessionToken } from '@/lib/require-session-token'
 import { useAuth } from '@/providers/auth-provider'
 
 export default function PlatformTenantsPage() {
-  const { token } = useAuth()
+  const { claims } = useAuth()
   const qc = useQueryClient()
 
   const [createOpen, setCreateOpen] = useState(false)
@@ -49,20 +48,19 @@ export default function PlatformTenantsPage() {
   const [admEmail, setAdmEmail] = useState('')
 
   const listQ = useQuery({
-    enabled: !!token,
-    queryKey: ['platform-tenants', token],
-    queryFn: () => listPlatformTenants(requireSessionToken(token)),
+    enabled: !!claims,
+    queryKey: ['platform-tenants', claims?.sub],
+    queryFn: () => listPlatformTenants(),
   })
 
   const createMut = useMutation({
-    mutationFn: () =>
-      createTenant(requireSessionToken(token), { name: cName.trim(), slug: cSlug.trim() }),
+    mutationFn: () => createTenant({ name: cName.trim(), slug: cSlug.trim() }),
     onSuccess: () => {
       toast.success('Empresa registada.')
       setCreateOpen(false)
       setCName('')
       setCSlug('')
-      qc.invalidateQueries({ queryKey: ['platform-tenants', token] })
+      qc.invalidateQueries({ queryKey: ['platform-tenants', claims?.sub] })
     },
     onError: (err: unknown) => {
       if (err instanceof ApiRequestError) toast.error(err.message)
@@ -72,7 +70,7 @@ export default function PlatformTenantsPage() {
 
   const inviteMut = useMutation({
     mutationFn: () =>
-      inviteTenantAdminRequest(requireSessionToken(token), {
+      inviteTenantAdminRequest({
         tenantId: adminOpen ?? '',
         email: admEmail.trim(),
       }),
@@ -92,11 +90,11 @@ export default function PlatformTenantsPage() {
     action: 'suspend' | 'activate' | 'delete',
   ): Promise<void> {
     try {
-      if (action === 'suspend') await suspendTenant(requireSessionToken(token), id)
-      else if (action === 'activate') await activateTenant(requireSessionToken(token), id)
-      else await softDeleteTenant(requireSessionToken(token), id)
+      if (action === 'suspend') await suspendTenant(id)
+      else if (action === 'activate') await activateTenant(id)
+      else await softDeleteTenant(id)
       toast.success('Estado atualizado.')
-      qc.invalidateQueries({ queryKey: ['platform-tenants', token] })
+      qc.invalidateQueries({ queryKey: ['platform-tenants', claims?.sub] })
     } catch (err: unknown) {
       if (err instanceof ApiRequestError) toast.error(err.message)
       else toast.error('Operação incompleta.')
@@ -105,9 +103,9 @@ export default function PlatformTenantsPage() {
 
   async function approveSignup(id: string): Promise<void> {
     try {
-      await approveTenantSignup(requireSessionToken(token), id)
+      await approveTenantSignup(id)
       toast.success('Registo público aprovado.')
-      qc.invalidateQueries({ queryKey: ['platform-tenants', token] })
+      qc.invalidateQueries({ queryKey: ['platform-tenants', claims?.sub] })
     } catch (err: unknown) {
       if (err instanceof ApiRequestError) toast.error(err.message)
       else toast.error('Não foi possível aprovar.')
@@ -116,9 +114,9 @@ export default function PlatformTenantsPage() {
 
   async function rejectSignup(id: string): Promise<void> {
     try {
-      await rejectTenantSignup(requireSessionToken(token), id)
+      await rejectTenantSignup(id)
       toast.success('Pedido recusado e removido.')
-      qc.invalidateQueries({ queryKey: ['platform-tenants', token] })
+      qc.invalidateQueries({ queryKey: ['platform-tenants', claims?.sub] })
     } catch (err: unknown) {
       if (err instanceof ApiRequestError) toast.error(err.message)
       else toast.error('Não foi possível recusar.')
