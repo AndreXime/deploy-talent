@@ -11,7 +11,6 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { HomeFeaturedJobs } from '@/components/home-featured-jobs'
-import { HomeSessionRedirect } from '@/components/home-session-redirect'
 import { PublicHeader } from '@/components/public-header'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -19,7 +18,6 @@ import { Button } from '@/components/ui/button'
 export default function HomePage() {
   return (
     <div className="flex min-h-full flex-col">
-      <HomeSessionRedirect />
       <PublicHeader />
 
       <main className="flex flex-1 flex-col">
