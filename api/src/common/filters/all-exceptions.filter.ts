@@ -5,6 +5,10 @@ import {
   HttpException,
   HttpStatus,
 } from '@nestjs/common'
+import {
+  PrismaClientKnownRequestError,
+  PrismaClientValidationError,
+} from '@prisma/client/runtime/client.js'
 import type { Request, Response } from 'express'
 
 interface ErrorBody {
@@ -52,17 +56,16 @@ export class AllExceptionsFilter implements ExceptionFilter {
       }
     }
 
-    if (
-      exception instanceof Error &&
-      'code' in exception &&
-      typeof (exception as { code: unknown }).code === 'string'
-    ) {
-      const code = (exception as { code: string }).code
+    if (exception instanceof PrismaClientValidationError) {
       return {
-        status: HttpStatus.CONFLICT,
-        error: code,
+        status: HttpStatus.BAD_REQUEST,
+        error: 'Bad Request',
         message: exception.message,
       }
+    }
+
+    if (exception instanceof PrismaClientKnownRequestError) {
+      return normalizePrismaKnownRequest(exception)
     }
 
     if (exception instanceof Error) {
@@ -78,5 +81,45 @@ export class AllExceptionsFilter implements ExceptionFilter {
       error: 'UnknownError',
       message: 'Unexpected error',
     }
+  }
+}
+
+function normalizePrismaKnownRequest(exception: PrismaClientKnownRequestError): {
+  status: number
+  error: string
+  message: string
+} {
+  switch (exception.code) {
+    case 'P2002':
+      return {
+        status: HttpStatus.CONFLICT,
+        error: exception.code,
+        message: exception.message,
+      }
+    case 'P2003':
+      return {
+        status: HttpStatus.BAD_REQUEST,
+        error: exception.code,
+        message: exception.message,
+      }
+    case 'P2014':
+    case 'P2034':
+      return {
+        status: HttpStatus.CONFLICT,
+        error: exception.code,
+        message: exception.message,
+      }
+    case 'P2025':
+      return {
+        status: HttpStatus.NOT_FOUND,
+        error: exception.code,
+        message: exception.message,
+      }
+    default:
+      return {
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        error: exception.code,
+        message: 'Database request failed.',
+      }
   }
 }
