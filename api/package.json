@@ -2,9 +2,9 @@
   "name": "api",
   "version": "0.9.0",
   "description": "",
-  "author": "",
+  "author": "Andre Ximenes",
   "private": true,
-  "license": "UNLICENSED",
+  "license": "Apache-2.0",
   "scripts": {
     "build": "nest build",
     "format": "biome format --write .",

@@ -218,3 +218,7 @@ Estados: `SOURCED`, `APPLIED`, `IN_PROGRESS`, `REJECTED`, `WITHDRAWN`, `HIRED`.
 | MinIO (consola) | http://127.0.0.1:9001 |
 | Mailpit (UI) | http://127.0.0.1:8025 |
 | Postgres | `localhost:5432` (user e base definidos no `.env` da raiz; o exemplo usa `deploy_talent`) |
+
+## Licença
+
+Copyright 2026 Andre Ximenes. Licenciado sob [Apache License 2.0](./LICENSE).
