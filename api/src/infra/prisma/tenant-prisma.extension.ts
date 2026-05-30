@@ -6,6 +6,12 @@ interface QueryParams<TArgs> {
   query: (args: TArgs) => Promise<unknown>
 }
 
+interface TenantScopedModelDelegate {
+  findFirst: (args: unknown) => Promise<unknown>
+  updateMany: (args: unknown) => Promise<{ count: number }>
+  deleteMany: (args: unknown) => Promise<{ count: number }>
+}
+
 function getTenantId(tenantContext: TenantContextService): string | null {
   return tenantContext.getTenantId()
 }
@@ -34,98 +40,105 @@ function addTenantIdToData<TArgs extends { data: unknown }>(args: TArgs, tenantI
   }
 }
 
+export function createTenantScopedHandlers(
+  model: TenantScopedModelDelegate,
+  tenantContext: TenantContextService,
+) {
+  return {
+    async findMany(params: QueryParams<{ where?: Record<string, unknown> }>) {
+      const tenantId = getTenantId(tenantContext)
+      if (tenantId) addTenantIdToWhere(params.args, tenantId)
+      return params.query(params.args)
+    },
+    async findFirst(params: QueryParams<{ where?: Record<string, unknown> }>) {
+      const tenantId = getTenantId(tenantContext)
+      if (tenantId) addTenantIdToWhere(params.args, tenantId)
+      return params.query(params.args)
+    },
+    async findUnique(params: QueryParams<{ where?: Record<string, unknown> }>) {
+      const tenantId = getTenantId(tenantContext)
+      if (!tenantId) return params.query(params.args)
+      addTenantIdToWhere(params.args, tenantId)
+      return model.findFirst(params.args)
+    },
+    async count(params: QueryParams<{ where?: Record<string, unknown> }>) {
+      const tenantId = getTenantId(tenantContext)
+      if (tenantId) addTenantIdToWhere(params.args, tenantId)
+      return params.query(params.args)
+    },
+    async create(params: QueryParams<{ data: unknown }>) {
+      const tenantId = getTenantId(tenantContext)
+      if (tenantId) addTenantIdToData(params.args, tenantId)
+      return params.query(params.args)
+    },
+    async createMany(params: QueryParams<{ data: unknown }>) {
+      const tenantId = getTenantId(tenantContext)
+      if (tenantId) addTenantIdToData(params.args, tenantId)
+      return params.query(params.args)
+    },
+    async update(params: QueryParams<{ where?: Record<string, unknown>; data: unknown }>) {
+      const tenantId = getTenantId(tenantContext)
+      if (!tenantId) return params.query(params.args)
+      const whereArgs = { where: { ...(params.args.where ?? {}) } }
+      addTenantIdToWhere(whereArgs, tenantId)
+      const { count } = await model.updateMany({
+        where: whereArgs.where,
+        data: params.args.data,
+      })
+      if (count === 0) {
+        return params.query({ ...params.args, where: { id: '__tenant_rls_miss__' } })
+      }
+      const id = whereArgs.where?.id
+      if (typeof id === 'string') {
+        return model.findFirst({ where: { id, tenantId } })
+      }
+      return params.query(params.args)
+    },
+    async updateMany(params: QueryParams<{ where?: Record<string, unknown> }>) {
+      const tenantId = getTenantId(tenantContext)
+      if (tenantId) addTenantIdToWhere(params.args, tenantId)
+      return params.query(params.args)
+    },
+    async delete(params: QueryParams<{ where?: Record<string, unknown> }>) {
+      const tenantId = getTenantId(tenantContext)
+      if (!tenantId) return params.query(params.args)
+      const whereArgs = { where: { ...(params.args.where ?? {}) } }
+      const id = whereArgs.where?.id
+      if (typeof id !== 'string') {
+        return params.query({ ...params.args, where: { id: '__tenant_rls_miss__' } })
+      }
+      addTenantIdToWhere(whereArgs, tenantId)
+      const existing = await model.findFirst({ where: whereArgs.where })
+      if (!existing) {
+        return params.query({ ...params.args, where: { id: '__tenant_rls_miss__' } })
+      }
+      await model.deleteMany({ where: whereArgs.where })
+      return existing
+    },
+    async deleteMany(params: QueryParams<{ where?: Record<string, unknown> }>) {
+      const tenantId = getTenantId(tenantContext)
+      if (tenantId) addTenantIdToWhere(params.args, tenantId)
+      return params.query(params.args)
+    },
+  }
+}
+
 export function tenantPrismaExtension(tenantContext: TenantContextService) {
-  return Prisma.defineExtension((client) =>
-    client.$extends({
+  return Prisma.defineExtension((client) => {
+    const jobHandlers = createTenantScopedHandlers(client.job, tenantContext)
+    const applicationHandlers = createTenantScopedHandlers(client.application, tenantContext)
+    const applicationHistoryHandlers = createTenantScopedHandlers(
+      client.applicationHistory,
+      tenantContext,
+    )
+
+    return client.$extends({
       name: 'tenant-logical-rls',
       query: {
-        job: {
-          async findMany(params: QueryParams<Prisma.JobFindManyArgs>) {
-            const tenantId = getTenantId(tenantContext)
-            if (tenantId) addTenantIdToWhere(params.args, tenantId)
-            return params.query(params.args)
-          },
-          async findFirst(params: QueryParams<Prisma.JobFindFirstArgs>) {
-            const tenantId = getTenantId(tenantContext)
-            if (tenantId) addTenantIdToWhere(params.args, tenantId)
-            return params.query(params.args)
-          },
-          async count(params: QueryParams<Prisma.JobCountArgs>) {
-            const tenantId = getTenantId(tenantContext)
-            if (tenantId) addTenantIdToWhere(params.args, tenantId)
-            return params.query(params.args)
-          },
-          async create(params: QueryParams<Prisma.JobCreateArgs>) {
-            const tenantId = getTenantId(tenantContext)
-            if (tenantId) addTenantIdToData(params.args, tenantId)
-            return params.query(params.args)
-          },
-          async createMany(params: QueryParams<Prisma.JobCreateManyArgs>) {
-            const tenantId = getTenantId(tenantContext)
-            if (tenantId) addTenantIdToData(params.args, tenantId)
-            return params.query(params.args)
-          },
-          async updateMany(params: QueryParams<Prisma.JobUpdateManyArgs>) {
-            const tenantId = getTenantId(tenantContext)
-            if (tenantId) addTenantIdToWhere(params.args, tenantId)
-            return params.query(params.args)
-          },
-          async deleteMany(params: QueryParams<Prisma.JobDeleteManyArgs>) {
-            const tenantId = getTenantId(tenantContext)
-            if (tenantId) addTenantIdToWhere(params.args, tenantId)
-            return params.query(params.args)
-          },
-        },
-        application: {
-          async findMany(params: QueryParams<Prisma.ApplicationFindManyArgs>) {
-            const tenantId = getTenantId(tenantContext)
-            if (tenantId) addTenantIdToWhere(params.args, tenantId)
-            return params.query(params.args)
-          },
-          async findFirst(params: QueryParams<Prisma.ApplicationFindFirstArgs>) {
-            const tenantId = getTenantId(tenantContext)
-            if (tenantId) addTenantIdToWhere(params.args, tenantId)
-            return params.query(params.args)
-          },
-          async count(params: QueryParams<Prisma.ApplicationCountArgs>) {
-            const tenantId = getTenantId(tenantContext)
-            if (tenantId) addTenantIdToWhere(params.args, tenantId)
-            return params.query(params.args)
-          },
-          async create(params: QueryParams<Prisma.ApplicationCreateArgs>) {
-            const tenantId = getTenantId(tenantContext)
-            if (tenantId) addTenantIdToData(params.args, tenantId)
-            return params.query(params.args)
-          },
-          async createMany(params: QueryParams<Prisma.ApplicationCreateManyArgs>) {
-            const tenantId = getTenantId(tenantContext)
-            if (tenantId) addTenantIdToData(params.args, tenantId)
-            return params.query(params.args)
-          },
-          async updateMany(params: QueryParams<Prisma.ApplicationUpdateManyArgs>) {
-            const tenantId = getTenantId(tenantContext)
-            if (tenantId) addTenantIdToWhere(params.args, tenantId)
-            return params.query(params.args)
-          },
-          async deleteMany(params: QueryParams<Prisma.ApplicationDeleteManyArgs>) {
-            const tenantId = getTenantId(tenantContext)
-            if (tenantId) addTenantIdToWhere(params.args, tenantId)
-            return params.query(params.args)
-          },
-        },
-        applicationHistory: {
-          async findMany(params: QueryParams<Prisma.ApplicationHistoryFindManyArgs>) {
-            const tenantId = getTenantId(tenantContext)
-            if (tenantId) addTenantIdToWhere(params.args, tenantId)
-            return params.query(params.args)
-          },
-          async create(params: QueryParams<Prisma.ApplicationHistoryCreateArgs>) {
-            const tenantId = getTenantId(tenantContext)
-            if (tenantId) addTenantIdToData(params.args, tenantId)
-            return params.query(params.args)
-          },
-        },
+        job: jobHandlers,
+        application: applicationHandlers,
+        applicationHistory: applicationHistoryHandlers,
       },
-    }),
-  )
+    })
+  })
 }
