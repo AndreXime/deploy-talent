@@ -31,7 +31,42 @@ jobs:
       - run: npm run prisma:generate
       - run: npm run check
       - run: npm run build
-      - run: npm test
+      - run: npm run test:cov
+
+  api-migrate:
+    name: API (migrate deploy smoke)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci
+          POSTGRES_DB: ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U ci -d ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://ci:ci@127.0.0.1:5432/ci?schema=public
+    defaults:
+      run:
+        working-directory: api
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: api/package-lock.json
+
+      - run: npm ci
+      - run: npm run prisma:generate
+      - run: npx prisma migrate deploy
 
   web:
     name: Web (check, build)
@@ -52,5 +87,28 @@ jobs:
       - run: npm run check
       - name: Build
         env:
-          NEXT_PUBLIC_API_BASE_URL: http://127.0.0.1:3001
+          NEXT_PUBLIC_API_BASE_URL: http://127.0.0.1:3050
         run: npm run build
+
+  docker-api:
+    name: Docker (API image)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Build API image
+        run: docker build -f api/Dockerfile -t deploy-talent-api:ci api
+
+  docker-web:
+    name: Docker (Web image)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Build Web image
+        run: |
+          docker build \
+            -f web/Dockerfile \
+            --build-arg NEXT_PUBLIC_API_BASE_URL=http://127.0.0.1:3050 \
+            -t deploy-talent-web:ci \
+            web
