@@ -2,7 +2,7 @@ const raw = process.env.NEXT_PUBLIC_API_BASE_URL?.trim().replace(/\/$/, '')
 
 if (!raw) {
   throw new Error(
-    'NEXT_PUBLIC_API_BASE_URL é obrigatória. Define a variável em web/.env (ou no ambiente do build) antes de arrancar `next dev` ou `next build`.',
+    'NEXT_PUBLIC_API_BASE_URL é obrigatória. Defina a variável em web/.env (ou no ambiente do build) antes de iniciar `next dev` ou `next build`.',
   )
 }
 

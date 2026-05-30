@@ -19,7 +19,7 @@ const baseLinks = [
   { href: '/empresa/candidaturas', label: 'Candidaturas', icon: Users },
   { href: '/empresa/pipeline', label: 'Pipeline', icon: ListChecks },
   { href: '/empresa/marca', label: 'Marca', icon: Palette },
-  { href: '/empresa/conta', label: 'A minha conta', icon: Building2 },
+  { href: '/empresa/conta', label: 'Minha conta', icon: Building2 },
 ] as const
 
 function NavLinks({ onNavigate }: Readonly<{ onNavigate?: () => void }>) {

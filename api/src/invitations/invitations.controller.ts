@@ -104,7 +104,7 @@ export class InvitationsController {
   @ApiOperation({
     summary: 'Préviaizar um convite a partir do token',
     description:
-      'Endpoint público usado pela página de ativação para mostrar o email e a empresa associados ao convite. Não devolve nem aceita senhas.',
+      'Endpoint público usado pela página de ativação para mostrar o email e a empresa associados ao convite. Não retorna nem aceita senhas.',
   })
   @ApiOkResponse({ type: InvitationPreviewDto })
   async preview(@Param('token') token: string) {
@@ -117,7 +117,7 @@ export class InvitationsController {
   @ApiOperation({
     summary: 'Aceitar convite e ativar a conta',
     description:
-      'Endpoint público. Cria o usuário com a senha definida pelo destinatário, invalida o convite, define cookies httpOnly e devolve dados públicos da sessão.',
+      'Endpoint público. Cria o usuário com a senha definida pelo destinatário, invalida o convite, define cookies httpOnly e retorna dados públicos da sessão.',
   })
   @ApiBody({ type: AcceptInvitationDto })
   @ApiOkResponse({ type: SessionClaimsResponseDto })

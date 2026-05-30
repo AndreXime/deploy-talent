@@ -67,7 +67,7 @@ flowchart TD
 
 ## Ativação de conta via convite
 
-A página `/ativar/[token]` no frontend é pública. Faz prévia para mostrar nome, empresa (quando B2B) e email, depois aceita a senha escolhida e devolve um JWT pronto. Para convites `CANDIDATE` (sourcing) também é criado o `Candidate` na mesma transação.
+A página `/ativar/[token]` no frontend é pública. Faz pré-visualização para mostrar nome, empresa (quando B2B) e email, depois aceita a senha escolhida e retorna um JWT pronto. Para convites `CANDIDATE` (sourcing) também é criado o `Candidate` na mesma transação.
 
 ```mermaid
 flowchart TD
@@ -107,12 +107,12 @@ flowchart TD
 
 ## Candidatura espontânea pelo candidato
 
-O candidato aplica directamente a partir do site público de carreiras ou do marketplace. A vaga tem de estar a aceitar candidaturas e a entrada inicial é gravada no histórico.
+O candidato aplica diretamente a partir do site público de carreiras ou do marketplace. A vaga precisa estar a aceitar candidaturas e a entrada inicial é registrada no histórico.
 
 ```mermaid
 flowchart TD
     browse([Candidato vê vaga em /carreiras ou /vagas]) --> session{Sessão de CANDIDATE ativa?}
-    session -- não --> auth[Login ou registo do candidato]
+    session -- não --> auth[Login ou cadastro do candidato]
     auth --> apply
     session -- sim --> apply[POST /tenants/:tenantId/applications/apply com jobId]
     apply --> jobOk{Vaga PUBLISHED ou PAUSED?}
@@ -123,13 +123,13 @@ flowchart TD
     firstStage --> create[Cria Application APPLIED com currentJobStageId + appliedAt]
     create --> progress[Cria ApplicationStageProgress PENDING para a etapa inicial]
     progress --> history[Regista ApplicationHistory inicial com nome da etapa]
-    history --> notify[Email best effort: candidatura submetida]
+    history --> notify[Email best effort: candidatura enviada]
     notify --> done([201 Application])
 ```
 
 ## Sourcing por email pelo recrutador
 
-O recrutador faz prospecção por email a partir da vaga. A API decide o efeito a partir do estado do email na plataforma: convite para se cadastrar, email com link da vaga, ou nada se já existir candidatura. Nenhuma candidatura é criada pelo lado da empresa; o candidato submete `apply` quando quiser.
+O recrutador faz prospecção por email a partir da vaga. A API decide o efeito a partir do estado do email na plataforma: convite para se cadastrar, email com link da vaga, ou nada se já existir candidatura. Nenhuma candidatura é criada pelo lado da empresa; o candidato envia `apply` quando quiser.
 
 ```mermaid
 flowchart TD
@@ -143,7 +143,7 @@ flowchart TD
     userExists -- sim --> isCandidate{Role do User é CANDIDATE?}
     isCandidate -- não --> err409[409 Conflict]
     isCandidate -- sim --> hasApp{Já existe Application para esta vaga?}
-    hasApp -- sim --> noOp[Nada enviado, devolve applicationId]
+    hasApp -- sim --> noOp[Nada enviado, retorna applicationId]
     noOp --> doneApplied([201 ALREADY_APPLIED])
     hasApp -- não --> emailJob[Email com link público da vaga carreiras/&lt;tenantId&gt;/vagas/&lt;jobId&gt;]
     emailJob --> doneLink([201 JOB_LINK_SENT])

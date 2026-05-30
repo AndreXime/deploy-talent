@@ -286,7 +286,7 @@ export class ApplicationsController {
   @Roles(UserRole.CANDIDATE)
   @ApiJwtAuth()
   @ApiOperation({
-    summary: 'Submete dados da etapa atual',
+    summary: 'Envia dados da etapa atual',
     description:
       'Validação por kind: QUESTIONNAIRE espera `{ answers }`. FILE_UPLOAD espera `{ fileKey, mimeType, fileSize }` (tipos e limite de tamanho fixos na API). MANUAL e INTERVIEW_LINK não aceitam submissões aqui.',
   })

@@ -75,7 +75,7 @@ export default function TenantPipelinePage() {
     mutationFn: (stages: PipelineStageInput[]) => replaceTenantPipeline(stages),
     onSuccess: (data) => {
       queryClient.setQueryData(TEMPLATE_QUERY_KEY, data)
-      toast.success('Pipeline guardada.')
+      toast.success('Pipeline salva.')
     },
     onError: (err: unknown) => {
       if (err instanceof ApiRequestError) toast.error(err.message)

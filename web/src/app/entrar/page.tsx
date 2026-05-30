@@ -35,7 +35,7 @@ export default function LoginPage() {
           <CardHeader>
             <CardTitle>Entrar</CardTitle>
             <CardDescription>
-              Use as credenciais que recebeu. A sua conta abre directamente na área certa.
+              Use as credenciais que recebeu. Sua conta abre diretamente na área certa.
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4 pb-0">

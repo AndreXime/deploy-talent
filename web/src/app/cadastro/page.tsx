@@ -50,14 +50,14 @@ export default function RegisterPage() {
         password,
       })
       toast.success(
-        'Pedido enviado. Quando a plataforma aprovar a sua empresa, poderá entrar em Entrar com este email.',
+        'Pedido enviado. Quando a plataforma aprovar sua empresa, use Entrar com este e-mail.',
       )
       router.replace('/entrar')
     } catch (err) {
       if (err instanceof ApiRequestError) {
         toast.error(err.message)
       } else {
-        toast.error('Não foi possível concluir o registo.')
+        toast.error('Não foi possível concluir o cadastro.')
       }
     } finally {
       setLoading(false)
@@ -73,8 +73,8 @@ export default function RegisterPage() {
             <CardTitle>Criar conta</CardTitle>
             <CardDescription>
               {mode === 'candidate'
-                ? 'Um só perfil para todas as suas candidaturas.'
-                : 'Pedido de empresa na plataforma. A moderação activa a conta antes do primeiro acesso.'}
+                ? 'Um único perfil para todas as suas candidaturas.'
+                : 'Pedido de empresa na plataforma. A moderação ativa a conta antes do primeiro acesso.'}
             </CardDescription>
             <div className="flex flex-col gap-2 pt-2 sm:flex-row sm:gap-2">
               <Button
@@ -135,7 +135,7 @@ export default function RegisterPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="password">Palavra-passe</Label>
+                <Label htmlFor="password">Senha</Label>
                 <Input
                   id="password"
                   type="password"
@@ -151,10 +151,10 @@ export default function RegisterPage() {
             <CardFooter className="flex flex-col gap-3 pt-4">
               <Button type="submit" className="w-full" disabled={loading}>
                 {loading
-                  ? 'A enviar…'
+                  ? 'Enviando…'
                   : mode === 'candidate'
                     ? 'Criar conta'
-                    : 'Pedir registo de empresa'}
+                    : 'Pedir cadastro de empresa'}
               </Button>
               <p className="text-center text-sm text-muted-foreground">
                 Já tem conta?{' '}

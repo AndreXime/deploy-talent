@@ -29,7 +29,7 @@ function pickString(v: string | null): string | undefined {
   return t ? t : undefined
 }
 
-/** Valor sentinela interno do Select; não usar como modalidade/local na base de dados. */
+/** Valor sentinela interno do Select; não usar como modalidade/local na banco de dados. */
 const MARKETPLACE_FILTER_ANY = '__dt_marketplace_any__'
 
 function mergeDraftStringOption(options: readonly string[], draft: string): string[] {

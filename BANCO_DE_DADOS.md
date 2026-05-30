@@ -201,7 +201,7 @@ erDiagram
 | `application_stage_progress` | único `(applicationId, jobStageId)` | um único progresso por etapa de cada candidatura |
 | `application_stage_progress` | FK `completedByUserId` `ON DELETE SET NULL` | auditoria preservada após remoção do usuário |
 
-Todas as FKs para `Tenant`, `Job`, `Candidate` e `Application` propagam com `ON DELETE CASCADE`; apagar um tenant remove o seu universo de dados (vagas, candidaturas e histórico).
+Todas as FKs para `Tenant`, `Job`, `Candidate` e `Application` propagam com `ON DELETE CASCADE`; apagar um tenant remove seu universo de dados (vagas, candidaturas e histórico).
 
 ## Ciclo de vida: Vagas (`Job.status`)
 

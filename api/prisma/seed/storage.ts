@@ -14,7 +14,7 @@ import {
  * o seed escreve a chave diretamente via Prisma (sem passar pelos validadores dos
  * controllers) e as leituras apenas assinam a chave que estiver na BD. Manter um
  * prefixo `seed/` torna explícito que estes objetos são compartilhados por todos os
- * registos do seed e nunca devem ser apagados pelos `forget-me` / atualizações de
+ * registros do seed e nunca devem ser apagados pelos `forget-me` / atualizações de
  * branding.
  */
 export const SEED_PLACEHOLDER_KEYS = {

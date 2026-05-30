@@ -130,7 +130,7 @@ export default function HomePage() {
                 Menos buzzword. Mais sinal técnico.
               </p>
               <p className="mt-4 max-w-xl text-pretty text-base text-muted-foreground">
-                Bento com o que importa para decidir se a vaga merece o seu tempo: stack explícita,
+                Bento com o que importa para decidir se a vaga merece seu tempo: stack explícita,
                 integrações e transparência de cultura de engenharia.
               </p>
             </div>
@@ -185,7 +185,7 @@ export default function HomePage() {
                 </h3>
                 <p className="mt-2 text-pretty text-sm leading-relaxed text-muted-foreground">
                   Linguagens, frameworks e limites arquiteturais visíveis antes de investir tempo no
-                  processo. Otimize a sua curadoria como otimizaria um deploy: com dados, não com
+                  processo. Otimize sua curadoria como otimizaria um deploy: com dados, não com
                   suposições.
                 </p>
               </div>
@@ -304,8 +304,8 @@ export default function HomePage() {
                     </Link>
                   </li>
                   <li>
-                    <Link href="/registo" className="text-foreground hover:underline">
-                      Registo candidato
+                    <Link href="/cadastro" className="text-foreground hover:underline">
+                      Cadastro candidato
                     </Link>
                   </li>
                   <li>

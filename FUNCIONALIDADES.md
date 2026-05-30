@@ -6,13 +6,13 @@
 > - [Modelo de Dados](./BANCO_DE_DADOS.md)
 > - [Fluxos](./FLUXOS.md)
 
-O **Deploy Talent** é uma plataforma multi-tenant de recrutamento (ATS) que materializa, num só produto, todo o ciclo de aquisição de talento: desde o site público de carreiras de cada empresa, passando pelo marketplace agregado de vagas, até a gestão interna do pipeline de candidaturas. Do lado **B2B**, cada empresa opera como um *tenant* isolado por `tenant_id`, com os seus próprios recrutadores, vagas, candidaturas, pipeline e ativos de marca (logo, banner), sob uma hierarquia de papéis (`SUPER_ADMIN`, `TENANT_ADMIN`, `RECRUITER`) que delimita o que cada usuário vê e faz. Do lado **B2C**, o candidato mantém um perfil único e global (*one-profile*), independente das empresas onde se candidata: edita uma vez, propaga em todas as candidaturas ativas, e pode anonimizar a conta para responder a pedidos no estilo LGPD. As vagas seguem uma máquina de estados explícita (`DRAFT → PUBLISHED → PAUSED → CLOSED`) e as candidaturas percorrem um pipeline auditável (`SOURCED`, `APPLIED`, `IN_PROGRESS`, `REJECTED`, `WITHDRAWN`, `HIRED`), com cada transição gravada em histórico identificando o usuário autor da mudança. À volta deste núcleo, a plataforma trata também das pontas operacionais: arquivos (currículos, avatares, logos, banners) entram e saem do S3 por URLs pré-assinadas com TTL e autorização por papel + prefixo da chave; e-mails transacionais (submissão, contratação, rejeição) são disparados via SMTP em *best-effort* para não bloquear o fluxo principal; e a camada de segurança combina JWT + RBAC, CORS configurável, Helmet em produção, throttling global e uma extensão do Prisma client que injeta `tenantId` automaticamente nas queries de domínio, funcionando como rede de proteção extra para o isolamento entre tenants.
+O **Deploy Talent** é uma plataforma multi-tenant de recrutamento (ATS) que materializa, em um só produto, todo o ciclo de aquisição de talento: desde o site público de carreiras de cada empresa, passando pelo marketplace agregado de vagas, até a gestão interna do pipeline de candidaturas. Do lado **B2B**, cada empresa opera como um *tenant* isolado por `tenant_id`, com seus próprios recrutadores, vagas, candidaturas, pipeline e ativos de marca (logo, banner), sob uma hierarquia de papéis (`SUPER_ADMIN`, `TENANT_ADMIN`, `RECRUITER`) que delimita o que cada usuário vê e faz. Do lado **B2C**, o candidato mantém um perfil único e global (*one-profile*), independente das empresas onde se candidata: edita uma vez, propaga em todas as candidaturas ativas, e pode anonimizar a conta para responder a pedidos no estilo LGPD. As vagas seguem uma máquina de estados explícita (`DRAFT → PUBLISHED → PAUSED → CLOSED`) e as candidaturas percorrem um pipeline auditável (`SOURCED`, `APPLIED`, `IN_PROGRESS`, `REJECTED`, `WITHDRAWN`, `HIRED`), com cada transição registrada em histórico identificando o usuário autor da mudança. Em torno deste núcleo, a plataforma trata também das pontas operacionais: arquivos (currículos, avatares, logos, banners) entram e saem do S3 por URLs pré-assinadas com TTL e autorização por papel + prefixo da chave; e-mails transacionais (submissão, contratação, rejeição) são disparados via SMTP em *best-effort* para não bloquear o fluxo principal; e a camada de segurança combina JWT + RBAC, CORS configurável, Helmet em produção, throttling global e uma extensão do Prisma client que injeta `tenantId` automaticamente nas queries de domínio, funcionando como rede de proteção extra para o isolamento entre tenants.
 
 ## Funcionalidades
 
 ### Multi-tenant (empresas)
 
-Cada organização é um tenant com dados isolados por `tenant_id`. O `SUPER_ADMIN` gere o ciclo de vida dos tenants (criar, listar, suspender, ativar, soft-delete); `TENANT_ADMIN` e `RECRUITER` operam apenas no contexto do tenant do JWT. O isolamento é reforçado por uma extensão do Prisma client que injeta/limita por `tenantId` queries de `job`, `application` e `applicationHistory` quando o contexto está definido em `AsyncLocalStorage`.
+Cada organização é um tenant com dados isolados por `tenant_id`. O `SUPER_ADMIN` gerencia o ciclo de vida dos tenants (criar, listar, suspender, ativar, soft-delete); `TENANT_ADMIN` e `RECRUITER` operam apenas no contexto do tenant do JWT. O isolamento é reforçado por uma extensão do Prisma client que injeta/limita por `tenantId` queries de `job`, `application` e `applicationHistory` quando o contexto está definido em `AsyncLocalStorage`.
 
 ### Vagas e página de carreiras
 
@@ -36,9 +36,9 @@ Cada tenant tem um template padrão (`PipelineTemplate` + `TemplateStage`). Ao c
 * `MANUAL`: avaliação interna sem ação do candidato.
 * `QUESTIONNAIRE`: perguntas configuráveis (`TEXT_SHORT`, `TEXT_LONG`, `SINGLE_CHOICE`) que o candidato responde no portal.
 * `INTERVIEW_LINK`: o recrutador compartilha um URL (com agendamento opcional) que o candidato vê na sua área.
-* `FILE_UPLOAD`: o candidato submete um arquivo via S3 pré-assinado (`purpose` `APPLICATION_STAGE_FILE`). A API fixa os tipos permitidos (PDF, DOCX, PNG, JPG, TXT) e o tamanho máximo efetivo (menor entre 10 MiB e `S3_MAX_UPLOAD_BYTES`). A configuração da etapa só pode incluir `instructions`.
+* `FILE_UPLOAD`: o candidato envia um arquivo via S3 pré-assinado (`purpose` `APPLICATION_STAGE_FILE`). A API fixa os tipos permitidos (PDF, DOCX, PNG, JPG, TXT) e o tamanho máximo efetivo (menor entre 10 MiB e `S3_MAX_UPLOAD_BYTES`). A configuração da etapa só pode incluir `instructions`.
 
-Cada submissão fica em `ApplicationStageProgress` (`PENDING` → `COMPLETED`), incluindo dados submetidos e quem completou, para auditoria.
+Cada submissão fica em `ApplicationStageProgress` (`PENDING` → `COMPLETED`), incluindo dados enviados e quem completou, para auditoria.
 
 ### E-mail transacional (SMTP)
 
@@ -54,26 +54,26 @@ Autenticação JWT com RBAC no token, CORS configurável, Helmet em produção e
 
 ### Convites de ativação
 
-Toda a entrada B2B **em produção** passa por **convite por email**, nunca por senha definida por terceiros. O `SUPER_ADMIN` convida o `TENANT_ADMIN` de cada empresa; depois é o próprio `TENANT_ADMIN` que convida os seus `RECRUITER` no contexto do tenant do JWT. O sourcing por email compartilha o mesmo mecanismo de convite para criar `CANDIDATE` quando o email ainda não existe na plataforma. Em todos os casos a API gera um token opaco de 32 bytes, persiste apenas o SHA 256, e o link único `${WEB_BASE_URL}/ativar/<token>` viaja exclusivamente por SMTP. O destinatário abre o link, define a sua própria senha e a conta é criada nesse momento, com login imediato.
+Toda a entrada B2B **em produção** passa por **convite por email**, nunca por senha definida por terceiros. O `SUPER_ADMIN` convida o `TENANT_ADMIN` de cada empresa; depois é o próprio `TENANT_ADMIN` que convida seus `RECRUITER` no contexto do tenant do JWT. O sourcing por email compartilha o mesmo mecanismo de convite para criar `CANDIDATE` quando o email ainda não existe na plataforma. Em todos os casos a API gera um token opaco de 32 bytes, persiste apenas o SHA 256, e o link único `${WEB_BASE_URL}/ativar/<token>` viaja exclusivamente por SMTP. O destinatário abre o link, define sua própria senha e a conta é criada nesse momento, com login imediato.
 
 ### Onboarding B2B: caminho canônico vs. auto-registro
 
 | Caminho | Quem inicia | Endpoint / UI | Uso recomendado |
 |---|---|---|---|
 | **Convite (canônico)** | `SUPER_ADMIN` convida `TENANT_ADMIN`; `TENANT_ADMIN` convida `RECRUITER` | `POST /invitations/tenant-admin`, `POST /invitations/recruiter`, `/ativar/[token]` | **Produção** e ambientes onde o operador controla quem entra |
-| **Auto-registro + aprovação** | Futuro `TENANT_ADMIN` preenche formulário público | `POST /auth/register/tenant-admin`, `/registo`, aprovação em `/plataforma/empresas` | **Demo / piloto** quando não há operador disponível para convidar manualmente |
+| **Auto-registro + aprovação** | Futuro `TENANT_ADMIN` preenche formulário público | `POST /auth/register/tenant-admin`, `/cadastro`, aprovação em `/plataforma/empresas` | **Demo / piloto** quando não há operador disponível para convidar manualmente |
 
 Regras:
 
 - Em produção, prefira sempre o fluxo por **convite**. O auto-registro cria tenant inativo (`signupPending: true`) e exige aprovação do `SUPER_ADMIN` antes do login B2B funcionar.
 - Os dois caminhos coexistem na API e na UI, mas o auto-registro não substitui convites para recrutadores: após aprovação, o `TENANT_ADMIN` ainda convida `RECRUITER` por email.
-- Para desabilitar auto-registro em produção, remova ou proteja a rota `/registo` no frontend e não exponha `POST /auth/register/tenant-admin` publicamente (ex.: feature flag ou gateway).
+- Para desabilitar auto-registro em produção, remova ou proteja a rota `/cadastro` no frontend e não exponha `POST /auth/register/tenant-admin` publicamente (ex.: feature flag ou gateway).
 
 ### Sourcing por email
 
-`TENANT_ADMIN` e `RECRUITER` fazem prospecção a partir do detalhe da vaga submetendo apenas `nome + email`. A API decide o efeito conforme o estado do email no domínio:
+`TENANT_ADMIN` e `RECRUITER` fazem prospecção a partir do detalhe da vaga enviando apenas `nome + email`. A API decide o efeito conforme o estado do email no domínio:
 
-- **`CANDIDATE_INVITED`**: email não está registrado. É criado um `Invitation` com `role: CANDIDATE` e `tenantId: null`, e enviado link de ativação `${WEB_BASE_URL}/ativar/<token>`. Ao aceitar, o `User` e o `Candidate` são provisionados em transação, com o nome guardado no convite. A candidatura à vaga acontece quando o candidato a envia a partir da página pública.
+- **`CANDIDATE_INVITED`**: email não está registrado. É criado um `Invitation` com `role: CANDIDATE` e `tenantId: null`, e enviado link de ativação `${WEB_BASE_URL}/ativar/<token>`. Ao aceitar, o `User` e o `Candidate` são provisionados em transação, com o nome salvo no convite. A candidatura à vaga acontece quando o candidato a envia a partir da página pública.
 - **`JOB_LINK_SENT`**: email pertence a um `User` `CANDIDATE` mas sem candidatura nesta vaga. Não é criado nada na plataforma; apenas é disparado um email com o link público da vaga (`${WEB_BASE_URL}/carreiras/<tenantId>/vagas/<jobId>`).
 - **`ALREADY_APPLIED`**: já existe uma `Application` para o par (vaga, candidato). Nenhum email é enviado; a API responde com `applicationId` e o frontend mostra "candidato já se candidatou a esta vaga".
 
@@ -106,7 +106,7 @@ Estados possíveis: `SOURCED`, `APPLIED`, `IN_PROGRESS`, `REJECTED`, `WITHDRAWN`
 Regras de criação:
 
 - **Candidato:** `POST /applications/apply` só funciona para vagas `PUBLISHED` ou `PAUSED`; cria a candidatura em `APPLIED`, atribui a primeira `JobStage` como `currentJobStageId`, abre um `ApplicationStageProgress` em `PENDING` e regista a entrada inicial em `ApplicationHistory`.
-- **Sourcing:** `POST /applications/sourced` não cria candidaturas. Conforme o estado do email envia convite de plataforma (`CANDIDATE_INVITED`), envia link público da vaga (`JOB_LINK_SENT`) ou responde sem efeito (`ALREADY_APPLIED`). A candidatura efetiva acontece quando o candidato submete `apply` a partir da página pública.
+- **Sourcing:** `POST /applications/sourced` não cria candidaturas. Conforme o estado do email envia convite de plataforma (`CANDIDATE_INVITED`), envia link público da vaga (`JOB_LINK_SENT`) ou responde sem efeito (`ALREADY_APPLIED`). A candidatura efetiva acontece quando o candidato envia `apply` a partir da página pública.
 
 Regras de transição:
 
@@ -122,7 +122,7 @@ Regras de transição:
 | `SUPER_ADMIN` | Criar, listar, suspender, ativar e soft-delete de tenants; convidar `TENANT_ADMIN` por email (link único de ativação). |
 | `TENANT_ADMIN` | Convidar `RECRUITER` por email (link único de ativação); gerir vagas e pipeline no tenant do **JWT**. |
 | `RECRUITER` | Mesmo escopo operacional de vagas e candidaturas no tenant do **JWT**. |
-| `CANDIDATE` | Registo/login, `GET/PATCH/DELETE /candidates/me`, `/applications/me` e candidatura com UUID do tenant na URL. |
+| `CANDIDATE` | Cadastro/login, `GET/PATCH/DELETE /candidates/me`, `/applications/me` e candidatura com UUID do tenant na URL. |
 
 ### Resolução do tenant
 
@@ -155,7 +155,7 @@ Regras de transição:
 - Ao criar uma vaga, o template é clonado em `JobStage` (FK `jobId`). Enquanto a vaga estiver em `DRAFT`, o recrutador pode reordenar/adicionar/remover etapas em `/empresa/vagas/:jobId/etapas`. Após `PUBLISHED`/`PAUSED`/`CLOSED` as etapas ficam fixas.
 - Cada etapa tem um `kind` que define a interação com o candidato: `MANUAL`, `QUESTIONNAIRE`, `INTERVIEW_LINK`, `FILE_UPLOAD`. Configurações específicas vivem em `JobStage.config` (JSON).
 - Movimento entre etapas é por endpoint dedicado `PATCH /applications/:id/stage` (não viaja em `/move`, que continua a tratar de status macro). Cada movimento garante a existência de um `ApplicationStageProgress` `PENDING` para a nova etapa.
-- O candidato vê em `/candidato/candidaturas/:id` apenas a etapa atual e pode submeter:
+- O candidato vê em `/candidato/candidaturas/:id` apenas a etapa atual e pode enviar:
   * Para `QUESTIONNAIRE`: respostas validadas contra o `config.questions`.
   * Para `FILE_UPLOAD`: upload presigned no purpose `APPLICATION_STAGE_FILE`, com chave e metadados em `ApplicationStageProgress.submittedData`; tipos e limite de tamanho são impostos pela API.
 - `INTERVIEW_LINK` é configurado pelo recrutador (`PATCH /applications/:id/stage/:jobStageId/interviewLink`), que armazena URL e agendamento na progress da própria candidatura, ficando visível para o candidato.
@@ -166,5 +166,5 @@ Regras de transição:
 - A API gera um token opaco aleatório (32 bytes, base64url) e guarda **apenas o SHA 256**, evitando que uma fuga de leitura no Postgres comprometa convites pendentes.
 - Cada novo convite para o mesmo email, empresa e papel revoga automaticamente os convites pendentes anteriores.
 - Validade configurável por `INVITATION_TTL_HOURS` (1..720, padrão 72h). Convites expirados, já aceitos ou revogados deixam de ser utilizáveis.
-- Se o envio SMTP falhar o convite é revogado, garantindo que não fica um token ativo em base de dados sem ter sido entregue.
-- A ativação (`POST /invitations/:token/accept`) cria o usuário com o papel registrado no convite, marca o convite como aceito numa única transação, e devolve `access_token` e `refresh_token` (refresh opaco no banco) para login imediato.
+- Se o envio SMTP falhar o convite é revogado, garantindo que não fica um token ativo em banco de dados sem ter sido entregue.
+- A ativação (`POST /invitations/:token/accept`) cria o usuário com o papel registrado no convite, marca o convite como aceito numa única transação, e retorna `access_token` e `refresh_token` (refresh opaco no banco) para login imediato.

@@ -105,7 +105,7 @@ function CareerListInner({ tenantId, valid }: { tenantId: string; valid: boolean
             </div>
           </div>
           <p className="text-sm text-muted-foreground">
-            Encontre oportunidades abertas e candidate-se com o seu perfil.
+            Encontre oportunidades abertas e candidate-se com seu perfil.
           </p>
         </div>
 

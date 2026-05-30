@@ -159,7 +159,7 @@ function QuestionnaireEditor({
                 value={q.label}
                 disabled={disabled}
                 onChange={(e) => update(q.id, { label: e.target.value })}
-                placeholder="Ex: Qual a sua experiência com TypeScript?"
+                placeholder="Ex: Qual sua experiência com TypeScript?"
               />
               <div className="grid gap-2 sm:grid-cols-3">
                 <div>

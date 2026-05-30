@@ -263,7 +263,7 @@ export default function TenantJobDetailPage() {
               <div>
                 <CardTitle>Sourcing por email</CardTitle>
                 <CardDescription>
-                  Convida um candidato externo a candidatar se. A plataforma decide qual email
+                  Convida um candidato externo a candidatar-se. A plataforma decide qual email
                   enviar conforme o candidato já tenha conta ou candidatura nesta vaga.
                 </CardDescription>
               </div>

@@ -17,7 +17,7 @@ const jobPublicLabels: Record<ApiJobStatus, string> = {
 }
 
 const applicationLabels: Record<ApiApplicationStatus, string> = {
-  SOURCED: 'Contacto iniciado pela empresa',
+  SOURCED: 'Contato iniciado pela empresa',
   APPLIED: 'Candidatura enviada',
   IN_PROGRESS: 'Em avaliação',
   REJECTED: 'Encerrado (não selecionado)',

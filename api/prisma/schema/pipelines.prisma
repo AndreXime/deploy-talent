@@ -21,7 +21,7 @@ model TemplateStage {
   kind       PipelineStageKind
   name       String
   /// Configuração específica do `kind` (perguntas do questionário,
-  /// instruções de entrevista, mime types aceites, etc.).
+  /// instruções de entrevista, mime types aceitos, etc.).
   config     Json              @default("{}")
   required   Boolean           @default(true)
   createdAt  DateTime          @default(now())
@@ -63,7 +63,7 @@ model ApplicationStageProgress {
   applicationId     String
   jobStageId        String
   status            ApplicationStageProgressStatus @default(PENDING)
-  /// Payload submetido pelo candidato (respostas do questionário, chave S3
+  /// Payload enviado pelo candidato (respostas do questionário, chave S3
   /// do arquivo, dados da entrevista). Estrutura varia conforme o `kind`.
   submittedData     Json?
   completedAt       DateTime?

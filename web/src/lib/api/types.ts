@@ -81,7 +81,7 @@ export interface MarketplaceJobFilterOptions {
   tenants: MarketplaceTenantFilterOption[]
 }
 
-/** Uma vaga guardada (GET /candidates/me/saved-jobs, POST idempotente). */
+/** Uma vaga salva (GET /candidates/me/saved-jobs, POST idempotente). */
 export interface CandidateSavedJobRow {
   savedAt: string
   job: JobResponse
@@ -104,7 +104,7 @@ export interface CandidateProfileResponse {
   updatedAt: string
 }
 
-/** Campos aceites em `PATCH /candidates/me` (continuam a ser chaves S3 após upload). */
+/** Campos aceitos em `PATCH /candidates/me` (continuam sendo chaves S3 após upload). */
 export type PatchCandidateProfileBody = Partial<{
   name: string
   phone: string

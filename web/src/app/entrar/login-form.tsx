@@ -57,7 +57,7 @@ export function LoginForm() {
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="password">Palavra-passe</Label>
+          <Label htmlFor="password">Senha</Label>
           <Input
             id="password"
             type="password"
@@ -75,7 +75,7 @@ export function LoginForm() {
         </Button>
         <p className="text-center text-sm text-muted-foreground">
           É candidato e ainda não tem conta?{' '}
-          <Link href="/registo" className="font-medium underline-offset-4 hover:underline">
+          <Link href="/cadastro" className="font-medium underline-offset-4 hover:underline">
             Criar conta
           </Link>
         </p>

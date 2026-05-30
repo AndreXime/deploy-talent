@@ -56,7 +56,7 @@ export default function PlatformTenantsPage() {
   const createMut = useMutation({
     mutationFn: () => createTenant({ name: cName.trim(), slug: cSlug.trim() }),
     onSuccess: () => {
-      toast.success('Empresa registada.')
+      toast.success('Empresa registrada.')
       setCreateOpen(false)
       setCName('')
       setCSlug('')
@@ -104,7 +104,7 @@ export default function PlatformTenantsPage() {
   async function approveSignup(id: string): Promise<void> {
     try {
       await approveTenantSignup(id)
-      toast.success('Registo público aprovado.')
+      toast.success('Cadastro público aprovado.')
       qc.invalidateQueries({ queryKey: ['platform-tenants', claims?.sub] })
     } catch (err: unknown) {
       if (err instanceof ApiRequestError) toast.error(err.message)
@@ -146,9 +146,9 @@ export default function PlatformTenantsPage() {
           <CardHeader className="pb-2">
             <CardTitle>Listagem</CardTitle>
             <CardDescription>
-              Pedidos de empresa feitos em registo público aparecem com a etiqueta Aguarda aprovação
-              até o administrador da plataforma aprovar ou recusar. Ao criar empresa aqui, o
-              identificador curto (slug) segue o padrão da API.
+              Pedidos de empresa feitos em cadastro público aparecem com a etiqueta Aguarda
+              aprovação até o administrador da plataforma aprovar ou recusar. Ao criar empresa aqui,
+              o identificador curto (slug) segue o padrão da API.
             </CardDescription>
           </CardHeader>
           <CardContent className="overflow-x-auto px-4">
@@ -190,7 +190,7 @@ export default function PlatformTenantsPage() {
                                 type="button"
                                 onClick={() => approveSignup(row.id).catch(() => undefined)}
                               >
-                                Aprovar registo
+                                Aprovar cadastro
                               </Button>
                               <Button
                                 variant="outline"

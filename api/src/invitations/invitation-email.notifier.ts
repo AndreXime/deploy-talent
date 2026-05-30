@@ -97,7 +97,7 @@ export class InvitationEmailNotifier {
         '',
         `${inviter} convidou para administrar a empresa "${tenantName}" no Deploy Talent.`,
         '',
-        'Para ativar a conta e definir a sua senha, abra:',
+        'Para ativar a conta e definir sua senha, abra:',
         activationUrl,
         '',
         `Este link expira a ${expires} e só pode ser usado uma vez.`,
@@ -105,7 +105,7 @@ export class InvitationEmailNotifier {
       ].join('\n'),
       html: `<p>Olá,</p>
 <p><strong>${safe.inviter}</strong> convidou para administrar a empresa <strong>${safe.tenant}</strong> no Deploy Talent.</p>
-<p>Para ativar a conta e definir a sua senha, abra o link abaixo:</p>
+<p>Para ativar a conta e definir sua senha, abra o link abaixo:</p>
 <p><a href="${safe.url}">${safe.url}</a></p>
 <p>Este link expira a <strong>${safe.expires}</strong> e só pode ser usado uma vez.</p>
 <p>Se não esperava este convite, ignore esta mensagem.</p>`,
@@ -131,7 +131,7 @@ export class InvitationEmailNotifier {
         '',
         `${inviter} convidou para integrar a equipe de recrutamento da empresa "${tenantName}" no Deploy Talent.`,
         '',
-        'Para ativar a conta de recrutador e definir a sua senha, abra:',
+        'Para ativar a conta de recrutador e definir sua senha, abra:',
         activationUrl,
         '',
         `Este link expira a ${expires} e só pode ser usado uma vez.`,
@@ -139,7 +139,7 @@ export class InvitationEmailNotifier {
       ].join('\n'),
       html: `<p>Olá,</p>
 <p><strong>${safe.inviter}</strong> convidou para integrar a equipe de recrutamento da empresa <strong>${safe.tenant}</strong> no Deploy Talent.</p>
-<p>Para ativar a conta de recrutador e definir a sua senha, abra o link abaixo:</p>
+<p>Para ativar a conta de recrutador e definir sua senha, abra o link abaixo:</p>
 <p><a href="${safe.url}">${safe.url}</a></p>
 <p>Este link expira a <strong>${safe.expires}</strong> e só pode ser usado uma vez.</p>
 <p>Se não esperava este convite, ignore esta mensagem.</p>`,
@@ -166,9 +166,9 @@ export class InvitationEmailNotifier {
       text: [
         `Olá ${recipientName},`,
         '',
-        `A equipe de recrutamento de "${tenantName}" identificou o seu perfil para a vaga "${jobTitle}" no Deploy Talent.`,
+        `A equipe de recrutamento de "${tenantName}" identificou seu perfil para a vaga "${jobTitle}" no Deploy Talent.`,
         '',
-        'Para criar conta de candidato e definir a sua senha, abra:',
+        'Para criar conta de candidato e definir sua senha, abra:',
         activationUrl,
         '',
         'Depois de ativar a conta poderá rever a descrição da vaga em:',
@@ -178,8 +178,8 @@ export class InvitationEmailNotifier {
         'Se não esperava este convite, ignore esta mensagem.',
       ].join('\n'),
       html: `<p>Olá <strong>${safe.name}</strong>,</p>
-<p>A equipe de recrutamento de <strong>${safe.tenant}</strong> identificou o seu perfil para a vaga <strong>${safe.job}</strong> no Deploy Talent.</p>
-<p>Para criar conta de candidato e definir a sua senha, abra o link abaixo:</p>
+<p>A equipe de recrutamento de <strong>${safe.tenant}</strong> identificou seu perfil para a vaga <strong>${safe.job}</strong> no Deploy Talent.</p>
+<p>Para criar conta de candidato e definir sua senha, abra o link abaixo:</p>
 <p><a href="${safe.activationUrl}">${safe.activationUrl}</a></p>
 <p>Depois de ativar a conta poderá rever a descrição da vaga em:</p>
 <p><a href="${safe.jobUrl}">${safe.jobUrl}</a></p>
@@ -201,16 +201,16 @@ export class InvitationEmailNotifier {
       text: [
         'Olá,',
         '',
-        `A equipe de recrutamento de "${tenantName}" identificou o seu perfil para a vaga "${jobTitle}" no Deploy Talent.`,
+        `A equipe de recrutamento de "${tenantName}" identificou seu perfil para a vaga "${jobTitle}" no Deploy Talent.`,
         '',
-        'Como já tem conta de candidato na plataforma, basta abrir o link abaixo e candidatar se directamente:',
+        'Como já tem conta de candidato na plataforma, basta abrir o link abaixo e candidatar-se diretamente:',
         jobUrl,
         '',
         'Se não tem interesse, ignore esta mensagem.',
       ].join('\n'),
       html: `<p>Olá,</p>
-<p>A equipe de recrutamento de <strong>${safe.tenant}</strong> identificou o seu perfil para a vaga <strong>${safe.job}</strong> no Deploy Talent.</p>
-<p>Como já tem conta de candidato na plataforma, basta abrir o link abaixo e candidatar se directamente:</p>
+<p>A equipe de recrutamento de <strong>${safe.tenant}</strong> identificou seu perfil para a vaga <strong>${safe.job}</strong> no Deploy Talent.</p>
+<p>Como já tem conta de candidato na plataforma, basta abrir o link abaixo e candidatar-se diretamente:</p>
 <p><a href="${safe.jobUrl}">${safe.jobUrl}</a></p>
 <p>Se não tem interesse, ignore esta mensagem.</p>`,
     }

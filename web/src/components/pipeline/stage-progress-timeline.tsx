@@ -105,7 +105,7 @@ function StageSubmissionSummary({
     const fileKey = submission.fileKey as string | undefined
     return (
       <p className="text-sm text-muted-foreground">
-        Arquivo submetido: <span className="font-mono">{fileKey ?? 'desconhecido'}</span>
+        Arquivo enviado: <span className="font-mono">{fileKey ?? 'desconhecido'}</span>
       </p>
     )
   }

@@ -86,7 +86,7 @@ export default function JobStagesPage() {
     mutationFn: (stages: PipelineStageInput[]) => replaceJobStages(jobId.trim(), stages),
     onSuccess: (data) => {
       queryClient.setQueryData(['job-stages', claims?.sub, jobId], data)
-      toast.success('Etapas guardadas.')
+      toast.success('Etapas salvas.')
     },
     onError: (err: unknown) => {
       if (err instanceof ApiRequestError) toast.error(err.message)

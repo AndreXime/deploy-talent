@@ -133,7 +133,7 @@ describe('SourceCandidateUseCase', () => {
     expect(notifier.notifyCandidateSourcedForJob).not.toHaveBeenCalled()
   })
 
-  it('devolve ALREADY_APPLIED e não dispara emails quando já existe candidatura', async () => {
+  it('retorna ALREADY_APPLIED e não dispara emails quando já existe candidatura', async () => {
     const prisma = buildPrisma({
       job: {
         findFirst: jest.fn(async () => ({ id: 'j1', title: 'PM', tenantId: 't1' })),

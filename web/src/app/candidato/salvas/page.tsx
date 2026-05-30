@@ -33,12 +33,10 @@ export default function SavedJobsPage() {
     return (
       <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 px-4 py-10 lg:px-6">
         <Alert>
-          <AlertDescription>
-            Inicie sessão como candidato para ver as vagas que guardou.
-          </AlertDescription>
+          <AlertDescription>Entre como candidato para ver as vagas que salvou.</AlertDescription>
         </Alert>
         <Button asChild>
-          <Link href="/entrar?redirect=/candidato/guardadas">Entrar</Link>
+          <Link href="/entrar?redirect=/candidato/salvas">Entrar</Link>
         </Button>
       </main>
     )
@@ -47,7 +45,7 @@ export default function SavedJobsPage() {
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-8 px-4 py-8 lg:px-6">
       <div className="space-y-1">
-        <h1 className="text-2xl font-semibold tracking-tight">Vagas guardadas</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Vagas salvas</h1>
         <p className="text-sm text-muted-foreground">
           Referências que marcou para rever ou candidatar-se mais tarde.
         </p>
@@ -71,7 +69,7 @@ export default function SavedJobsPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
               <Bookmark className="size-5 text-muted-foreground" aria-hidden />
-              Ainda não guardou vagas
+              Ainda não salvou vagas
             </CardTitle>
             <CardDescription>
               Em qualquer vaga pública, use “Guardar vaga” para a encontrar aqui.
@@ -107,7 +105,7 @@ export default function SavedJobsPage() {
                     </span>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Guardada em {new Date(savedAt).toLocaleString()}
+                    Salva em {new Date(savedAt).toLocaleString()}
                   </p>
                 </div>
                 <Button asChild className="shrink-0 gap-2 self-stretch sm:self-center">

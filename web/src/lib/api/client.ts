@@ -21,7 +21,7 @@ function attemptRefreshOn401(path: string): boolean {
   return !skip.some((prefix) => p === prefix)
 }
 
-/** 401 em fluxos de login/registo não devem limpar cookies nem disparar redirect. */
+/** 401 em fluxos de login/cadastro não devem limpar cookies nem disparar redirect. */
 function shouldDispatchUnauthorized(path: string): boolean {
   const p = normalizedPath(path)
   const skip = [

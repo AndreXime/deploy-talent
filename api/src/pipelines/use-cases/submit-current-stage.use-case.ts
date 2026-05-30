@@ -39,7 +39,7 @@ export class SubmitCurrentStageUseCase {
 
     const stage = application.currentStage
     if (!stage || !application.currentJobStageId) {
-      throw new BadRequestException('Sem etapa atual para submeter')
+      throw new BadRequestException('Sem etapa atual para enviar')
     }
 
     const normalized = validateStageSubmission(stage.kind, stage.config, payload, {

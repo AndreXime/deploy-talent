@@ -8,7 +8,7 @@ export function buildOpenApiConfig() {
         'API REST multi-tenant (pool compartilhado, isolamento por `tenant_id`).',
         '',
         '### Autenticação',
-        '- **JWT (access)**: header `Authorization: Bearer <jwt>` ou **cookie httpOnly** `deploy_talent_access_token` quando o primeiro login/registo/refresco define `Set-Cookie` (`SameSite=Lax`, `credentials: include` entre origens CORS configuradas). O JSON já não inclui os tokens crus; há `GET /auth/session`.',
+        '- **JWT (access)**: header `Authorization: Bearer <jwt>` ou **cookie httpOnly** `deploy_talent_access_token` quando o primeiro login/cadastro/refresco define `Set-Cookie` (`SameSite=Lax`, `credentials: include` entre origens CORS configuradas). O JSON já não inclui os tokens crus; há `GET /auth/session`.',
         '- **Bearer no Swagger/OpenAPI**: após autorizar pode colar aqui um access JWT obtido pela própria UI do Swagger só enquanto testa fora do fluxo de cookies.',
         '- **Refresh opaco**: cookie httpOnly `deploy_talent_refresh_token` ou corpo de `POST /auth/refresh` (útil em clientes não-browser).',
         '- **Tenant (B2B)**: `RECRUITER`/`TENANT_ADMIN` — o tenant vem do **JWT** (sem header).',

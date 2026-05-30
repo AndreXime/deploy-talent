@@ -17,7 +17,7 @@ export class TenantResponseDto {
   @ApiProperty() slug!: string
   @ApiProperty() isActive!: boolean
   @ApiProperty({
-    description: 'Registo público aguardando aprovação do SUPER_ADMIN',
+    description: 'Cadastro público aguardando aprovação do SUPER_ADMIN',
   })
   signupPending!: boolean
   @ApiProperty({ nullable: true, type: String, format: 'date-time' }) deletedAt!: Date | null
@@ -56,7 +56,7 @@ export class PublicExploreJobRowDto {
   @ApiProperty({ type: TenantSnippetDto }) tenant!: TenantSnippetDto
 }
 
-/** Vaga guardada (`GET /candidates/me/saved-jobs`). */
+/** Vaga salva (`GET /candidates/me/saved-jobs`). */
 export class CandidateSavedJobRowDto {
   @ApiProperty({ type: String, format: 'date-time' }) savedAt!: Date
   @ApiProperty({ type: JobResponseDto }) job!: JobResponseDto
@@ -122,7 +122,7 @@ export class AccessTokenDto {
   access_token!: string
 }
 
-/** Par access + refresh (login, registo, refresh, aceitar convite). */
+/** Par access + refresh (login, cadastro, refresh, aceitar convite). */
 export class SessionTokensDto extends AccessTokenDto {
   @ApiProperty({
     description:
@@ -180,7 +180,7 @@ export class B2BAccountResponseDto {
   avatarUrl!: string | null
 }
 
-/** Recrutador listado na aba "Equipa" do tenant admin. */
+/** Recrutador listado na aba "Equipe" do tenant admin. */
 export class TenantRecruiterItemDto {
   @ApiProperty({ format: 'uuid' }) id!: string
   @ApiProperty({ format: 'email' }) email!: string
@@ -219,7 +219,7 @@ export class CreatedInvitationDto {
 /**
  * Resultado do sourcing de candidato por um recrutador.
  *
- * - `CANDIDATE_INVITED`: email não estava registado; convite com link de
+ * - `CANDIDATE_INVITED`: email não estava registrado; convite com link de
  *   ativação foi enviado e `invitationId` é devolvido.
  * - `JOB_LINK_SENT`: candidato já tem conta mas ainda não se candidatou; email
  *   apenas com o link público da vaga foi enviado.

@@ -19,7 +19,7 @@ export interface TenantPipelineTemplateView {
 }
 
 /**
- * Devolve o template de pipeline default do tenant atual. Se ainda não
+ * Retorna o template de pipeline default do tenant atual. Se ainda não
  * existir, cria um com uma única etapa MANUAL "Triagem" para que a UI tenha
  * sempre algo para mostrar.
  */

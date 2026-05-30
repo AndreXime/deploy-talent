@@ -18,7 +18,7 @@ export class TenantsPublicController {
   @ApiOperation({
     summary: 'Resolver empresa pelo slug',
     description:
-      'Público; apenas tenant ativo e não eliminado. Devolve dados mínimos (incl. `id` para rotas `/tenants/:tenantId/jobs`).',
+      'Público; apenas tenant ativo e não eliminado. Retorna dados mínimos (incl. `id` para rotas `/tenants/:tenantId/jobs`).',
   })
   @ApiParam({ name: 'slug', example: 'acme-corp' })
   @ApiOkResponse({ type: TenantSnippetDto })

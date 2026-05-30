@@ -61,7 +61,7 @@ export default function PublicJobDetailPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['my-saved-job-ids', claims?.sub] })
       queryClient.invalidateQueries({ queryKey: ['my-saved-jobs', claims?.sub] })
-      toast.success('Vaga guardada na sua lista.')
+      toast.success('Vaga salva na sua lista.')
     },
     onError: (err: unknown) => {
       if (err instanceof ApiRequestError) toast.error(err.message)
@@ -74,7 +74,7 @@ export default function PublicJobDetailPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['my-saved-job-ids', claims?.sub] })
       queryClient.invalidateQueries({ queryKey: ['my-saved-jobs', claims?.sub] })
-      toast.success('Removida das vagas guardadas.')
+      toast.success('Removida das vagas salvas.')
     },
     onError: (err: unknown) => {
       if (err instanceof ApiRequestError) toast.error(err.message)
@@ -227,12 +227,12 @@ export default function PublicJobDetailPage() {
                       {savedIdsQ.isLoading
                         ? 'A verificar…'
                         : isSaved
-                          ? 'Remover dos guardados'
+                          ? 'Remover dos salvos'
                           : 'Guardar vaga'}
                     </Button>
                   ) : null}
                   <Button variant="ghost" size="sm" className="sm:ml-auto" asChild>
-                    <Link href="/candidato/guardadas">Ver todas as guardadas</Link>
+                    <Link href="/candidato/salvas">Ver todas as salvas</Link>
                   </Button>
                 </div>
               ) : null}
@@ -243,7 +243,7 @@ export default function PublicJobDetailPage() {
               ) : (
                 <>
                   <p className="text-sm text-muted-foreground">
-                    Inicie sessão como candidato e envie o seu perfil com um clique.
+                    Entre como candidato e envie seu perfil com um clique.
                   </p>
                   <Button
                     size="lg"
@@ -256,7 +256,7 @@ export default function PublicJobDetailPage() {
                       ? applyMut.isPending
                         ? 'Enviando…'
                         : 'Enviar candidatura'
-                      : 'Iniciar sessão para candidatar-me'}
+                      : 'Entrar para candidatar-me'}
                   </Button>
                 </>
               )}

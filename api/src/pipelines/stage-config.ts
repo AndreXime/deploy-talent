@@ -177,7 +177,7 @@ export function validateStageConfig(
 
 /**
  * Valida a submissão do candidato para uma etapa, à luz da `config` da
- * mesma. Devolve o payload normalizado pronto para gravar em
+ * mesma. Retorna o payload normalizado pronto para gravar em
  * `ApplicationStageProgress.submittedData`. Não aplicável a `MANUAL` (lança).
  */
 export interface ValidateStageSubmissionOptions {
@@ -196,7 +196,7 @@ export function validateStageSubmission(
       throw new BadRequestException('Etapa MANUAL não aceita submissão do candidato')
     case PipelineStageKind.INTERVIEW_LINK:
       throw new BadRequestException(
-        'Etapa de entrevista é gerida pelo recrutador; candidato não submete',
+        'Etapa de entrevista é gerenciada pelo recrutador; candidato não envia',
       )
     case PipelineStageKind.QUESTIONNAIRE: {
       const cfg = validateQuestionnaireConfig(config)
@@ -280,7 +280,7 @@ function validateFileUploadSubmission(
   const allowed = PIPELINE_FILE_UPLOAD_ALLOWED_MIME_TYPES as readonly string[]
   if (!mimeType || !allowed.includes(mimeType)) {
     throw new BadRequestException(
-      `Tipo de arquivo não permitido. Aceites na pipeline: PDF, DOCX, PNG, JPG, TXT (${allowed.join(', ')})`,
+      `Tipo de arquivo não permitido. Aceitos na pipeline: PDF, DOCX, PNG, JPG, TXT (${allowed.join(', ')})`,
     )
   }
   const maxBytes = resolvePipelineFileUploadMaxBytes(s3MaxUploadBytes)

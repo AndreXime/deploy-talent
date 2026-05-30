@@ -111,7 +111,7 @@ export default function TeamPage() {
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-8 p-4 lg:p-8">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Equipa</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Equipe</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Veja quem já tem acesso e envie convites para novos recrutadores. O destinatário define a
           sua própria senha ao aceitar o convite.

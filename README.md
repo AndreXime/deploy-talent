@@ -6,7 +6,7 @@
 > - [Modelo de Dados](./BANCO_DE_DADOS.md)
 > - [Fluxos](./FLUXOS.md)
 
-Plataforma multi-tenant de recrutamento (ATS). Backend **NestJS** + frontend **Next.js** num único repositório.
+Plataforma multi-tenant de recrutamento (ATS). Backend **NestJS** + frontend **Next.js** em um único repositório.
 
 - Isolamento lógico por `tenant_id`, com perfil global do candidato (*one-profile*).
 - Vagas com máquina de estados e candidaturas com pipeline + histórico.
@@ -115,7 +115,7 @@ Todas as contas geradas usam a mesma password.
 
 ## Funcionalidades expostas pela API
 
-- **Multi-tenant (empresas):** cada organização é um tenant com dados isolados por `tenant_id`. `SUPER_ADMIN` gere o ciclo de vida dos tenants; `TENANT_ADMIN` e `RECRUITER` trabalham apenas no contexto do tenant do JWT.
+- **Multi-tenant (empresas):** cada organização é um tenant com dados isolados por `tenant_id`. `SUPER_ADMIN` gerencia o ciclo de vida dos tenants; `TENANT_ADMIN` e `RECRUITER` trabalham apenas no contexto do tenant do JWT.
 - **Vagas e página de carreiras:** criação e edição com ciclo `DRAFT` → `PUBLISHED` / `PAUSED` → `CLOSED`. Endpoints públicos servem o site de empresa (`/carreiras/:tenantId`) e o marketplace agregado (`/vagas`). Candidaturas novas só em vagas `PUBLISHED` ou `PAUSED`.
 - **Perfil único do candidato (*one-profile*):** o candidato tem um perfil global; mudanças propagam a todas as candidaturas ativas. Pode anonimizar a conta (LGPD-style) com remoção dos dados identificáveis.
 - **Candidaturas e pipeline:** o candidato candidata-se com o UUID do tenant na URL e pode desistir (`WITHDRAWN`). Recrutadores fazem *sourcing* (`SOURCED`), movem o processo (`IN_PROGRESS`, `REJECTED`, `HIRED`, …) com histórico de auditoria e etapas por vaga (`JobStage` / `ApplicationStageProgress`).
@@ -127,7 +127,7 @@ Todas as contas geradas usam a mesma password.
 
 **Produção:** o caminho canônico é **convite por email** (`SUPER_ADMIN` → `TENANT_ADMIN` → `RECRUITER`). Detalhes em [Funcionalidades](./FUNCIONALIDADES.md#onboarding-b2b-caminho-canônico-vs-auto-registro).
 
-**Demo / piloto:** existe também auto-registro em `/registo` (`POST /auth/register/tenant-admin`), com aprovação do `SUPER_ADMIN` antes do tenant ficar ativo. Use apenas quando não houver operador para enviar convites manualmente.
+**Demo / piloto:** existe também auto-registro em `/cadastro` (`POST /auth/register/tenant-admin`), com aprovação do `SUPER_ADMIN` antes do tenant ficar ativo. Use apenas quando não houver operador para enviar convites manualmente.
 
 ## Variáveis de ambiente
 
@@ -184,7 +184,7 @@ O arquivo `.env` ao lado de `docker-compose.yml` define Postgres, MinIO, variáv
 | `SUPER_ADMIN` | Criar/listar/suspender/ativar/soft-delete tenants; **convidar** `TENANT_ADMIN` por email (caminho canônico); aprovar/rejeitar auto-registros pendentes em `/plataforma/empresas`. |
 | `TENANT_ADMIN` | Convidar `RECRUITER` por email (a conta é ativada pelo próprio com link único); vagas e pipeline no tenant do **JWT**. |
 | `RECRUITER` | Mesmo escopo operacional de vagas/candidaturas no tenant do **JWT**. |
-| `CANDIDATE` | Registo/login, `GET/PATCH/DELETE /candidates/me`, candidaturas (`/applications/me`) e candidatar com UUID do tenant na URL. |
+| `CANDIDATE` | Cadastro/login, `GET/PATCH/DELETE /candidates/me`, candidaturas (`/applications/me`) e candidatar com UUID do tenant na URL. |
 
 ## Domínio (visão rápida)
 
@@ -215,7 +215,7 @@ Estados: `SOURCED`, `APPLIED`, `IN_PROGRESS`, `REJECTED`, `WITHDRAWN`, `HIRED`.
 | API | http://localhost:3050 |
 | Swagger (API) | http://localhost:3050/docs |
 | OpenAPI JSON | http://localhost:3050/docs-json |
-| MinIO (consola) | http://127.0.0.1:9001 |
+| MinIO (console) | http://127.0.0.1:9001 |
 | Mailpit (UI) | http://127.0.0.1:8025 |
 | Postgres | `localhost:5432` (user e base definidos no `.env` da raiz; o exemplo usa `deploy_talent`) |
 

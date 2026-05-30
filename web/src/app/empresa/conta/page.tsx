@@ -66,7 +66,7 @@ export default function B2BAccountPage() {
   return (
     <main className="mx-auto flex w-full max-w-lg flex-1 flex-col gap-8 p-4 lg:p-8">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">A minha conta</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Minha conta</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Foto usada internamente na equipe (não confundir com a marca pública da empresa).
         </p>

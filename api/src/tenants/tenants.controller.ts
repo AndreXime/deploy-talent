@@ -82,7 +82,7 @@ export class TenantsController {
   @ApiJwtTenantB2b()
   @ApiOperation({
     summary: 'Empresa do usuário autenticado',
-    description: 'Devolve a empresa correspondente ao `tenantId` do JWT.',
+    description: 'Retorna a empresa correspondente ao `tenantId` do JWT.',
   })
   @ApiOkResponse({ type: TenantResponseDto })
   async current() {
@@ -97,7 +97,7 @@ export class TenantsController {
   @ApiOperation({
     summary: 'Listar recrutadores da empresa atual',
     description:
-      'Apenas `TENANT_ADMIN`. Devolve os usuárioes com papel `RECRUITER` no tenant do JWT, ordenados por antiguidade, com `avatarUrl` assinado.',
+      'Apenas `TENANT_ADMIN`. Retorna os usuárioes com papel `RECRUITER` no tenant do JWT, ordenados por antiguidade, com `avatarUrl` assinado.',
   })
   @ApiOkResponse({ type: TenantRecruiterItemDto, isArray: true })
   async currentRecruiters() {
@@ -113,7 +113,7 @@ export class TenantsController {
   @ApiOperation({
     summary: 'Remover recrutador da empresa atual',
     description:
-      'Apenas `TENANT_ADMIN`. Apaga o usuário. Histórico de candidaturas, transições e avaliações preserva os registos com a referência ao autor a `null` (ON DELETE SET NULL).',
+      'Apenas `TENANT_ADMIN`. Apaga o usuário. Histórico de candidaturas, transições e avaliações preserva os registros com a referência ao autor a `null` (ON DELETE SET NULL).',
   })
   @ApiParam({ name: 'userId', format: 'uuid' })
   @ApiNoContentResponse()
@@ -189,7 +189,7 @@ export class TenantsController {
   @UseGuards(JwtAuthGuard)
   @Roles(UserRole.SUPER_ADMIN)
   @ApiOperation({
-    summary: 'Aprovar registo público de empresa',
+    summary: 'Aprovar cadastro público de empresa',
     description: 'Activa o tenant e remove `signupPending` (admin já pode entrar em `/entrar`).',
   })
   @ApiParam({ name: 'id', format: 'uuid' })
@@ -203,8 +203,8 @@ export class TenantsController {
   @UseGuards(JwtAuthGuard)
   @Roles(UserRole.SUPER_ADMIN)
   @ApiOperation({
-    summary: 'Recusar registo público de empresa',
-    description: 'Apaga o tenant e o utilizador TENANT_ADMIN associado (slug fica livre).',
+    summary: 'Recusar cadastro público de empresa',
+    description: 'Apaga o tenant e o usuário TENANT_ADMIN associado (slug fica livre).',
   })
   @ApiParam({ name: 'id', format: 'uuid' })
   @ApiNoContentResponse()

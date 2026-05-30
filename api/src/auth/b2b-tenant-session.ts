@@ -9,7 +9,7 @@ export function assertB2bTenantAllowsLogin(user: User, tenant: Tenant | null): v
     throw new UnauthorizedException('Conta sem empresa associada.')
   }
   if (tenant.deletedAt) {
-    throw new UnauthorizedException('Empresa inactiva.')
+    throw new UnauthorizedException('Empresa inativa.')
   }
   if (tenant.signupPending) {
     throw new UnauthorizedException('Conta aguarda aprovação da plataforma.')

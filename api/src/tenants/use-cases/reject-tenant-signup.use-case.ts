@@ -3,7 +3,7 @@ import type { PrismaClient } from '../../../generated/prisma/client'
 import { PRISMA_CLIENT } from '../../infra/prisma/prisma.constants'
 
 /**
- * Remove registo público ainda não aprovado (admin + empresa).
+ * Remove cadastro público ainda não aprovado (admin + empresa).
  */
 @Injectable()
 export class RejectTenantSignupUseCase {

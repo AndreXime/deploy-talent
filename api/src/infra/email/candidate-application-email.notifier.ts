@@ -42,14 +42,14 @@ export class CandidateApplicationEmailNotifier {
     const text = [
       `Olá, ${candidateName},`,
       '',
-      `Recebemos a sua candidatura para a vaga "${jobTitle}" na ${companyName}.`,
-      'A equipe de recrutamento irá analisar o seu perfil e entrará em contato se houver seguimento.',
+      `Recebemos sua candidatura para a vaga "${jobTitle}" na ${companyName}.`,
+      'A equipe de recrutamento irá analisar seu perfil e entrará em contato se houver seguimento.',
       '',
       'Obrigado pelo seu interesse.',
     ].join('\n')
     const html = `<p>Olá, ${safe.name},</p>
-<p>Recebemos a sua candidatura para a vaga <strong>${safe.job}</strong> na <strong>${safe.company}</strong>.</p>
-<p>A equipe de recrutamento irá analisar o seu perfil e entrará em contato se houver seguimento.</p>
+<p>Recebemos sua candidatura para a vaga <strong>${safe.job}</strong> na <strong>${safe.company}</strong>.</p>
+<p>A equipe de recrutamento irá analisar seu perfil e entrará em contato se houver seguimento.</p>
 <p>Obrigado pelo seu interesse.</p>`
     await this.sendSafe({ to: recipientEmail, subject, text, html })
   }
@@ -89,17 +89,17 @@ export class CandidateApplicationEmailNotifier {
       `Olá, ${candidateName},`,
       '',
       `Obrigado por se candidatar à vaga "${jobTitle}" na ${companyName}.`,
-      'Após análise, neste momento não avançaremos com o seu perfil para esta posição.',
-      'Valorizamos o tempo que dedicou e desejamos-lhe sucesso na sua procura.',
+      'Após análise, neste momento não avançaremos com seu perfil para esta posição.',
+      'Valorizamos o tempo que dedicou e desejamos a você sucesso na sua procura.',
       '',
-      'Com os melhores cumprimentos,',
-      `Equipa de recrutamento — ${companyName}`,
+      'Atenciosamente,',
+      `Equipe de recrutamento — ${companyName}`,
     ].join('\n')
     const html = `<p>Olá, ${safe.name},</p>
 <p>Obrigado por se candidatar à vaga <strong>${safe.job}</strong> na <strong>${safe.company}</strong>.</p>
-<p>Após análise, neste momento <strong>não avançaremos</strong> com o seu perfil para esta posição.</p>
-<p>Valorizamos o tempo que dedicou e desejamos-lhe sucesso na sua procura.</p>
-<p>Com os melhores cumprimentos,<br/>Equipa de recrutamento — ${safe.company}</p>`
+<p>Após análise, neste momento <strong>não avançaremos</strong> com seu perfil para esta posição.</p>
+<p>Valorizamos o tempo que dedicou e desejamos a você sucesso na sua procura.</p>
+<p>Atenciosamente,<br/>Equipe de recrutamento — ${safe.company}</p>`
     await this.sendSafe({ to: recipientEmail, subject, text, html })
   }
 
@@ -121,8 +121,8 @@ export class CandidateApplicationEmailNotifier {
     const subject = `Nova etapa na candidatura - ${jobTitle}`
     const transition =
       previousStageName !== null && previousStageName.length > 0
-        ? `A sua candidatura passou da etapa "${previousStageName}" para "${newStageName}".`
-        : `A sua candidatura avançou para a etapa "${newStageName}".`
+        ? `Sua candidatura passou da etapa "${previousStageName}" para "${newStageName}".`
+        : `Sua candidatura avançou para a etapa "${newStageName}".`
     const text = [
       `Olá, ${candidateName},`,
       '',
@@ -131,18 +131,18 @@ export class CandidateApplicationEmailNotifier {
       `Vaga: "${jobTitle}" na ${companyName}.`,
       'Pode acompanhar o que falta fazer na área do candidato na plataforma.',
       '',
-      'Com os melhores cumprimentos,',
-      `Equipa de recrutamento - ${companyName}`,
+      'Atenciosamente,',
+      `Equipe de recrutamento - ${companyName}`,
     ].join('\n')
     const prevHtml =
       previousStageName !== null && previousStageName.length > 0
-        ? `<p>A sua candidatura passou da etapa <strong>${escapeHtml(previousStageName)}</strong> para <strong>${safe.stage}</strong>.</p>`
-        : `<p>A sua candidatura avançou para a etapa <strong>${safe.stage}</strong>.</p>`
+        ? `<p>Sua candidatura passou da etapa <strong>${escapeHtml(previousStageName)}</strong> para <strong>${safe.stage}</strong>.</p>`
+        : `<p>Sua candidatura avançou para a etapa <strong>${safe.stage}</strong>.</p>`
     const html = `<p>Olá, ${safe.name},</p>
 ${prevHtml}
 <p>Vaga: <strong>${safe.job}</strong> na <strong>${safe.company}</strong>.</p>
 <p>Pode acompanhar o que falta fazer na área do candidato na plataforma.</p>
-<p>Com os melhores cumprimentos,<br/>Equipa de recrutamento - ${safe.company}</p>`
+<p>Atenciosamente,<br/>Equipe de recrutamento - ${safe.company}</p>`
     await this.sendSafe({ to: recipientEmail, subject, text, html })
   }
 

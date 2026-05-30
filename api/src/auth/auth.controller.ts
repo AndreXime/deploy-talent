@@ -236,14 +236,14 @@ export class AuthController {
   @Post('register/tenant-admin')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
-    summary: 'Pedido de registo de empresa (administrador)',
+    summary: 'Pedido de cadastro de empresa (administrador)',
     description:
-      'Cria tenant inactivo e utilizador TENANT_ADMIN. O slug público deriva-se automaticamente do nome da empresa. O SUPER_ADMIN aprova em `PATCH /tenants/:id/approve-signup` antes do login B2B funcionar.',
+      'Cria tenant inativo e usuário TENANT_ADMIN. O slug público é derivado automaticamente do nome da empresa. O SUPER_ADMIN aprova em `PATCH /tenants/:id/approve-signup` antes do login B2B funcionar.',
   })
   @ApiBody({ type: RegisterTenantAdminDto })
   @ApiCreatedResponse({
     type: RegisterTenantAdminPendingResponseDto,
-    description: 'Pedido registado; sem tokens até aprovação',
+    description: 'Pedido registrado; sem tokens até aprovação',
   })
   @ApiConflictResponse({ description: 'E-mail já em uso' })
   @ApiBadRequestResponse({ description: 'Validação do corpo' })

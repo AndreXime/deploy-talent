@@ -12,7 +12,7 @@ export interface ImageAssetFieldProps {
   currentUrl: string | null
   /** Forma do preview: quadrado (logo/avatar) ou largo (banner). */
   aspect?: Aspect
-  /** MIME types aceites no input file (default JPEG/PNG/WebP). */
+  /** MIME types aceitos no input file (default JPEG/PNG/WebP). */
   accept?: string[]
   /** Texto auxiliar abaixo dos botões (ex.: limites de tamanho). */
   hint?: string

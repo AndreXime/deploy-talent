@@ -97,7 +97,7 @@ export class CandidatesController {
 
   @Get('me/saved-jobs')
   @ApiOperation({
-    summary: 'Listar vagas guardadas',
+    summary: 'Listar vagas salvas',
     description: 'Paginação `page` / `limit`; cada item inclui vaga, empresa e `savedAt`.',
   })
   @ApiOkResponse({ description: '`items`, `total`, `page`, `limit`' })
@@ -114,7 +114,7 @@ export class CandidatesController {
   @ApiOperation({
     summary: 'Guardar vaga (favorito)',
     description:
-      'Idempotente: se já existir, devolve o registo existente. Só vagas listáveis no marketplace.',
+      'Idempotente: se já existir, retorna o registro existente. Só vagas listáveis no marketplace.',
   })
   @ApiBody({ type: SaveJobDto })
   @ApiOkResponse({ type: CandidateSavedJobRowDto })
@@ -125,7 +125,7 @@ export class CandidatesController {
 
   @Delete('me/saved-jobs/:jobId')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Remover vaga guardada' })
+  @ApiOperation({ summary: 'Remover vaga salva' })
   @ApiParam({ name: 'jobId', format: 'uuid' })
   async removeSaved(@Request() req: RequestWithUser, @Param('jobId') jobId: string) {
     const user = requireUser(req)

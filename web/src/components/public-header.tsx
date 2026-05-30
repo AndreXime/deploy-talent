@@ -24,7 +24,7 @@ import { useAuth } from '@/providers/auth-provider'
 
 const candidateAreaLinks = [
   { href: '/candidato', label: 'Candidaturas', icon: ClipboardList },
-  { href: '/candidato/guardadas', label: 'Guardadas', icon: Bookmark },
+  { href: '/candidato/salvas', label: 'Salvas', icon: Bookmark },
   { href: '/candidato/perfil', label: 'Perfil', icon: UserRound },
 ] as const
 
@@ -66,7 +66,7 @@ function NavActions({ pathname, stack, onNavigate }: NavActionsProps) {
             </Link>
           </Button>
           <Button size="sm" className={cn('gap-2', itemClass)} asChild>
-            <Link href="/registo" onClick={onNavigate}>
+            <Link href="/cadastro" onClick={onNavigate}>
               <UserPlus className="size-4 shrink-0" aria-hidden />
               Criar conta
             </Link>
