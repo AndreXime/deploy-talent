@@ -1,2 +1,15 @@
 node_modules/
 /.env
+.DS_Store
+*.tsbuildinfo
+
+# API
+api/dist/
+api/coverage/
+api/generated/
+
+# Web
+web/.next/
+web/out/
+web/build/
+web/coverage/

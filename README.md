@@ -162,6 +162,7 @@ O ficheiro `.env` ao lado de `docker-compose.yml` define Postgres, MinIO, variá
 | `WEB_BASE_URL` | Sim | URL pública do frontend (sem barra final). Usada para montar os links dos emails de convite. |
 | `INVITATION_TTL_HOURS` | Não | Tempo de vida dos convites de ativação (1..720, padrão 72). |
 | `CORS_ORIGINS` | Não | Lista CSV de origens. Vazio em `PROD` = CORS desligado; vazio em `DEV/TEST` = qualquer origem. |
+| `COOKIE_SECURE` | Não | `true`/`1` força `Secure` nos cookies de sessão; omitido = `Secure` só em `PROD`. |
 
 ### Web (`web/.env`)
 

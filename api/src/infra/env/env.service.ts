@@ -213,6 +213,15 @@ export class EnvService {
   }
 
   /**
+   * Força flag Secure nos cookies de sessão. Omitido ou vazio: Secure só em PROD.
+   */
+  get cookieSecure(): boolean | null {
+    const value = this.config.get<string>('COOKIE_SECURE', { infer: true })
+    if (!value || value.trim().length === 0) return null
+    return value === 'true' || value === '1'
+  }
+
+  /**
    * Origens permitidas para CORS (vírgula). Em PROD, lista vazia = CORS desligado (defina explicitamente).
    * Em DEV/TEST, lista vazia = `true` (qualquer origem).
    */

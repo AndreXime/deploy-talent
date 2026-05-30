@@ -8,9 +8,10 @@ export class AuthCookiesService {
   constructor(private readonly env: EnvService) {}
 
   private baseCookieOptions(): CookieOptions {
+    const secureOverride = this.env.cookieSecure
     return {
       path: '/',
-      secure: this.env.envMode === 'PROD',
+      secure: secureOverride ?? this.env.envMode === 'PROD',
       httpOnly: true,
       sameSite: 'lax',
     }
