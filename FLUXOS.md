@@ -6,7 +6,7 @@
 > - [Modelo de Dados](./BANCO_DE_DADOS.md)
 > - **Fluxos**
 
-Conjunto de diagramas de fluxo (Mermaid `flowchart`) que descrevem os caminhos operacionais críticos do Deploy Talent. Cada secção foca um caso de uso ponta a ponta, identificando ramos felizes, validações e estados de erro relevantes na API. Para o ciclo de vida dos agregados (`Job.status`, `Application.status`) consulte o [Modelo de Dados](./BANCO_DE_DADOS.md).
+Conjunto de diagramas de fluxo (Mermaid `flowchart`) que descrevem os caminhos operacionais críticos do Deploy Talent. Cada seção foca um caso de uso ponta a ponta, identificando ramos felizes, validações e estados de erro relevantes na API. Para o ciclo de vida dos agregados (`Job.status`, `Application.status`) consulte o [Modelo de Dados](./BANCO_DE_DADOS.md).
 
 ## Autenticação e contexto B2B
 
@@ -29,7 +29,7 @@ flowchart TD
 
 ## Convite de admin de empresa
 
-O `SUPER_ADMIN` provisiona empresas e convida o primeiro `TENANT_ADMIN`. O corpo do pedido nunca aceita senha; o destinatário fá la na ativação.
+O `SUPER_ADMIN` provisiona empresas e convida o primeiro `TENANT_ADMIN`. O corpo do pedido nunca aceita senha; o destinatário faz isso na ativação.
 
 ```mermaid
 flowchart TD
@@ -84,7 +84,7 @@ flowchart TD
     clash -- sim --> err409[409 Conflict]
     clash -- não --> tx[Transação: cria User com role do convite, cria Candidate se role=CANDIDATE, marca aceitação]
     tx --> jwt[LoginUseCase emite access_token]
-    jwt --> done([Frontend grava sessão e redirecciona para home do papel])
+    jwt --> done([Frontend grava sessão e redireciona para home do papel])
 ```
 
 ## Upload com URL pré assinada

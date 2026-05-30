@@ -16,7 +16,7 @@ Cada organização é um tenant com dados isolados por `tenant_id`. O `SUPER_ADM
 
 ### Vagas e página de carreiras
 
-Criação e edição de vagas com ciclo `DRAFT` → `PUBLISHED` / `PAUSED` → `CLOSED`. Endpoints públicos servem o site de empresa em `/carreiras/:tenantId` e o marketplace agregado em `/vagas`. Candidaturas novas só são aceites em vagas `PUBLISHED` ou `PAUSED`.
+Criação e edição de vagas com ciclo `DRAFT` → `PUBLISHED` / `PAUSED` → `CLOSED`. Endpoints públicos servem o site de empresa em `/carreiras/:tenantId` e o marketplace agregado em `/vagas`. Candidaturas novas só são aceitas em vagas `PUBLISHED` ou `PAUSED`.
 
 ### Perfil único do candidato (*one-profile*)
 
@@ -42,7 +42,7 @@ Cada submissão fica em `ApplicationStageProgress` (`PENDING` → `COMPLETED`), 
 
 ### E-mail transacional (SMTP)
 
-Disparado em submissão de candidatura, contratação e rejeição. Falhas no envio **não bloqueiam** a operação principal, são apenas registadas.
+Disparado em submissão de candidatura, contratação e rejeição. Falhas no envio **não bloqueiam** a operação principal, são apenas registradas.
 
 ### Arquivos e marca
 
@@ -73,7 +73,7 @@ Regras:
 
 `TENANT_ADMIN` e `RECRUITER` fazem prospecção a partir do detalhe da vaga submetendo apenas `nome + email`. A API decide o efeito conforme o estado do email no domínio:
 
-- **`CANDIDATE_INVITED`**: email não está registado. É criado um `Invitation` com `role: CANDIDATE` e `tenantId: null`, e enviado link de ativação `${WEB_BASE_URL}/ativar/<token>`. Ao aceitar, o `User` e o `Candidate` são provisionados em transação, com o nome guardado no convite. A candidatura à vaga acontece quando o candidato a submete a partir da página pública.
+- **`CANDIDATE_INVITED`**: email não está registrado. É criado um `Invitation` com `role: CANDIDATE` e `tenantId: null`, e enviado link de ativação `${WEB_BASE_URL}/ativar/<token>`. Ao aceitar, o `User` e o `Candidate` são provisionados em transação, com o nome guardado no convite. A candidatura à vaga acontece quando o candidato a envia a partir da página pública.
 - **`JOB_LINK_SENT`**: email pertence a um `User` `CANDIDATE` mas sem candidatura nesta vaga. Não é criado nada na plataforma; apenas é disparado um email com o link público da vaga (`${WEB_BASE_URL}/carreiras/<tenantId>/vagas/<jobId>`).
 - **`ALREADY_APPLIED`**: já existe uma `Application` para o par (vaga, candidato). Nenhum email é enviado; a API responde com `applicationId` e o frontend mostra "candidato já se candidatou a esta vaga".
 
@@ -146,7 +146,7 @@ Regras de transição:
 ### E-mail transacional
 
 - Eventos que disparam envio: submissão de candidatura, contratação (`HIRED`), rejeição (`REJECTED`).
-- O envio é *best-effort*: erros de SMTP são registados mas não revertem a operação principal.
+- O envio é *best-effort*: erros de SMTP são registrados mas não revertem a operação principal.
 
 ### Pipeline customizável
 
@@ -165,6 +165,6 @@ Regras de transição:
 - O onboarding de **ambos** os papéis B2B passa pela mesma máquina de convite. `SUPER_ADMIN` envia o convite ao futuro `TENANT_ADMIN` (`POST /invitations/tenant-admin`); o `TENANT_ADMIN` envia o convite a cada futuro `RECRUITER` no tenant do seu JWT (`POST /invitations/recruiter`). Em nenhum dos pedidos é possível enviar ou definir senha.
 - A API gera um token opaco aleatório (32 bytes, base64url) e guarda **apenas o SHA 256**, evitando que uma fuga de leitura no Postgres comprometa convites pendentes.
 - Cada novo convite para o mesmo email, empresa e papel revoga automaticamente os convites pendentes anteriores.
-- Validade configurável por `INVITATION_TTL_HOURS` (1..720, padrão 72h). Convites expirados, já aceites ou revogados deixam de ser utilizáveis.
+- Validade configurável por `INVITATION_TTL_HOURS` (1..720, padrão 72h). Convites expirados, já aceitos ou revogados deixam de ser utilizáveis.
 - Se o envio SMTP falhar o convite é revogado, garantindo que não fica um token ativo em base de dados sem ter sido entregue.
-- A ativação (`POST /invitations/:token/accept`) cria o usuário com o papel registado no convite, marca o convite como aceite numa única transação, e devolve `access_token` e `refresh_token` (refresh opaco na base) para login imediato.
+- A ativação (`POST /invitations/:token/accept`) cria o usuário com o papel registrado no convite, marca o convite como aceito numa única transação, e devolve `access_token` e `refresh_token` (refresh opaco no banco) para login imediato.

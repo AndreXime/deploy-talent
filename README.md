@@ -40,21 +40,21 @@ Plataforma multi-tenant de recrutamento (ATS). Backend **NestJS** + frontend **N
 
 ## Como rodar
 
-Na **raiz do repositório**, cria o ficheiro `.env` a partir do modelo (o Compose interpola estas variáveis no `docker-compose.yml`):
+Na **raiz do repositório**, crie o arquivo `.env` a partir do modelo (o Compose interpola essas variáveis no `docker-compose.yml`):
 
 ```bash
 cp .env.example .env
 ```
 
-Há três caminhos. Escolhe um.
+Há três caminhos. Escolha um.
 
 ### A) Mais comum: infra em Docker, apps em modo dev local
 
-Recomendado para desenvolvimento: hot reload, breakpoints, tudo a passar pela tua máquina.
+Recomendado para desenvolvimento: hot reload, breakpoints, tudo passando pela sua máquina.
 
 ```bash
-# 0) na raiz: já tens `.env` (ver bloco acima)
-# 1) sobe Postgres + MinIO + Mailpit
+# 0) na raiz: já tenha o `.env` (ver bloco acima)
+# 1) suba Postgres + MinIO + Mailpit
 docker compose up -d
 
 # 2) API (em api/)
@@ -66,7 +66,7 @@ npm run prisma:migrate          # cria schema e aplica migrações
 npx prisma db seed              # popula tenants, vagas, candidatos (ver "Seed" abaixo)
 npm run start:dev               # http://localhost:3050  · Swagger em /docs
 
-# 3) Web (noutro shell, em web/)
+# 3) Web (em outro terminal, em web/)
 cd web
 npm install
 cp .env.example .env
@@ -75,7 +75,7 @@ npm run dev                     # http://localhost:3000
 
 ### B) Tudo em Docker
 
-Útil para ensaiar prod-like ou validar o build das imagens. Os serviços `api` e `web` estão escondidos atrás de um **profile `app`** para não pesar no fluxo dev habitual. Precisas do `.env` na raiz (`cp .env.example .env`).
+Útil para ensaiar prod-like ou validar o build das imagens. Os serviços `api` e `web` estão escondidos atrás de um **profile `app`** para não pesar no fluxo dev habitual. Você precisa do `.env` na raiz (`cp .env.example .env`).
 
 ```bash
 docker compose --profile app up -d --build
@@ -83,13 +83,13 @@ docker compose --profile app up -d --build
 # Web → http://localhost:3000
 ```
 
-O `api` arranca depois do `postgres` ficar healthy e do `minio-setup` criar o bucket `files`. As migrações **não correm automaticamente** dentro do container, porque a imagem de produção não inclui o CLI do Prisma. Aplica-as a partir do `api/` local antes de subir o stack:
+O `api` inicia depois do `postgres` ficar healthy e do `minio-setup` criar o bucket `files`. As migrações **não rodam automaticamente** dentro do container, porque a imagem de produção não inclui o CLI do Prisma. Aplique-as a partir do `api/` local antes de subir o stack:
 
 ```bash
 cd api && npm run prisma:migrate && npx prisma db seed
 ```
 
-> **Nota S3 + Docker:** as URLs pré-assinadas geradas pela API correm dentro da network do Compose e usam `http://minio:9000`. Para abrires essas URLs no browser do host, adiciona uma vez `127.0.0.1 minio` ao `/etc/hosts`. Em modo (A) este problema não existe, porque o `S3_ENDPOINT` é `http://127.0.0.1:9000`.
+> **Nota S3 + Docker:** as URLs pré-assinadas geradas pela API rodam dentro da network do Compose e usam `http://minio:9000`. Para abrir essas URLs no browser do host, adicione uma vez `127.0.0.1 minio` ao `/etc/hosts`. Em modo (A) este problema não existe, porque o `S3_ENDPOINT` é `http://127.0.0.1:9000`.
 
 ## Build de produção
 
@@ -133,7 +133,7 @@ Todas as contas geradas usam a mesma password.
 
 ### Docker Compose (`.env` na raiz)
 
-O ficheiro `.env` ao lado de `docker-compose.yml` define Postgres, MinIO, variáveis do serviço `api` e o build arg `NEXT_PUBLIC_API_BASE_URL` da `web`. Não commits o `.env`; usa `cp .env.example .env` e ajusta valores (em produção, injeta segredos no servidor ou no CI).
+O arquivo `.env` ao lado de `docker-compose.yml` define Postgres, MinIO, variáveis do serviço `api` e o build arg `NEXT_PUBLIC_API_BASE_URL` da `web`. Não commite o `.env`; use `cp .env.example .env` e ajuste valores (em produção, injete segredos no servidor ou no CI).
 
 ### API (`api/.env`)
 
