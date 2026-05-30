@@ -54,7 +54,20 @@ Autenticação JWT com RBAC no token, CORS configurável, Helmet em produção e
 
 ### Convites de ativação
 
-Toda a entrada B2B na plataforma passa por **convite por email**, nunca por senha definida por terceiros. O `SUPER_ADMIN` convida o `TENANT_ADMIN` de cada empresa; depois é o próprio `TENANT_ADMIN` que convida os seus `RECRUITER` no contexto do tenant do JWT. O sourcing por email compartilha o mesmo mecanismo de convite para criar `CANDIDATE` quando o email ainda não existe na plataforma. Em todos os casos a API gera um token opaco de 32 bytes, persiste apenas o SHA 256, e o link único `${WEB_BASE_URL}/ativar/<token>` viaja exclusivamente por SMTP. O destinatário abre o link, define a sua própria senha e a conta é criada nesse momento, com login imediato.
+Toda a entrada B2B **em produção** passa por **convite por email**, nunca por senha definida por terceiros. O `SUPER_ADMIN` convida o `TENANT_ADMIN` de cada empresa; depois é o próprio `TENANT_ADMIN` que convida os seus `RECRUITER` no contexto do tenant do JWT. O sourcing por email compartilha o mesmo mecanismo de convite para criar `CANDIDATE` quando o email ainda não existe na plataforma. Em todos os casos a API gera um token opaco de 32 bytes, persiste apenas o SHA 256, e o link único `${WEB_BASE_URL}/ativar/<token>` viaja exclusivamente por SMTP. O destinatário abre o link, define a sua própria senha e a conta é criada nesse momento, com login imediato.
+
+### Onboarding B2B: caminho canônico vs. auto-registro
+
+| Caminho | Quem inicia | Endpoint / UI | Uso recomendado |
+|---|---|---|---|
+| **Convite (canônico)** | `SUPER_ADMIN` convida `TENANT_ADMIN`; `TENANT_ADMIN` convida `RECRUITER` | `POST /invitations/tenant-admin`, `POST /invitations/recruiter`, `/ativar/[token]` | **Produção** e ambientes onde o operador controla quem entra |
+| **Auto-registro + aprovação** | Futuro `TENANT_ADMIN` preenche formulário público | `POST /auth/register/tenant-admin`, `/registo`, aprovação em `/plataforma/empresas` | **Demo / piloto** quando não há operador disponível para convidar manualmente |
+
+Regras:
+
+- Em produção, prefira sempre o fluxo por **convite**. O auto-registro cria tenant inativo (`signupPending: true`) e exige aprovação do `SUPER_ADMIN` antes do login B2B funcionar.
+- Os dois caminhos coexistem na API e na UI, mas o auto-registro não substitui convites para recrutadores: após aprovação, o `TENANT_ADMIN` ainda convida `RECRUITER` por email.
+- Para desabilitar auto-registro em produção, remova ou proteja a rota `/registo` no frontend e não exponha `POST /auth/register/tenant-admin` publicamente (ex.: feature flag ou gateway).
 
 ### Sourcing por email
 

@@ -123,6 +123,12 @@ Todas as contas geradas usam a mesma password.
 - **Arquivos e marca:** upload S3 com URL pré-assinada (avatar do candidato, currículo, logo e banner do tenant). Download autorizado também por URL pré-assinada, segundo o papel e o prefixo da chave. Há recurso público de branding do tenant.
 - **Segurança e operação:** JWT + RBAC, CORS configurável, Helmet em produção, throttling global. Fora de `PROD`, Swagger em `/docs`.
 
+## Onboarding B2B
+
+**Produção:** o caminho canônico é **convite por email** (`SUPER_ADMIN` → `TENANT_ADMIN` → `RECRUITER`). Detalhes em [Funcionalidades](./FUNCIONALIDADES.md#onboarding-b2b-caminho-canônico-vs-auto-registro).
+
+**Demo / piloto:** existe também auto-registro em `/registo` (`POST /auth/register/tenant-admin`), com aprovação do `SUPER_ADMIN` antes do tenant ficar ativo. Use apenas quando não houver operador para enviar convites manualmente.
+
 ## Variáveis de ambiente
 
 ### Docker Compose (`.env` na raiz)
@@ -174,7 +180,7 @@ O ficheiro `.env` ao lado de `docker-compose.yml` define Postgres, MinIO, variá
 
 | Papel | Uso típico |
 |---|---|
-| `SUPER_ADMIN` | Criar/listar/suspender/ativar/soft-delete tenants; convidar `TENANT_ADMIN` por email (a conta é ativada pelo próprio com link único). |
+| `SUPER_ADMIN` | Criar/listar/suspender/ativar/soft-delete tenants; **convidar** `TENANT_ADMIN` por email (caminho canônico); aprovar/rejeitar auto-registros pendentes em `/plataforma/empresas`. |
 | `TENANT_ADMIN` | Convidar `RECRUITER` por email (a conta é ativada pelo próprio com link único); vagas e pipeline no tenant do **JWT**. |
 | `RECRUITER` | Mesmo escopo operacional de vagas/candidaturas no tenant do **JWT**. |
 | `CANDIDATE` | Registo/login, `GET/PATCH/DELETE /candidates/me`, candidaturas (`/applications/me`) e candidatar com UUID do tenant na URL. |
