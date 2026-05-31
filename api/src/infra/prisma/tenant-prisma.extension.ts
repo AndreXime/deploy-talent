@@ -7,9 +7,9 @@ interface QueryParams<TArgs> {
 }
 
 interface TenantScopedModelDelegate {
-  findFirst: (args: unknown) => Promise<unknown>
-  updateMany: (args: unknown) => Promise<{ count: number }>
-  deleteMany: (args: unknown) => Promise<{ count: number }>
+  findFirst(args?: { where?: Record<string, unknown> }): Promise<unknown>
+  updateMany(args: { where?: Record<string, unknown>; data?: unknown }): Promise<{ count: number }>
+  deleteMany(args: { where?: Record<string, unknown> }): Promise<{ count: number }>
 }
 
 function getTenantId(tenantContext: TenantContextService): string | null {
