@@ -221,4 +221,4 @@ Estados: `SOURCED`, `APPLIED`, `IN_PROGRESS`, `REJECTED`, `WITHDRAWN`, `HIRED`.
 
 ## Licença
 
-Copyright 2026 Andre Ximenes. Licenciado sob [Apache License 2.0](./LICENSE).
+Copyright 2026 Andre Ximenes. Licenciado sob [MIT License](./LICENSE).
