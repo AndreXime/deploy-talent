@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { toast } from 'sonner'
+import { PageHead } from '@/components/page-head'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -24,6 +25,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { WorkbenchPageShell } from '@/components/workbench-page-shell'
 import { ApiRequestError } from '@/lib/api/client'
 import { inviteTenantAdminRequest } from '@/lib/api/invitations-api'
 import {
@@ -126,25 +128,22 @@ export default function PlatformTenantsPage() {
   const slugValid = /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(cSlug.trim())
 
   return (
-    <main className="flex flex-1 flex-col gap-8">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Empresas</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Controlo alto nível sobre quem pode operar nesta infraestrutura.
-          </p>
-        </div>
-        <Button type="button" onClick={() => setCreateOpen(true)}>
+    <WorkbenchPageShell>
+      <PageHead
+        title="Empresas"
+        description="Controlo alto nível sobre quem pode operar nesta infraestrutura."
+      >
+        <Button type="button" className="min-h-11 rounded-full" onClick={() => setCreateOpen(true)}>
           Nova empresa
         </Button>
-      </div>
+      </PageHead>
 
       {listQ.isLoading && <Skeleton className="h-64 w-full" />}
 
       {!listQ.isLoading && (
-        <Card>
+        <Card className="border-border shadow-none">
           <CardHeader className="pb-2">
-            <CardTitle>Listagem</CardTitle>
+            <CardTitle className="font-display">Listagem</CardTitle>
             <CardDescription>
               Pedidos de empresa feitos em cadastro público aparecem com a etiqueta Aguarda
               aprovação até o administrador da plataforma aprovar ou recusar. Ao criar empresa aqui,
@@ -233,7 +232,11 @@ export default function PlatformTenantsPage() {
                                   )
                                 }
                               >
-                                {row.deletedAt ? '—' : row.isActive ? 'Suspender' : 'Reativar'}
+                                {row.deletedAt
+                                  ? 'Eliminada'
+                                  : row.isActive
+                                    ? 'Suspender'
+                                    : 'Reativar'}
                               </Button>
                               <Button
                                 variant="destructive"
@@ -292,6 +295,7 @@ export default function PlatformTenantsPage() {
             <Button
               type="button"
               disabled={createMut.isPending || !cName.trim() || !slugValid}
+              className="min-h-11"
               onClick={() => createMut.mutate()}
             >
               Confirmar criação
@@ -327,6 +331,7 @@ export default function PlatformTenantsPage() {
             <Button
               type="button"
               disabled={inviteMut.isPending || !admEmail.trim()}
+              className="min-h-11"
               onClick={() => inviteMut.mutate()}
             >
               Enviar convite
@@ -334,6 +339,6 @@ export default function PlatformTenantsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </main>
+    </WorkbenchPageShell>
   )
 }

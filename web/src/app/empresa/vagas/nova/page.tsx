@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'sonner'
+import { PageHead } from '@/components/page-head'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -17,6 +18,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { WorkbenchPageShell } from '@/components/workbench-page-shell'
 import { ApiRequestError } from '@/lib/api/client'
 import { createJob } from '@/lib/api/jobs-api'
 
@@ -49,21 +51,19 @@ export default function NewJobPage() {
   })
 
   return (
-    <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 p-4 lg:p-8">
+    <WorkbenchPageShell className="max-w-2xl">
       <div className="flex flex-wrap items-center gap-2">
         <Button variant="outline" size="sm" asChild>
           <Link href="/empresa/vagas">Voltar</Link>
         </Button>
       </div>
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Nova vaga</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Começa em estado de rascunho até publicar com todos os campos necessários preenchidos.
-        </p>
-      </div>
-      <Card>
+      <PageHead
+        title="Nova vaga"
+        description="Começa em estado de rascunho até publicar com todos os campos necessários preenchidos."
+      />
+      <Card className="border-border shadow-none">
         <CardHeader>
-          <CardTitle>Dados principais</CardTitle>
+          <CardTitle className="font-display">Dados principais</CardTitle>
           <CardDescription>Há texto visível apenas à equipe até publicar.</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4">
@@ -120,11 +120,16 @@ export default function NewJobPage() {
           </div>
         </CardContent>
         <CardFooter className="flex flex-wrap gap-2 border-t px-6 py-4">
-          <Button type="button" disabled={mut.isPending} onClick={() => mut.mutate()}>
+          <Button
+            type="button"
+            disabled={mut.isPending}
+            className="min-h-11 rounded-full"
+            onClick={() => mut.mutate()}
+          >
             {mut.isPending ? 'A guardar…' : 'Criar rascunho'}
           </Button>
         </CardFooter>
       </Card>
-    </main>
+    </WorkbenchPageShell>
   )
 }

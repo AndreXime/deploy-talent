@@ -5,6 +5,7 @@ import { Briefcase, ChevronRight, MapPin, MonitorSmartphone } from 'lucide-react
 import Link from 'next/link'
 import { useParams, usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { Suspense, useEffect, useState } from 'react'
+import { PageHead } from '@/components/page-head'
 import { PublicHeader } from '@/components/public-header'
 import { JobStatusBadge } from '@/components/status-badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -81,33 +82,19 @@ function CareerListInner({ tenantId, valid }: { tenantId: string; valid: boolean
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background/90 to-transparent" />
         </div>
       ) : null}
-      <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-8 px-4 py-10 lg:px-6">
-        <div className="space-y-2">
-          <div className="flex items-center gap-3">
-            {brandingQ.data?.logo?.url ? (
-              <img
-                src={brandingQ.data.logo.url}
-                alt=""
-                className="size-14 rounded-md border bg-card object-contain p-1"
-              />
-            ) : null}
-            <div className="flex min-w-0 flex-col">
-              <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                Vagas abertas
-              </span>
-              {brandingQ.data?.name ? (
-                <h1 className="truncate text-2xl font-semibold tracking-tight lg:text-3xl">
-                  {brandingQ.data.name}
-                </h1>
-              ) : (
-                <Skeleton className="mt-1 h-8 w-48" />
-              )}
-            </div>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            Encontre oportunidades abertas e candidate-se com seu perfil.
-          </p>
-        </div>
+      <main className="page-container flex flex-1 flex-col gap-8 py-10 lg:py-12">
+        <PageHead
+          title={brandingQ.data?.name ?? 'Carreiras'}
+          description="Encontre oportunidades abertas e candidate-se com seu perfil."
+        >
+          {brandingQ.data?.logo?.url ? (
+            <img
+              src={brandingQ.data.logo.url}
+              alt=""
+              className="size-14 rounded-lg border border-border bg-card object-contain p-1"
+            />
+          ) : null}
+        </PageHead>
 
         {!valid ? (
           <Alert variant="destructive">
@@ -118,10 +105,10 @@ function CareerListInner({ tenantId, valid }: { tenantId: string; valid: boolean
         ) : null}
 
         {valid ? (
-          <Card>
+          <Card className="border-border shadow-none">
             <CardHeader>
-              <CardTitle className="text-base">Filtrar vagas</CardTitle>
-              <CardDescription>Opcional — aplica-se à lista abaixo.</CardDescription>
+              <CardTitle className="font-display text-base">Filtrar vagas</CardTitle>
+              <CardDescription>Opcional. Aplica-se à lista abaixo.</CardDescription>
             </CardHeader>
             <CardContent className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2 sm:col-span-2">
@@ -158,7 +145,7 @@ function CareerListInner({ tenantId, valid }: { tenantId: string; valid: boolean
                 />
               </div>
               <div className="flex items-end sm:col-span-2">
-                <Button type="button" className="w-full sm:w-auto" onClick={applyFilters}>
+                <Button type="button" className="min-h-11 w-full lg:w-auto" onClick={applyFilters}>
                   Aplicar filtros
                 </Button>
               </div>
@@ -196,12 +183,12 @@ function CareerListInner({ tenantId, valid }: { tenantId: string; valid: boolean
 
         <ul className="flex flex-col gap-3">
           {jobsQ.data?.items.map((job) => (
-            <li key={job.id}>
-              <Card className="overflow-hidden shadow-sm transition-shadow hover:shadow-md">
-                <CardContent className="flex flex-col gap-4 p-4 sm:flex-row sm:items-start sm:justify-between">
-                  <div className="space-y-2">
+            <li key={job.id} className="min-w-0">
+              <Card className="hover-lift overflow-hidden border-border transition-shadow">
+                <CardContent className="flex flex-col gap-4 p-5 lg:flex-row lg:items-start lg:justify-between">
+                  <div className="min-w-0 space-y-2">
                     <div className="flex flex-wrap items-center gap-2">
-                      <h2 className="text-lg font-medium">{job.title}</h2>
+                      <h2 className="font-display text-lg font-semibold">{job.title}</h2>
                       <JobStatusBadge status={job.status} audience="public" />
                     </div>
                     <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
@@ -215,7 +202,10 @@ function CareerListInner({ tenantId, valid }: { tenantId: string; valid: boolean
                       </span>
                     </div>
                   </div>
-                  <Button asChild className="shrink-0 gap-2 self-stretch sm:self-center">
+                  <Button
+                    asChild
+                    className="min-h-11 shrink-0 gap-2 self-stretch rounded-full lg:self-center"
+                  >
                     <Link href={`/carreiras/${tenantId}/vagas/${job.id}`}>
                       Ver detalhes
                       <ChevronRight className="size-4" aria-hidden />
@@ -233,7 +223,7 @@ function CareerListInner({ tenantId, valid }: { tenantId: string; valid: boolean
 
 function CareerListFallback() {
   return (
-    <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-8 px-4 py-10 lg:px-6">
+    <main className="page-container flex flex-1 flex-col gap-8 py-10">
       <Skeleton className="h-10 w-48" />
       <Skeleton className="h-48 w-full" />
       <Skeleton className="h-24 w-full" />

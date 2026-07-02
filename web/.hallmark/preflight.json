@@ -1,0 +1,8 @@
+{
+  "date": "2026-07-01",
+  "fontStack": "Geist + Geist Mono (next/font) + Instrument Sans (display)",
+  "palette": "OKLCH custom Cobalt (hallmark-tokens.css)",
+  "motion": "tw-animate-css only",
+  "spacing": "4pt Hallmark scale + Tailwind",
+  "framework": "Next.js 16 App Router"
+}

@@ -4,8 +4,10 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { ImageAssetField } from '@/components/image-asset-field'
+import { PageHead } from '@/components/page-head'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
+import { WorkbenchPageShell } from '@/components/workbench-page-shell'
 import { ApiRequestError } from '@/lib/api/client'
 import { presignUpload, uploadFileToPresignedUrl } from '@/lib/api/media-api'
 import { getCurrentTenant, getPublicBranding, patchCurrentBranding } from '@/lib/api/tenants-api'
@@ -74,17 +76,15 @@ export default function TenantBrandingPage() {
   const bannerUrl = brandingQ.data?.banner?.url ?? null
 
   return (
-    <main className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-8 p-4 lg:p-8">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Marca no site de carreiras</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Estas imagens aparecem no topo da página pública de vagas da sua empresa.
-        </p>
-      </div>
+    <WorkbenchPageShell className="max-w-xl">
+      <PageHead
+        title="Marca no site de carreiras"
+        description="Estas imagens aparecem no topo da página pública de vagas da sua empresa."
+      />
 
-      <Card>
+      <Card className="border-border shadow-none">
         <CardHeader>
-          <CardTitle>Logótipo</CardTitle>
+          <CardTitle className="font-display">Logótipo</CardTitle>
           <CardDescription>Formato quadrado funciona melhor em listagens.</CardDescription>
         </CardHeader>
         <CardContent>
@@ -105,9 +105,9 @@ export default function TenantBrandingPage() {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="border-border shadow-none">
         <CardHeader>
-          <CardTitle>Banner</CardTitle>
+          <CardTitle className="font-display">Banner</CardTitle>
           <CardDescription>
             Imagem larga opcional para reforçar a identidade visual.
           </CardDescription>
@@ -129,6 +129,6 @@ export default function TenantBrandingPage() {
           )}
         </CardContent>
       </Card>
-    </main>
+    </WorkbenchPageShell>
   )
 }

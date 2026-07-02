@@ -3,11 +3,13 @@
 import { useQuery } from '@tanstack/react-query'
 import { Bookmark, ChevronRight, MapPin, MonitorSmartphone } from 'lucide-react'
 import Link from 'next/link'
+import { PageHead } from '@/components/page-head'
 import { JobStatusBadge } from '@/components/status-badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
+import { WorkbenchPageShell } from '@/components/workbench-page-shell'
 import { listMySavedJobs } from '@/lib/api/candidates-api'
 import { useAuth } from '@/providers/auth-provider'
 
@@ -31,25 +33,23 @@ export default function SavedJobsPage() {
 
   if (!claims || !isCandidate) {
     return (
-      <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 px-4 py-10 lg:px-6">
+      <WorkbenchPageShell className="max-w-2xl">
         <Alert>
           <AlertDescription>Entre como candidato para ver as vagas que salvou.</AlertDescription>
         </Alert>
-        <Button asChild>
+        <Button asChild className="min-h-11 rounded-full">
           <Link href="/entrar?redirect=/candidato/salvas">Entrar</Link>
         </Button>
-      </main>
+      </WorkbenchPageShell>
     )
   }
 
   return (
-    <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-8 px-4 py-8 lg:px-6">
-      <div className="space-y-1">
-        <h1 className="text-2xl font-semibold tracking-tight">Vagas salvas</h1>
-        <p className="text-sm text-muted-foreground">
-          Referências que marcou para rever ou candidatar-se mais tarde.
-        </p>
-      </div>
+    <WorkbenchPageShell className="max-w-3xl">
+      <PageHead
+        title="Vagas salvas"
+        description="Referências que marcou para rever ou candidatar-se mais tarde."
+      />
 
       {listQ.isLoading ? (
         <div className="space-y-3">
@@ -65,9 +65,9 @@ export default function SavedJobsPage() {
       ) : null}
 
       {listQ.data && listQ.data.items.length === 0 ? (
-        <Card>
+        <Card className="border-border shadow-none">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
+            <CardTitle className="flex items-center gap-2 font-display text-base">
               <Bookmark className="size-5 text-muted-foreground" aria-hidden />
               Ainda não salvou vagas
             </CardTitle>
@@ -76,7 +76,7 @@ export default function SavedJobsPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button variant="outline" asChild>
+            <Button variant="outline" asChild className="min-h-11 rounded-full">
               <Link href="/vagas">Explorar vagas</Link>
             </Button>
           </CardContent>
@@ -86,7 +86,7 @@ export default function SavedJobsPage() {
       <ul className="flex flex-col gap-3">
         {listQ.data?.items.map(({ job, tenant, savedAt }) => (
           <li key={`${job.id}-${savedAt}`}>
-            <Card className="shadow-sm">
+            <Card className="hover-lift border-border shadow-none">
               <CardContent className="flex flex-col gap-4 p-4 sm:flex-row sm:items-start sm:justify-between">
                 <div className="space-y-2">
                   <p className="text-xs uppercase text-muted-foreground">{tenant.name}</p>
@@ -108,7 +108,10 @@ export default function SavedJobsPage() {
                     Salva em {new Date(savedAt).toLocaleString()}
                   </p>
                 </div>
-                <Button asChild className="shrink-0 gap-2 self-stretch sm:self-center">
+                <Button
+                  asChild
+                  className="min-h-11 shrink-0 gap-2 self-stretch rounded-full sm:self-center"
+                >
                   <Link href={`/carreiras/${job.tenantId}/vagas/${job.id}`}>
                     Abrir
                     <ChevronRight className="size-4" aria-hidden />
@@ -119,6 +122,6 @@ export default function SavedJobsPage() {
           </li>
         ))}
       </ul>
-    </main>
+    </WorkbenchPageShell>
   )
 }

@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
+import { PageHead } from '@/components/page-head'
 import { StageConfigEditor } from '@/components/pipeline/stage-config-editor'
 import { StageKindBadge } from '@/components/pipeline/stage-kind-badge'
 import { JobStatusBadge } from '@/components/status-badge'
@@ -15,6 +16,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
+import { WorkbenchPageShell } from '@/components/workbench-page-shell'
 import { ApiRequestError } from '@/lib/api/client'
 import { getTenantJob } from '@/lib/api/jobs-api'
 import { listJobStages, replaceJobStages } from '@/lib/api/pipelines-api'
@@ -109,7 +111,7 @@ export default function JobStagesPage() {
   }
 
   return (
-    <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 p-4 lg:p-8">
+    <WorkbenchPageShell className="max-w-3xl">
       <Button variant="outline" size="sm" className="w-fit gap-1" asChild>
         <Link href={`/empresa/vagas/${jobId}`}>
           <ArrowLeft className="size-4" />
@@ -128,10 +130,9 @@ export default function JobStagesPage() {
       ) : (
         job && (
           <>
-            <div className="flex flex-wrap items-center gap-3">
-              <h1 className="text-2xl font-semibold tracking-tight">Etapas: {job.title}</h1>
+            <PageHead title={`Etapas: ${job.title}`}>
               <JobStatusBadge status={job.status} />
-            </div>
+            </PageHead>
             {!isDraft && (
               <Alert>
                 <AlertDescription>
@@ -143,11 +144,11 @@ export default function JobStagesPage() {
 
             <div className="flex flex-col gap-4">
               {drafts.map((stage, idx) => (
-                <Card key={stage.draftId}>
+                <Card key={stage.draftId} className="border-border shadow-none">
                   <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div className="flex flex-col gap-2">
                       <div className="flex flex-wrap items-center gap-2">
-                        <CardTitle className="text-base">Etapa {idx + 1}</CardTitle>
+                        <CardTitle className="font-display text-base">Etapa {idx + 1}</CardTitle>
                         <StageKindBadge kind={stage.kind} />
                       </div>
                       <CardDescription>Ordem em que o candidato a percorre.</CardDescription>
@@ -260,7 +261,7 @@ export default function JobStagesPage() {
                 </Button>
                 <Button
                   type="button"
-                  className="gap-2"
+                  className="min-h-11 gap-2 rounded-full"
                   disabled={replaceMut.isPending || drafts.length === 0}
                   onClick={() =>
                     replaceMut.mutate(
@@ -281,6 +282,6 @@ export default function JobStagesPage() {
           </>
         )
       )}
-    </main>
+    </WorkbenchPageShell>
   )
 }

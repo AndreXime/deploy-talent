@@ -32,7 +32,7 @@ export default function CandidateLayout({ children }: Readonly<{ children: React
     )
   }
 
-  if (!claims || claims.role !== 'CANDIDATE') {
+  if (claims?.role !== 'CANDIDATE') {
     return (
       <div className="flex flex-1 items-center justify-center p-8 text-muted-foreground">
         A redirecionar…
@@ -43,7 +43,7 @@ export default function CandidateLayout({ children }: Readonly<{ children: React
   return (
     <div className="flex min-h-full flex-col">
       <PublicHeader />
-      <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col">{children}</div>
+      <div className="page-container mx-auto flex w-full max-w-6xl flex-1 flex-col">{children}</div>
     </div>
   )
 }

@@ -30,32 +30,29 @@ export function HomeFeaturedJobs() {
   })
 
   return (
-    <section id="vagas-destaque" className="scroll-mt-28 px-4 py-20 lg:py-24">
-      <div className="mx-auto max-w-6xl">
+    <section id="vagas-destaque" className="scroll-mt-28 py-16 lg:py-20">
+      <div className="page-container">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-primary">
-              Vagas em destaque
+          <div className="section-head min-w-0">
+            <h2 className="text-balance text-[length:var(--text-display-s)] font-semibold tracking-tight">
+              Publicadas agora
             </h2>
-            <p className="mt-2 text-balance text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
-              Posições públicas no marketplace
-            </p>
-            <p className="mt-2 max-w-2xl text-pretty text-sm text-muted-foreground">
-              As mesmas vagas do explorador, as primeiras {FEATURED_LIMIT} publicadas.
+            <p className="max-w-2xl text-pretty text-sm text-muted-foreground">
+              As {FEATURED_LIMIT} vagas mais recentes do marketplace, o mesmo índice do explorador.
             </p>
           </div>
-          <Button variant="outline" asChild>
+          <Button variant="outline" className="min-h-11 shrink-0 rounded-full" asChild>
             <Link href="/vagas" className="gap-2">
-              Ver todas
+              Ver índice completo
               <ArrowRight className="size-4" aria-hidden />
             </Link>
           </Button>
         </div>
 
         {jobsQ.isLoading ? (
-          <ul className="mt-12 grid grid-cols-1 gap-6 lg:grid-cols-3">
+          <ul className="mt-12 grid grid-cols-1 gap-4 min-[480px]:grid-cols-2 lg:grid-cols-3">
             {skeletonPlaceholders.map((id) => (
-              <li key={id}>
+              <li key={id} className="min-w-0">
                 <Skeleton className="h-52 w-full rounded-xl" />
               </li>
             ))}
@@ -77,13 +74,13 @@ export function HomeFeaturedJobs() {
         {jobsQ.data && jobsQ.data.items.length === 0 ? (
           <Card className="mt-10 border-dashed">
             <CardHeader>
-              <CardTitle className="text-base">Ainda sem vagas públicas</CardTitle>
+              <CardTitle className="font-display text-base">Ainda sem vagas públicas</CardTitle>
               <p className="text-sm text-muted-foreground">
                 Quando existirem posições publicadas, aparecem aqui automaticamente.
               </p>
             </CardHeader>
             <CardFooter>
-              <Button variant="secondary" asChild>
+              <Button variant="secondary" className="min-h-11" asChild>
                 <Link href="/vagas">Ir ao explorador</Link>
               </Button>
             </CardFooter>
@@ -91,16 +88,15 @@ export function HomeFeaturedJobs() {
         ) : null}
 
         {jobsQ.data && jobsQ.data.items.length > 0 ? (
-          <ul className="mt-12 grid grid-cols-1 gap-6 lg:grid-cols-3">
+          <ul className="mt-12 grid grid-cols-1 gap-4 min-[480px]:grid-cols-2 lg:grid-cols-3">
             {jobsQ.data.items.map(({ job, tenant }) => (
-              <li key={job.id}>
-                <Card
-                  className="h-full border-border/80 transition-shadow hover:shadow-md"
-                  size="sm"
-                >
+              <li key={job.id} className="min-w-0">
+                <Card className="hover-lift h-full border-border transition-shadow">
                   <CardHeader className="pb-2">
                     <div className="flex flex-wrap items-start justify-between gap-2">
-                      <CardTitle className="pr-2 text-base leading-snug">{job.title}</CardTitle>
+                      <CardTitle className="min-w-0 pr-2 font-display text-base leading-snug">
+                        {job.title}
+                      </CardTitle>
                       <JobStatusBadge status={job.status} audience="public" />
                     </div>
                     <Link
@@ -138,11 +134,11 @@ export function HomeFeaturedJobs() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="w-full justify-between px-0"
+                      className="min-h-11 w-full justify-between px-0"
                       asChild
                     >
                       <Link href={`/carreiras/${job.tenantId}/vagas/${job.id}`}>
-                        Ficha da vaga
+                        Ver vaga
                         <ArrowRight className="size-4" aria-hidden />
                       </Link>
                     </Button>

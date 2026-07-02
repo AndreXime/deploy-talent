@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { PublicHeader } from '@/components/public-header'
+import { AuthPageShell } from '@/components/auth-page-shell'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -65,107 +65,104 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="flex min-h-full flex-col">
-      <PublicHeader />
-      <main className="flex flex-1 flex-col items-center px-4 py-12">
-        <Card className="w-full max-w-md shadow-sm">
-          <CardHeader>
-            <CardTitle>Criar conta</CardTitle>
-            <CardDescription>
-              {mode === 'candidate'
-                ? 'Um único perfil para todas as suas candidaturas.'
-                : 'Pedido de empresa na plataforma. A moderação ativa a conta antes do primeiro acesso.'}
-            </CardDescription>
-            <div className="flex flex-col gap-2 pt-2 sm:flex-row sm:gap-2">
-              <Button
-                type="button"
-                variant={mode === 'candidate' ? 'default' : 'outline'}
-                className="w-full sm:flex-1"
-                onClick={() => setMode('candidate')}
-              >
-                Candidato
-              </Button>
-              <Button
-                type="button"
-                variant={mode === 'tenant_admin' ? 'default' : 'outline'}
-                className="w-full sm:flex-1"
-                onClick={() => setMode('tenant_admin')}
-              >
-                Empresa
-              </Button>
+    <AuthPageShell>
+      <Card className="border-border shadow-none">
+        <CardHeader>
+          <CardTitle className="font-display text-2xl">Criar conta</CardTitle>
+          <CardDescription>
+            {mode === 'candidate'
+              ? 'Um único perfil para todas as suas candidaturas.'
+              : 'Pedido de empresa na plataforma. A moderação ativa a conta antes do primeiro acesso.'}
+          </CardDescription>
+          <div className="flex flex-col gap-2 pt-2">
+            <Button
+              type="button"
+              variant={mode === 'candidate' ? 'default' : 'outline'}
+              className="min-h-11 w-full rounded-full"
+              onClick={() => setMode('candidate')}
+            >
+              Candidato
+            </Button>
+            <Button
+              type="button"
+              variant={mode === 'tenant_admin' ? 'default' : 'outline'}
+              className="min-h-11 w-full rounded-full"
+              onClick={() => setMode('tenant_admin')}
+            >
+              Empresa
+            </Button>
+          </div>
+        </CardHeader>
+        <form onSubmit={submitRegister}>
+          <CardContent className="grid gap-4">
+            {mode === 'candidate' ? (
+              <div className="space-y-2">
+                <Label htmlFor="name">Nome completo</Label>
+                <Input
+                  id="name"
+                  autoComplete="name"
+                  required
+                  minLength={2}
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <Label htmlFor="company">Nome da empresa</Label>
+                <Input
+                  id="company"
+                  autoComplete="organization"
+                  required
+                  minLength={2}
+                  maxLength={120}
+                  value={companyName}
+                  onChange={(e) => setCompanyName(e.target.value)}
+                />
+              </div>
+            )}
+            <div className="space-y-2">
+              <Label htmlFor="email">E-mail</Label>
+              <Input
+                id="email"
+                type="email"
+                autoComplete="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
             </div>
-          </CardHeader>
-          <form onSubmit={submitRegister}>
-            <CardContent className="grid gap-4">
-              {mode === 'candidate' ? (
-                <div className="space-y-2">
-                  <Label htmlFor="name">Nome completo</Label>
-                  <Input
-                    id="name"
-                    autoComplete="name"
-                    required
-                    minLength={2}
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                  />
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <Label htmlFor="company">Nome da empresa</Label>
-                  <Input
-                    id="company"
-                    autoComplete="organization"
-                    required
-                    minLength={2}
-                    maxLength={120}
-                    value={companyName}
-                    onChange={(e) => setCompanyName(e.target.value)}
-                  />
-                </div>
-              )}
-              <div className="space-y-2">
-                <Label htmlFor="email">E-mail</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="password">Senha</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  autoComplete="new-password"
-                  required
-                  minLength={8}
-                  maxLength={200}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-              </div>
-            </CardContent>
-            <CardFooter className="flex flex-col gap-3 pt-4">
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading
-                  ? 'Enviando…'
-                  : mode === 'candidate'
-                    ? 'Criar conta'
-                    : 'Pedir cadastro de empresa'}
-              </Button>
-              <p className="text-center text-sm text-muted-foreground">
-                Já tem conta?{' '}
-                <Link href="/entrar" className="font-medium underline-offset-4 hover:underline">
-                  Entrar
-                </Link>
-              </p>
-            </CardFooter>
-          </form>
-        </Card>
-      </main>
-    </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">Senha</Label>
+              <Input
+                id="password"
+                type="password"
+                autoComplete="new-password"
+                required
+                minLength={8}
+                maxLength={200}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </div>
+          </CardContent>
+          <CardFooter className="flex flex-col gap-3 pt-4">
+            <Button type="submit" className="min-h-11 w-full rounded-full" disabled={loading}>
+              {loading
+                ? 'Enviando…'
+                : mode === 'candidate'
+                  ? 'Criar conta'
+                  : 'Pedir cadastro de empresa'}
+            </Button>
+            <p className="text-center text-sm text-muted-foreground">
+              Já tem conta?{' '}
+              <Link href="/entrar" className="font-medium underline-offset-4 hover:underline">
+                Entrar
+              </Link>
+            </p>
+          </CardFooter>
+        </form>
+      </Card>
+    </AuthPageShell>
   )
 }

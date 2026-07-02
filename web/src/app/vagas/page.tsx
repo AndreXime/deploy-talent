@@ -7,7 +7,7 @@ function ExploreFallback() {
   return (
     <div className="flex min-h-full flex-col">
       <PublicHeader />
-      <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-8 px-4 py-10 lg:px-6">
+      <main className="page-container flex flex-1 flex-col gap-8 py-10">
         <Skeleton className="h-10 w-64" />
         <Skeleton className="h-48 w-full" />
         <Skeleton className="h-24 w-full" />

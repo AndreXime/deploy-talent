@@ -45,15 +45,15 @@ function NavActions({ pathname, stack, onNavigate }: NavActionsProps) {
   const router = useRouter()
   const { claims, signOut } = useAuth()
 
-  const itemClass = stack ? 'w-full justify-start' : ''
-  const gapClass = stack ? 'flex flex-col gap-2' : 'flex flex-wrap items-center gap-2'
+  const itemClass = stack ? 'w-full justify-start min-h-11' : 'min-h-11'
+  const gapClass = stack ? 'flex flex-col gap-1' : 'flex flex-wrap items-center gap-1'
 
   return (
     <div className={cn(gapClass)}>
-      <Button variant="ghost" size="sm" className={cn('gap-2', itemClass)} asChild>
+      <Button variant="ghost" size="sm" className={cn('gap-2 font-medium', itemClass)} asChild>
         <Link href="/vagas" onClick={onNavigate}>
           <Compass className="size-4 shrink-0" aria-hidden />
-          Explorar vagas
+          Vagas
         </Link>
       </Button>
 
@@ -65,7 +65,7 @@ function NavActions({ pathname, stack, onNavigate }: NavActionsProps) {
               Entrar
             </Link>
           </Button>
-          <Button size="sm" className={cn('gap-2', itemClass)} asChild>
+          <Button size="sm" className={cn('gap-2 rounded-full px-4', itemClass)} asChild>
             <Link href="/cadastro" onClick={onNavigate}>
               <UserPlus className="size-4 shrink-0" aria-hidden />
               Criar conta
@@ -133,34 +133,39 @@ export function PublicHeader() {
   const [menuOpen, setMenuOpen] = useState(false)
 
   return (
-    <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-      <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between gap-3 px-4 lg:gap-4 lg:px-6">
+    <header className="sticky top-0 z-[var(--z-sticky-nav)] border-b border-border/80 bg-background/90 backdrop-blur-md supports-[backdrop-filter]:bg-background/75">
+      <div className="page-container flex h-14 items-center justify-between gap-3">
         <Link
           href="/"
-          className="flex min-w-0 shrink items-center gap-2 font-semibold tracking-tight text-foreground"
+          className="flex min-w-0 shrink items-center gap-2.5 font-display text-base font-semibold tracking-tight text-foreground"
         >
-          <Briefcase className="size-7 shrink-0 text-muted-foreground" aria-hidden />
+          <span
+            className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground"
+            aria-hidden
+          >
+            <Briefcase className="size-4" />
+          </span>
           <span className="truncate">Deploy Talent</span>
         </Link>
 
-        <nav className="hidden items-center gap-2 lg:flex lg:shrink-0" aria-label="Principal">
+        <nav className="hidden items-center lg:flex lg:shrink-0" aria-label="Principal">
           <NavActions pathname={pathname} stack={false} />
         </nav>
 
         <div className="flex shrink-0 lg:hidden">
           <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
             <SheetTrigger
-              className={cn(buttonVariants({ variant: 'ghost', size: 'icon' }))}
+              className={cn(buttonVariants({ variant: 'outline', size: 'icon' }))}
               aria-label="Abrir menu de navegação"
             >
               <Menu className="size-5" aria-hidden />
             </SheetTrigger>
             <SheetContent side="right" className="flex w-[min(100vw-1.5rem,20rem)] flex-col gap-0">
               <SheetHeader>
-                <SheetTitle>Menu</SheetTitle>
+                <SheetTitle className="font-display">Menu</SheetTitle>
               </SheetHeader>
               <nav
-                className="flex flex-1 flex-col gap-2 overflow-y-auto px-2 pb-4 pt-2"
+                className="flex flex-1 flex-col gap-2 overflow-y-auto px-3 pb-4 pt-2"
                 aria-label="Principal"
               >
                 <NavActions pathname={pathname} stack onNavigate={() => setMenuOpen(false)} />

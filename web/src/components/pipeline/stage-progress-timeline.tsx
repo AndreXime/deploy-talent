@@ -95,7 +95,7 @@ function StageSubmissionSummary({
         {questions.map((q) => (
           <div key={q.id} className="grid grid-cols-[auto_1fr] items-baseline gap-2">
             <dt className="text-muted-foreground">{q.label}:</dt>
-            <dd className="whitespace-pre-wrap">{byId.get(q.id) ?? '—'}</dd>
+            <dd className="whitespace-pre-wrap">{byId.get(q.id) ?? 'Sem resposta'}</dd>
           </div>
         ))}
       </dl>

@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
+import { PageHead } from '@/components/page-head'
 import { JobStatusBadge } from '@/components/status-badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -28,6 +29,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Textarea } from '@/components/ui/textarea'
+import { WorkbenchPageShell } from '@/components/workbench-page-shell'
 import { sourceCandidate } from '@/lib/api/applications-api'
 import { ApiRequestError } from '@/lib/api/client'
 import { changeJobStatus, getTenantJob, patchJob } from '@/lib/api/jobs-api'
@@ -145,7 +147,7 @@ export default function TenantJobDetailPage() {
     })
 
   return (
-    <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-8 p-4 lg:p-8">
+    <WorkbenchPageShell className="max-w-3xl">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <Button variant="outline" size="sm" className="w-fit" asChild>
           <Link href="/empresa/vagas">Todas as vagas</Link>
@@ -172,14 +174,13 @@ export default function TenantJobDetailPage() {
 
       {j && (
         <>
-          <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-2xl font-semibold tracking-tight">Gerir posição</h1>
+          <PageHead title="Gerir posição">
             <JobStatusBadge status={j.status} />
-          </div>
+          </PageHead>
 
-          <Card>
+          <Card className="border-border shadow-none">
             <CardHeader>
-              <CardTitle>Editar textos públicos futuros</CardTitle>
+              <CardTitle className="font-display">Editar textos públicos futuros</CardTitle>
               <CardDescription>O que aparece aos candidatos após publicar.</CardDescription>
             </CardHeader>
             <CardContent className="grid gap-4">
@@ -213,15 +214,20 @@ export default function TenantJobDetailPage() {
               </div>
             </CardContent>
             <CardFooter className="border-t">
-              <Button type="button" disabled={patchMut.isPending} onClick={() => patchMut.mutate()}>
+              <Button
+                type="button"
+                disabled={patchMut.isPending}
+                className="min-h-11"
+                onClick={() => patchMut.mutate()}
+              >
                 {patchMut.isPending ? 'A guardar…' : 'Guardar alterações'}
               </Button>
             </CardFooter>
           </Card>
 
-          <Card>
+          <Card className="border-border shadow-none">
             <CardHeader>
-              <CardTitle>Ciclo de publicação</CardTitle>
+              <CardTitle className="font-display">Ciclo de publicação</CardTitle>
               <CardDescription>
                 Avance apenas para estados seguintes válidos nesta ferramenta.
               </CardDescription>
@@ -258,10 +264,10 @@ export default function TenantJobDetailPage() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="border-border shadow-none">
             <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <CardTitle>Sourcing por email</CardTitle>
+                <CardTitle className="font-display">Sourcing por email</CardTitle>
                 <CardDescription>
                   Convida um candidato externo a candidatar-se. A plataforma decide qual email
                   enviar conforme o candidato já tenha conta ou candidatura nesta vaga.
@@ -322,6 +328,7 @@ export default function TenantJobDetailPage() {
                   disabled={
                     sourceMut.isPending || sEmail.trim().length === 0 || sName.trim().length < 2
                   }
+                  className="min-h-11"
                   onClick={() => sourceMut.mutate()}
                 >
                   Enviar
@@ -331,6 +338,6 @@ export default function TenantJobDetailPage() {
           </Dialog>
         </>
       )}
-    </main>
+    </WorkbenchPageShell>
   )
 }

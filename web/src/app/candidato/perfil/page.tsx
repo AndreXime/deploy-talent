@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
+import { PageHead } from '@/components/page-head'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
@@ -25,6 +26,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
+import { WorkbenchPageShell } from '@/components/workbench-page-shell'
 import { forgetMe, getMyProfile, patchMyProfile } from '@/lib/api/candidates-api'
 import { ApiRequestError } from '@/lib/api/client'
 import { presignUpload, uploadFileToPresignedUrl } from '@/lib/api/media-api'
@@ -194,13 +196,11 @@ export default function CandidateProfilePage() {
   }
 
   return (
-    <main className="flex flex-1 flex-col gap-6 p-4 lg:max-w-2xl lg:p-8">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">O meu perfil</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Estes dados acompanham todas as suas candidaturas futuras e atuais.
-        </p>
-      </div>
+    <WorkbenchPageShell className="lg:max-w-2xl">
+      <PageHead
+        title="O meu perfil"
+        description="Estes dados acompanham todas as suas candidaturas futuras e atuais."
+      />
 
       {profileQ.isLoading && <Skeleton className="h-80 w-full" />}
 
@@ -213,9 +213,9 @@ export default function CandidateProfilePage() {
       )}
 
       {profileQ.data && !profileQ.data.anonymizedAt && (
-        <Card className="shadow-sm">
+        <Card className="border-border shadow-none">
           <CardHeader>
-            <CardTitle className="text-lg">Informações de contato</CardTitle>
+            <CardTitle className="font-display text-lg">Informações de contato</CardTitle>
             <CardDescription>
               E-mail: <span className="font-medium">{profileQ.data.email}</span> (não editável
               aqui).
@@ -268,7 +268,7 @@ export default function CandidateProfilePage() {
                         </Button>
                       ) : null}
                     </div>
-                    <p className="text-xs text-muted-foreground">JPG, PNG ou WEBP — até 10 MB</p>
+                    <p className="text-xs text-muted-foreground">JPG, PNG ou WEBP, até 10 MB</p>
                   </div>
                 </div>
               </div>
@@ -334,12 +334,12 @@ export default function CandidateProfilePage() {
                       </Button>
                     ) : null}
                   </div>
-                  <p className="text-xs text-muted-foreground">PDF, DOC ou DOCX — até 10 MB</p>
+                  <p className="text-xs text-muted-foreground">PDF, DOC ou DOCX, até 10 MB</p>
                 </div>
               </div>
             </CardContent>
             <CardFooter className="flex flex-wrap gap-2">
-              <Button type="submit" disabled={patchMut.isPending}>
+              <Button type="submit" disabled={patchMut.isPending} className="min-h-11">
                 {patchMut.isPending ? 'A guardar…' : 'Guardar alterações'}
               </Button>
               <Button
@@ -376,6 +376,6 @@ export default function CandidateProfilePage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </main>
+    </WorkbenchPageShell>
   )
 }

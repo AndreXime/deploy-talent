@@ -3,11 +3,13 @@
 import { useQuery } from '@tanstack/react-query'
 import { Building2 } from 'lucide-react'
 import Link from 'next/link'
+import { PageHead } from '@/components/page-head'
 import { ApplicationStatusBadge } from '@/components/status-badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
+import { WorkbenchPageShell } from '@/components/workbench-page-shell'
 import { listMyApplications } from '@/lib/api/applications-api'
 import { useAuth } from '@/providers/auth-provider'
 
@@ -21,13 +23,11 @@ export default function CandidateHomePage() {
   })
 
   return (
-    <main className="flex flex-1 flex-col gap-6 p-4 lg:p-8">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">As minhas candidaturas</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Acompanhe o estado junto das empresas onde se candidatou.
-        </p>
-      </div>
+    <WorkbenchPageShell>
+      <PageHead
+        title="As minhas candidaturas"
+        description="Acompanhe o estado junto das empresas onde se candidatou."
+      />
 
       {q.isLoading && (
         <div className="space-y-3">
@@ -43,9 +43,9 @@ export default function CandidateHomePage() {
       )}
 
       {!q.isLoading && q.data && q.data.items.length === 0 && (
-        <Card className="max-w-xl shadow-sm">
+        <Card className="max-w-xl border-border shadow-none">
           <CardHeader>
-            <CardTitle className="text-base">Sem candidaturas ainda</CardTitle>
+            <CardTitle className="font-display text-base">Sem candidaturas ainda</CardTitle>
             <CardDescription>
               Abra uma página de carreiras por empresa para se candidatar a uma posição publicada ou
               em pausa.
@@ -57,7 +57,7 @@ export default function CandidateHomePage() {
       <ul className="flex flex-col gap-4">
         {q.data?.items.map((item) => (
           <li key={item.id}>
-            <Card className="shadow-sm">
+            <Card className="hover-lift border-border shadow-none">
               <CardContent className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="space-y-2">
                   <div className="flex flex-wrap items-center gap-2">
@@ -73,7 +73,7 @@ export default function CandidateHomePage() {
                   variant="outline"
                   size="sm"
                   asChild
-                  className="shrink-0 self-start sm:self-auto"
+                  className="min-h-11 shrink-0 self-start sm:self-auto"
                 >
                   <Link href={`/candidato/candidaturas/${item.id}`}>Ver candidatura</Link>
                 </Button>
@@ -82,6 +82,6 @@ export default function CandidateHomePage() {
           </li>
         ))}
       </ul>
-    </main>
+    </WorkbenchPageShell>
   )
 }

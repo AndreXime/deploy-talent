@@ -5,6 +5,7 @@ import { Trash2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
+import { PageHead } from '@/components/page-head'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import {
@@ -26,6 +27,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
+import { WorkbenchPageShell } from '@/components/workbench-page-shell'
 import { ApiRequestError } from '@/lib/api/client'
 import { inviteRecruiterRequest } from '@/lib/api/invitations-api'
 import { getCurrentTenantRecruiters, removeCurrentTenantRecruiter } from '@/lib/api/tenants-api'
@@ -109,18 +111,15 @@ export default function TeamPage() {
   const recruiters = recruitersQ.data ?? []
 
   return (
-    <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-8 p-4 lg:p-8">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Equipe</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Veja quem já tem acesso e envie convites para novos recrutadores. O destinatário define a
-          sua própria senha ao aceitar o convite.
-        </p>
-      </div>
+    <WorkbenchPageShell className="max-w-3xl">
+      <PageHead
+        title="Equipe"
+        description="Veja quem já tem acesso e envie convites para novos recrutadores. O destinatário define a sua própria senha ao aceitar o convite."
+      />
 
-      <Card>
+      <Card className="border-border shadow-none">
         <CardHeader>
-          <CardTitle>Recrutadores ativos</CardTitle>
+          <CardTitle className="font-display">Recrutadores ativos</CardTitle>
           <CardDescription>Contas com papel `RECRUITER` no contexto desta empresa.</CardDescription>
         </CardHeader>
         <CardContent>
@@ -149,9 +148,9 @@ export default function TeamPage() {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="border-border shadow-none">
         <CardHeader>
-          <CardTitle>Convidar para a equipe</CardTitle>
+          <CardTitle className="font-display">Convidar para a equipe</CardTitle>
           <CardDescription>
             Envie um link único por email. Não definimos nem mostramos senhas aqui.
           </CardDescription>
@@ -179,7 +178,7 @@ export default function TeamPage() {
             </p>
           </CardContent>
           <CardFooter>
-            <Button type="submit" disabled={!canSubmit}>
+            <Button type="submit" disabled={!canSubmit} className="min-h-11 rounded-full">
               {inviteMut.isPending ? 'Enviando convite…' : 'Enviar convite'}
             </Button>
           </CardFooter>
@@ -227,7 +226,7 @@ export default function TeamPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </main>
+    </WorkbenchPageShell>
   )
 }
 

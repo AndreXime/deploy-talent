@@ -26,7 +26,7 @@ export default function CareerSlugRedirectPage() {
   return (
     <div className="flex min-h-full flex-col">
       <PublicHeader />
-      <main className="mx-auto flex w-full max-w-lg flex-1 flex-col gap-4 px-4 py-16 text-center text-sm text-muted-foreground">
+      <main className="page-container flex flex-1 flex-col items-center justify-center py-16 text-center text-sm text-muted-foreground">
         {!slug ? (
           <p>Slug inválido.</p>
         ) : q.isLoading ? (

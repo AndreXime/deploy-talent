@@ -106,7 +106,7 @@ export default function PublicJobDetailPage() {
 
   function handleApply() {
     if (!canApply) return
-    if (!claims || claims?.role !== 'CANDIDATE') {
+    if (claims?.role !== 'CANDIDATE') {
       router.push(`/entrar?redirect=${encodeURIComponent(pathname)}`)
       return
     }
@@ -121,7 +121,7 @@ export default function PublicJobDetailPage() {
           <img src={brandingQ.data.banner.url} alt="" className="h-full w-full object-cover" />
         </div>
       ) : null}
-      <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 px-4 py-8 lg:px-6">
+      <main className="page-container flex w-full max-w-3xl flex-1 flex-col gap-6 py-8 lg:py-10">
         <div className="-ml-3 flex flex-wrap items-center gap-1">
           <Button variant="ghost" size="sm" className="gap-1" asChild>
             <Link href="/vagas">
@@ -174,7 +174,9 @@ export default function PublicJobDetailPage() {
                 ) : null}
                 <div className="flex min-w-0 flex-1 flex-col gap-2">
                   <div className="flex flex-wrap items-center gap-2">
-                    <h1 className="text-2xl font-semibold tracking-tight">{job.title}</h1>
+                    <h1 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">
+                      {job.title}
+                    </h1>
                     <JobStatusBadge status={job.status} audience="public" />
                   </div>
                   <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
@@ -193,18 +195,18 @@ export default function PublicJobDetailPage() {
             </header>
 
             <section className="space-y-2">
-              <h2 className="text-lg font-medium">Sobre o cargo</h2>
+              <h2 className="font-display text-lg font-semibold">Sobre o cargo</h2>
               <p className="whitespace-pre-wrap text-sm leading-relaxed text-muted-foreground">
                 {job.description}
               </p>
             </section>
 
             <section className="space-y-2">
-              <h2 className="text-lg font-medium">Senioridade</h2>
+              <h2 className="font-display text-lg font-semibold">Senioridade</h2>
               <p className="text-sm text-muted-foreground">{job.seniority}</p>
             </section>
 
-            <div className="flex flex-col gap-3 rounded-lg border bg-card p-4">
+            <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-5">
               {claims && isCandidate && job ? (
                 <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
                   {isSaved || job.status === 'PUBLISHED' || job.status === 'PAUSED' ? (
@@ -247,7 +249,7 @@ export default function PublicJobDetailPage() {
                   </p>
                   <Button
                     size="lg"
-                    className="gap-2"
+                    className="min-h-11 gap-2 rounded-full"
                     onClick={handleApply}
                     disabled={applyMut.isPending}
                   >

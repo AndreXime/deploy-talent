@@ -6,7 +6,7 @@ import type {
   TenantSnippet,
 } from '@/lib/api/types'
 
-/** Público — resolve slug → dados mínimos (id para rotas /carreiras/:tenantId). */
+/** Público: resolve slug para dados mínimos (id para rotas /carreiras/:tenantId). */
 export function getTenantBySlug(slug: string) {
   const s = slug.trim()
   return apiRequest<TenantSnippet>(`/tenants/public/by-slug/${encodeURIComponent(s)}`, {

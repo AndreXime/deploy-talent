@@ -5,6 +5,7 @@ import { Briefcase, ChevronRight, MapPin, MonitorSmartphone } from 'lucide-react
 import Link from 'next/link'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { type ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
+import { PageHead } from '@/components/page-head'
 import { PublicHeader } from '@/components/public-header'
 import { JobStatusBadge } from '@/components/status-badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -249,177 +250,184 @@ export function ExploreJobsClient() {
   return (
     <div className="flex min-h-full flex-col">
       <PublicHeader />
-      <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-8 px-4 py-10 lg:px-6">
-        <div className="space-y-2">
-          <h1 className="text-2xl font-semibold tracking-tight lg:text-3xl">Explorar vagas</h1>
-          <p className="text-sm text-muted-foreground">
-            Oportunidades publicadas por empresas ativas na plataforma.
-          </p>
-        </div>
+      <main className="page-container flex flex-1 flex-col gap-8 py-10 lg:py-12">
+        <PageHead
+          title="Índice de vagas"
+          description="Oportunidades publicadas por empresas ativas na plataforma. Filtre por stack, senioridade, modalidade ou empresa."
+        />
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Filtros</CardTitle>
-            {filtersQ.isError ? (
-              <CardDescription className="text-destructive">
-                Não foi possível carregar as listas de filtro; pode usar palavras-chave e tentar de
-                novo.
-              </CardDescription>
+        <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:gap-10">
+          <aside className="w-full shrink-0 lg:sticky lg:top-[calc(var(--banner-height)+3.5rem)] lg:w-72 xl:w-80">
+            <Card className="border-border shadow-none">
+              <CardHeader className="pb-3">
+                <CardTitle className="font-display text-base">Filtros</CardTitle>
+                {filtersQ.isError ? (
+                  <CardDescription className="text-destructive">
+                    Não foi possível carregar as listas de filtro; pode usar palavras-chave e tentar
+                    de novo.
+                  </CardDescription>
+                ) : null}
+              </CardHeader>
+              <CardContent className="grid gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="ex-q">Palavras-chave</Label>
+                  <Input
+                    id="ex-q"
+                    value={draftQ}
+                    onChange={(e) => setDraftQ(e.target.value)}
+                    placeholder="Ex.: React, Rust…"
+                  />
+                </div>
+                <MarketplaceStringFacetSelect
+                  id="ex-mod"
+                  label="Modalidade"
+                  value={draftModality}
+                  onChange={setDraftModality}
+                  options={modalityOptions}
+                  chooseLabel="Qualquer modalidade"
+                  disabled={facetSelectDisabled}
+                />
+                <MarketplaceStringFacetSelect
+                  id="ex-loc"
+                  label="Local"
+                  value={draftLocation}
+                  onChange={setDraftLocation}
+                  options={locationOptions}
+                  chooseLabel="Qualquer local"
+                  disabled={facetSelectDisabled}
+                />
+                <MarketplaceStringFacetSelect
+                  id="ex-sen"
+                  label="Senioridade"
+                  value={draftSeniority}
+                  onChange={setDraftSeniority}
+                  options={seniorityOptions}
+                  chooseLabel="Qualquer senioridade"
+                  disabled={facetSelectDisabled}
+                />
+                <MarketplaceTenantFacetSelect
+                  id="ex-tid"
+                  label="Empresa"
+                  value={draftTenantId}
+                  onChange={setDraftTenantId}
+                  tenants={tenantOptions}
+                  chooseLabel="Qualquer empresa"
+                  disabled={facetSelectDisabled}
+                />
+                <Button type="button" className="min-h-11 w-full" onClick={applyFilters}>
+                  Aplicar filtros
+                </Button>
+              </CardContent>
+            </Card>
+          </aside>
+
+          <div className="min-w-0 flex-1 space-y-4">
+            {!tenantIdValid && tenantId ? (
+              <Alert variant="destructive">
+                <AlertDescription>
+                  A empresa seleccionada não é um UUID válido; limpe o filtro ou corrija o URL.
+                </AlertDescription>
+              </Alert>
             ) : null}
-          </CardHeader>
-          <CardContent className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2 sm:col-span-2">
-              <Label htmlFor="ex-q">Palavras-chave</Label>
-              <Input
-                id="ex-q"
-                value={draftQ}
-                onChange={(e) => setDraftQ(e.target.value)}
-                placeholder="Ex.: React, gestão de produto…"
-              />
-            </div>
-            <MarketplaceStringFacetSelect
-              id="ex-mod"
-              label="Modalidade"
-              value={draftModality}
-              onChange={setDraftModality}
-              options={modalityOptions}
-              chooseLabel="Escolha a modalidade"
-              disabled={facetSelectDisabled}
-            />
-            <MarketplaceStringFacetSelect
-              id="ex-loc"
-              label="Local"
-              value={draftLocation}
-              onChange={setDraftLocation}
-              options={locationOptions}
-              chooseLabel="Escolha o local"
-              disabled={facetSelectDisabled}
-            />
-            <MarketplaceStringFacetSelect
-              id="ex-sen"
-              label="Senioridade"
-              value={draftSeniority}
-              onChange={setDraftSeniority}
-              options={seniorityOptions}
-              chooseLabel="Escolha a senioridade"
-              disabled={facetSelectDisabled}
-            />
-            <MarketplaceTenantFacetSelect
-              id="ex-tid"
-              label="Empresa"
-              value={draftTenantId}
-              onChange={setDraftTenantId}
-              tenants={tenantOptions}
-              chooseLabel="Escolha a empresa"
-              disabled={facetSelectDisabled}
-            />
-            <div className="flex items-end sm:col-span-2">
-              <Button type="button" className="w-full sm:w-auto" onClick={applyFilters}>
-                Aplicar filtros
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
 
-        {!tenantIdValid && tenantId ? (
-          <Alert variant="destructive">
-            <AlertDescription>
-              A empresa seleccionada não é um UUID válido; limpe o filtro ou corrija o URL.
-            </AlertDescription>
-          </Alert>
-        ) : null}
+            {jobsQ.isLoading ? (
+              <div className="space-y-3">
+                <Skeleton className="h-24 w-full" />
+                <Skeleton className="h-24 w-full" />
+              </div>
+            ) : null}
 
-        {jobsQ.isLoading ? (
-          <div className="space-y-3">
-            <Skeleton className="h-24 w-full" />
-            <Skeleton className="h-24 w-full" />
-          </div>
-        ) : null}
+            {jobsQ.isError ? (
+              <Alert variant="destructive">
+                <AlertDescription>
+                  Não foi possível carregar as vagas. Tente mais tarde.
+                </AlertDescription>
+              </Alert>
+            ) : null}
 
-        {jobsQ.isError ? (
-          <Alert variant="destructive">
-            <AlertDescription>
-              Não foi possível carregar as vagas. Tente mais tarde.
-            </AlertDescription>
-          </Alert>
-        ) : null}
-
-        {jobsQ.data && jobsQ.data.items.length === 0 ? (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
-                <Briefcase className="size-5 text-muted-foreground" aria-hidden />
-                Nenhuma vaga encontrada
-              </CardTitle>
-              <CardDescription>Alargue os filtros ou volte mais tarde.</CardDescription>
-            </CardHeader>
-          </Card>
-        ) : null}
-
-        <ul className="flex flex-col gap-3">
-          {jobsQ.data?.items.map(({ job, tenant }) => (
-            <li key={job.id}>
-              <Card className="overflow-hidden shadow-sm transition-shadow hover:shadow-md">
-                <CardContent className="flex flex-col gap-4 p-4 sm:flex-row sm:items-start sm:justify-between">
-                  <div className="space-y-2">
-                    <Link
-                      href={`/carreiras/${tenant.id}`}
-                      className="text-xs font-medium uppercase tracking-wide text-primary hover:underline"
-                    >
-                      {tenant.name}
-                    </Link>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <h2 className="text-lg font-medium">{job.title}</h2>
-                      <JobStatusBadge status={job.status} audience="public" />
-                    </div>
-                    <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
-                      <span className="inline-flex items-center gap-1">
-                        <MonitorSmartphone className="size-4" aria-hidden />
-                        {job.modality}
-                      </span>
-                      <span className="inline-flex items-center gap-1">
-                        <MapPin className="size-4" aria-hidden />
-                        {job.location}
-                      </span>
-                    </div>
-                  </div>
-                  <Button asChild className="shrink-0 gap-2 self-stretch sm:self-center">
-                    <Link href={`/carreiras/${job.tenantId}/vagas/${job.id}`}>
-                      Ver detalhes
-                      <ChevronRight className="size-4" aria-hidden />
-                    </Link>
-                  </Button>
-                </CardContent>
+            {jobsQ.data && jobsQ.data.items.length === 0 ? (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <Briefcase className="size-5 text-muted-foreground" aria-hidden />
+                    Nenhuma vaga encontrada
+                  </CardTitle>
+                  <CardDescription>Alargue os filtros ou volte mais tarde.</CardDescription>
+                </CardHeader>
               </Card>
-            </li>
-          ))}
-        </ul>
+            ) : null}
 
-        {jobsQ.data && totalPages > 1 ? (
-          <div className="flex flex-wrap items-center justify-center gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={page <= 1}
-              onClick={() => goPage(page - 1)}
-            >
-              Anterior
-            </Button>
-            <span className="text-sm text-muted-foreground">
-              Página {page} de {totalPages}
-            </span>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={page >= totalPages}
-              onClick={() => goPage(page + 1)}
-            >
-              Seguinte
-            </Button>
+            <ul className="flex flex-col gap-3">
+              {jobsQ.data?.items.map(({ job, tenant }) => (
+                <li key={job.id} className="min-w-0">
+                  <Card className="hover-lift overflow-hidden border-border transition-shadow">
+                    <CardContent className="flex flex-col gap-4 p-5 lg:flex-row lg:items-start lg:justify-between">
+                      <div className="min-w-0 space-y-2">
+                        <Link
+                          href={`/carreiras/${tenant.id}`}
+                          className="text-xs font-medium uppercase tracking-wide text-primary hover:underline"
+                        >
+                          {tenant.name}
+                        </Link>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h2 className="font-display text-lg font-semibold">{job.title}</h2>
+                          <JobStatusBadge status={job.status} audience="public" />
+                        </div>
+                        <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
+                          <span className="inline-flex items-center gap-1">
+                            <MonitorSmartphone className="size-4 shrink-0" aria-hidden />
+                            {job.modality}
+                          </span>
+                          <span className="inline-flex items-center gap-1">
+                            <MapPin className="size-4 shrink-0" aria-hidden />
+                            {job.location}
+                          </span>
+                        </div>
+                      </div>
+                      <Button
+                        asChild
+                        className="min-h-11 shrink-0 gap-2 self-stretch rounded-full lg:self-center"
+                      >
+                        <Link href={`/carreiras/${job.tenantId}/vagas/${job.id}`}>
+                          Ver detalhes
+                          <ChevronRight className="size-4" aria-hidden />
+                        </Link>
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </li>
+              ))}
+            </ul>
+
+            {jobsQ.data && totalPages > 1 ? (
+              <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="min-h-11"
+                  disabled={page <= 1}
+                  onClick={() => goPage(page - 1)}
+                >
+                  Anterior
+                </Button>
+                <span className="text-sm text-muted-foreground">
+                  Página {page} de {totalPages}
+                </span>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="min-h-11"
+                  disabled={page >= totalPages}
+                  onClick={() => goPage(page + 1)}
+                >
+                  Seguinte
+                </Button>
+              </div>
+            ) : null}
           </div>
-        ) : null}
+        </div>
       </main>
     </div>
   )

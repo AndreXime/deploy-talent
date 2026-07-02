@@ -36,7 +36,7 @@ function NavLinks({ onNavigate }: Readonly<{ onNavigate?: () => void }>) {
       : baseLinks
 
   return (
-    <nav className="flex flex-col gap-1 p-4 lg:p-2">
+    <nav className="flex flex-col gap-0.5 p-3">
       {links.map(({ href, label, icon: Icon }) => {
         const active = pathname === href || pathname.startsWith(`${href}/`)
         return (
@@ -46,10 +46,10 @@ function NavLinks({ onNavigate }: Readonly<{ onNavigate?: () => void }>) {
             onClick={onNavigate}
             aria-current={active ? 'page' : undefined}
             className={cn(
-              'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+              'flex min-h-11 items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors duration-[var(--dur-micro)] ease-[var(--ease-out)]',
               active
-                ? 'bg-sidebar-primary text-sidebar-primary-foreground shadow-sm hover:bg-sidebar-primary/90'
-                : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
+                ? 'bg-sidebar-primary text-sidebar-primary-foreground shadow-sm'
+                : 'text-sidebar-foreground/85 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
             )}
           >
             <Icon
@@ -75,17 +75,17 @@ function CompanyHeading() {
 
   return (
     <div className="flex flex-col gap-0.5">
-      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+      <p className="font-mono text-[0.65rem] font-medium uppercase tracking-widest text-muted-foreground">
         Área da empresa
       </p>
       {tenantQ.isLoading ? (
-        <Skeleton className="mt-1 h-5 w-32" />
+        <Skeleton className="mt-1 h-6 w-36" />
       ) : (
         <p
-          className="truncate text-base font-semibold text-sidebar-foreground"
+          className="truncate font-display text-lg font-semibold tracking-tight text-sidebar-foreground"
           title={tenantQ.data?.name}
         >
-          {tenantQ.data?.name ?? '—'}
+          {tenantQ.data?.name ?? 'Empresa'}
         </p>
       )}
     </div>
@@ -99,19 +99,19 @@ export function CompanyShell({ children }: Readonly<{ children: React.ReactNode 
 
   return (
     <div className="flex min-h-full flex-col lg:h-dvh lg:flex-row lg:overflow-hidden">
-      <aside className="hidden w-56 shrink-0 flex-col border-r bg-sidebar text-sidebar-foreground lg:flex lg:h-dvh xl:w-64">
-        <div className="border-b px-4 py-4">
+      <aside className="hidden w-60 shrink-0 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground lg:flex lg:h-dvh xl:w-64">
+        <div className="border-b border-sidebar-border px-4 py-5">
           <CompanyHeading />
         </div>
         <ScrollArea className="min-h-0 flex-1">
           <NavLinks />
         </ScrollArea>
         <Separator />
-        <div className="p-2">
+        <div className="p-3">
           <Button
             variant="outline"
             size="sm"
-            className="w-full"
+            className="w-full min-h-11"
             type="button"
             onClick={() => {
               signOut()
@@ -124,19 +124,19 @@ export function CompanyShell({ children }: Readonly<{ children: React.ReactNode 
       </aside>
 
       <div className="flex min-h-full min-w-0 flex-1 flex-col lg:h-dvh lg:min-h-0 lg:overflow-y-auto">
-        <header className="flex items-center justify-between border-b px-4 py-3 lg:hidden">
+        <header className="flex items-center justify-between border-b border-border px-4 py-3 lg:hidden">
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger
               className={cn(
                 buttonVariants({ variant: 'outline', size: 'icon' }),
-                'rounded-lg border border-input shadow-xs',
+                'min-h-11 min-w-11 rounded-lg',
               )}
               aria-label="Abrir menu"
             >
               <Menu className="size-5" />
             </SheetTrigger>
             <SheetContent side="left" className="w-72 p-0">
-              <SheetHeader className="border-b p-4 text-left">
+              <SheetHeader className="border-b border-sidebar-border p-4 text-left">
                 <SheetTitle className="sr-only">Menu da empresa</SheetTitle>
                 <CompanyHeading />
               </SheetHeader>
@@ -146,6 +146,7 @@ export function CompanyShell({ children }: Readonly<{ children: React.ReactNode 
           <Button
             variant="ghost"
             size="sm"
+            className="min-h-11"
             type="button"
             onClick={() => {
               signOut()

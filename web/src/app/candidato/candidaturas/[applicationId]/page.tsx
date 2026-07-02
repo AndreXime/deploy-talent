@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'sonner'
+import { PageHead } from '@/components/page-head'
 import { CandidateCurrentStageCard } from '@/components/pipeline/candidate-current-stage-card'
 import { ApplicationStatusBadge, JobStatusBadge } from '@/components/status-badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -21,6 +22,7 @@ import {
 } from '@/components/ui/dialog'
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
+import { WorkbenchPageShell } from '@/components/workbench-page-shell'
 import { getMyApplication, withdrawMyApplication } from '@/lib/api/applications-api'
 import { ApiRequestError } from '@/lib/api/client'
 import { isUuid } from '@/lib/is-uuid'
@@ -59,7 +61,7 @@ export default function CandidateApplicationDetailPage() {
   const row = q.data
 
   return (
-    <main className="flex flex-1 flex-col gap-6 p-4 lg:p-8">
+    <WorkbenchPageShell className="min-w-0 w-full">
       <Button variant="ghost" size="sm" className="-ml-3 w-fit gap-1 self-start" asChild>
         <Link href="/candidato">
           <ArrowLeft className="size-4" aria-hidden />
@@ -73,7 +75,7 @@ export default function CandidateApplicationDetailPage() {
         </Alert>
       )}
 
-      {q.isLoading && <Skeleton className="h-60 w-full max-w-xl" />}
+      {q.isLoading && <Skeleton className="h-60 w-full" />}
 
       {q.isError && (
         <Alert variant="destructive">
@@ -82,15 +84,14 @@ export default function CandidateApplicationDetailPage() {
       )}
 
       {row && (
-        <div className="mx-auto flex w-full max-w-xl flex-col gap-6">
-          <div className="flex flex-wrap items-center gap-2">
-            <h1 className="text-2xl font-semibold tracking-tight">{row.job.title}</h1>
+        <>
+          <PageHead title={row.job.title}>
             <ApplicationStatusBadge status={row.status} />
-          </div>
+          </PageHead>
 
-          <Card>
+          <Card className="border-border shadow-none">
             <CardHeader className="pb-3">
-              <CardTitle className="text-base">Empresa</CardTitle>
+              <CardTitle className="font-display text-base">Empresa</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 text-sm text-muted-foreground">
               <span className="flex items-center gap-2 font-medium text-foreground">
@@ -115,9 +116,9 @@ export default function CandidateApplicationDetailPage() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="border-border shadow-none">
             <CardHeader className="pb-3">
-              <CardTitle className="text-base">Descrição da vaga</CardTitle>
+              <CardTitle className="font-display text-base">Descrição da vaga</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="whitespace-pre-wrap text-sm leading-relaxed text-muted-foreground">
@@ -131,12 +132,12 @@ export default function CandidateApplicationDetailPage() {
           {candidateMayWithdraw(row.status) && (
             <div className="rounded-lg border border-destructive/30 bg-muted/40 p-4">
               <p className="text-sm text-muted-foreground">
-                Não vai continuar neste processo? Pode desistir a qualquer momento — o estado será
+                Não vai continuar neste processo? Pode desistir a qualquer momento. O estado será
                 atualizado nesta página.
               </p>
               <Button
                 variant="destructive"
-                className="mt-3"
+                className="mt-3 min-h-11"
                 type="button"
                 onClick={() => setWithdrawOpen(true)}
               >
@@ -164,8 +165,8 @@ export default function CandidateApplicationDetailPage() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
-        </div>
+        </>
       )}
-    </main>
+    </WorkbenchPageShell>
   )
 }

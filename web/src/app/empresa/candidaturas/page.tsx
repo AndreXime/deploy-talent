@@ -5,6 +5,7 @@ import { ChevronRight, X } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useState } from 'react'
+import { PageHead } from '@/components/page-head'
 import { ApplicationStatusBadge } from '@/components/status-badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -17,6 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { WorkbenchPageShell } from '@/components/workbench-page-shell'
 import { listTenantApplications } from '@/lib/api/applications-api'
 import { getTenantJob } from '@/lib/api/jobs-api'
 import type { ApiApplicationStatus } from '@/lib/api/types'
@@ -70,13 +72,11 @@ export default function TenantApplicationsPage() {
   const rows = q.data?.items ?? []
 
   return (
-    <main className="flex flex-1 flex-col gap-6 p-4 lg:p-8">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Candidaturas</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Consulte quem está em processo e abra o detalhe para movimentar o funil.
-        </p>
-      </div>
+    <WorkbenchPageShell>
+      <PageHead
+        title="Candidaturas"
+        description="Consulte quem está em processo e abra o detalhe para movimentar o funil."
+      />
 
       {jobId && (
         <div className="flex flex-wrap items-center gap-3 rounded-lg border bg-muted/40 px-4 py-3 text-sm">
@@ -124,7 +124,7 @@ export default function TenantApplicationsPage() {
         </Alert>
       )}
 
-      <div className="rounded-lg border bg-card">
+      <div className="rounded-lg border border-border bg-card shadow-none">
         <Table>
           <TableHeader>
             <TableRow>
@@ -175,7 +175,7 @@ export default function TenantApplicationsPage() {
           </TableBody>
         </Table>
       </div>
-    </main>
+    </WorkbenchPageShell>
   )
 }
 

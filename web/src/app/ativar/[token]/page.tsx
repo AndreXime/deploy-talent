@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { PublicHeader } from '@/components/public-header'
+import { AuthPageShell } from '@/components/auth-page-shell'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -60,114 +60,111 @@ export default function ActivateInvitationPage() {
   const passwordsMatch = password.length >= 8 && password === confirm
 
   return (
-    <div className="flex min-h-full flex-col">
-      <PublicHeader />
-      <main className="flex flex-1 flex-col items-center px-4 py-12">
-        <Card className="w-full max-w-md shadow-sm">
-          <CardHeader>
-            <CardTitle>Ativar conta</CardTitle>
-            <CardDescription>
-              Defina uma senha para concluir o convite e entrar na plataforma.
-            </CardDescription>
-          </CardHeader>
+    <AuthPageShell>
+      <Card className="border-border shadow-none">
+        <CardHeader>
+          <CardTitle className="font-display text-2xl">Ativar conta</CardTitle>
+          <CardDescription>
+            Defina uma senha para concluir o convite e entrar na plataforma.
+          </CardDescription>
+        </CardHeader>
 
-          {previewQ.isLoading && (
+        {previewQ.isLoading && (
+          <CardContent>
+            <Skeleton className="h-32 w-full" />
+          </CardContent>
+        )}
+
+        {previewQ.isError && (
+          <>
             <CardContent>
-              <Skeleton className="h-32 w-full" />
+              <p className="text-sm text-destructive">
+                {previewQ.error instanceof ApiRequestError
+                  ? previewQ.error.message
+                  : 'O convite é inválido, foi revogado ou já expirou.'}
+              </p>
             </CardContent>
-          )}
+            <CardFooter>
+              <Button asChild variant="outline" className="min-h-11 w-full rounded-full">
+                <Link href="/entrar">Voltar ao início</Link>
+              </Button>
+            </CardFooter>
+          </>
+        )}
 
-          {previewQ.isError && (
-            <>
-              <CardContent>
-                <p className="text-sm text-destructive">
-                  {previewQ.error instanceof ApiRequestError
-                    ? previewQ.error.message
-                    : 'O convite é inválido, foi revogado ou já expirou.'}
-                </p>
-              </CardContent>
-              <CardFooter>
-                <Button asChild variant="outline" className="w-full">
-                  <Link href="/entrar">Voltar ao início</Link>
-                </Button>
-              </CardFooter>
-            </>
-          )}
-
-          {previewQ.data && (
-            <form
-              onSubmit={(e) => {
-                e.preventDefault()
-                if (passwordsMatch) acceptMut.mutate()
-              }}
-            >
-              <CardContent className="grid gap-4">
-                <dl className="grid gap-1 text-sm">
-                  {previewQ.data.name && (
-                    <div className="flex justify-between gap-3">
-                      <dt className="text-muted-foreground">Nome</dt>
-                      <dd className="font-medium">{previewQ.data.name}</dd>
-                    </div>
-                  )}
+        {previewQ.data && (
+          <form
+            onSubmit={(e) => {
+              e.preventDefault()
+              if (passwordsMatch) acceptMut.mutate()
+            }}
+          >
+            <CardContent className="grid gap-4">
+              <dl className="grid gap-1 text-sm">
+                {previewQ.data.name && (
                   <div className="flex justify-between gap-3">
-                    <dt className="text-muted-foreground">Email</dt>
-                    <dd className="font-medium">{previewQ.data.email}</dd>
+                    <dt className="text-muted-foreground">Nome</dt>
+                    <dd className="font-medium">{previewQ.data.name}</dd>
                   </div>
-                  {previewQ.data.tenantName && (
-                    <div className="flex justify-between gap-3">
-                      <dt className="text-muted-foreground">Empresa</dt>
-                      <dd className="font-medium">{previewQ.data.tenantName}</dd>
-                    </div>
-                  )}
+                )}
+                <div className="flex justify-between gap-3">
+                  <dt className="text-muted-foreground">Email</dt>
+                  <dd className="font-medium">{previewQ.data.email}</dd>
+                </div>
+                {previewQ.data.tenantName && (
                   <div className="flex justify-between gap-3">
-                    <dt className="text-muted-foreground">Expira</dt>
-                    <dd className="font-medium">{formatExpiry(previewQ.data.expiresAt)}</dd>
+                    <dt className="text-muted-foreground">Empresa</dt>
+                    <dd className="font-medium">{previewQ.data.tenantName}</dd>
                   </div>
-                </dl>
+                )}
+                <div className="flex justify-between gap-3">
+                  <dt className="text-muted-foreground">Expira</dt>
+                  <dd className="font-medium">{formatExpiry(previewQ.data.expiresAt)}</dd>
+                </div>
+              </dl>
 
-                <div className="space-y-2">
-                  <Label htmlFor="pw">Nova senha</Label>
-                  <Input
-                    id="pw"
-                    type="password"
-                    autoComplete="new-password"
-                    minLength={8}
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="pw2">Repita a senha</Label>
-                  <Input
-                    id="pw2"
-                    type="password"
-                    autoComplete="new-password"
-                    minLength={8}
-                    required
-                    value={confirm}
-                    onChange={(e) => setConfirm(e.target.value)}
-                  />
-                  {confirm.length > 0 && !passwordsMatch && (
-                    <p className="text-xs text-destructive">
-                      As senhas não coincidem ou têm menos de 8 caracteres.
-                    </p>
-                  )}
-                </div>
-              </CardContent>
-              <CardFooter>
-                <Button
-                  type="submit"
-                  className="w-full"
-                  disabled={!passwordsMatch || acceptMut.isPending}
-                >
-                  {acceptMut.isPending ? 'A ativar…' : 'Ativar conta'}
-                </Button>
-              </CardFooter>
-            </form>
-          )}
-        </Card>
-      </main>
-    </div>
+              <div className="space-y-2">
+                <Label htmlFor="pw">Nova senha</Label>
+                <Input
+                  id="pw"
+                  type="password"
+                  autoComplete="new-password"
+                  minLength={8}
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="pw2">Repita a senha</Label>
+                <Input
+                  id="pw2"
+                  type="password"
+                  autoComplete="new-password"
+                  minLength={8}
+                  required
+                  value={confirm}
+                  onChange={(e) => setConfirm(e.target.value)}
+                />
+                {confirm.length > 0 && !passwordsMatch && (
+                  <p className="text-xs text-destructive">
+                    As senhas não coincidem ou têm menos de 8 caracteres.
+                  </p>
+                )}
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Button
+                type="submit"
+                className="min-h-11 w-full rounded-full"
+                disabled={!passwordsMatch || acceptMut.isPending}
+              >
+                {acceptMut.isPending ? 'A ativar…' : 'Ativar conta'}
+              </Button>
+            </CardFooter>
+          </form>
+        )}
+      </Card>
+    </AuthPageShell>
   )
 }

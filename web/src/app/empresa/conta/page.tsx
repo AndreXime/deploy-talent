@@ -4,8 +4,10 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { ImageAssetField } from '@/components/image-asset-field'
+import { PageHead } from '@/components/page-head'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
+import { WorkbenchPageShell } from '@/components/workbench-page-shell'
 import { getMyB2BAccount, patchB2BAvatar } from '@/lib/api/auth-api'
 import { ApiRequestError } from '@/lib/api/client'
 import { presignUpload, uploadFileToPresignedUrl } from '@/lib/api/media-api'
@@ -64,17 +66,15 @@ export default function B2BAccountPage() {
   }
 
   return (
-    <main className="mx-auto flex w-full max-w-lg flex-1 flex-col gap-8 p-4 lg:p-8">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Minha conta</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Foto usada internamente na equipe (não confundir com a marca pública da empresa).
-        </p>
-      </div>
+    <WorkbenchPageShell className="max-w-lg">
+      <PageHead
+        title="Minha conta"
+        description="Foto usada internamente na equipe (não confundir com a marca pública da empresa)."
+      />
 
-      <Card>
+      <Card className="border-border shadow-none">
         <CardHeader>
-          <CardTitle>Foto de perfil</CardTitle>
+          <CardTitle className="font-display">Foto de perfil</CardTitle>
           <CardDescription>JPEG, PNG ou WebP.</CardDescription>
         </CardHeader>
         <CardContent>
@@ -94,6 +94,6 @@ export default function B2BAccountPage() {
           )}
         </CardContent>
       </Card>
-    </main>
+    </WorkbenchPageShell>
   )
 }

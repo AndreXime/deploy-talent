@@ -5,6 +5,7 @@ import { ArrowDown, ArrowUp, Plus, Save, Trash2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
+import { PageHead } from '@/components/page-head'
 import { StageConfigEditor } from '@/components/pipeline/stage-config-editor'
 import { StageKindBadge } from '@/components/pipeline/stage-kind-badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -13,6 +14,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
+import { WorkbenchPageShell } from '@/components/workbench-page-shell'
 import { ApiRequestError } from '@/lib/api/client'
 import { getTenantPipeline, replaceTenantPipeline } from '@/lib/api/pipelines-api'
 import type { PipelineStageInput, PipelineStageKind } from '@/lib/api/types'
@@ -106,14 +108,11 @@ export default function TenantPipelinePage() {
   }
 
   return (
-    <main className="flex flex-1 flex-col gap-6 p-4 lg:p-8">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Pipeline default</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Define as etapas que cada nova vaga clona ao ser criada. Cada etapa tem um tipo que
-          determina a interação do candidato.
-        </p>
-      </div>
+    <WorkbenchPageShell>
+      <PageHead
+        title="Pipeline default"
+        description="Define as etapas que cada nova vaga clona ao ser criada. Cada etapa tem um tipo que determina a interação do candidato."
+      />
 
       {templateQ.isError && (
         <Alert variant="destructive">
@@ -127,11 +126,11 @@ export default function TenantPipelinePage() {
         <>
           <div className="flex flex-col gap-4">
             {drafts.map((stage, idx) => (
-              <Card key={stage.draftId}>
+              <Card key={stage.draftId} className="border-border shadow-none">
                 <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div className="flex flex-col gap-2">
                     <div className="flex flex-wrap items-center gap-2">
-                      <CardTitle className="text-base">Etapa {idx + 1}</CardTitle>
+                      <CardTitle className="font-display text-base">Etapa {idx + 1}</CardTitle>
                       <StageKindBadge kind={stage.kind} />
                     </div>
                     <CardDescription>
@@ -249,7 +248,7 @@ export default function TenantPipelinePage() {
                 type="button"
                 onClick={handleSubmit}
                 disabled={replaceMut.isPending || drafts.length === 0}
-                className="gap-2"
+                className="min-h-11 gap-2 rounded-full"
               >
                 <Save className="size-4" />
                 Guardar pipeline
@@ -258,6 +257,6 @@ export default function TenantPipelinePage() {
           )}
         </>
       )}
-    </main>
+    </WorkbenchPageShell>
   )
 }

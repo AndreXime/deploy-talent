@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'sonner'
+import { PageHead } from '@/components/page-head'
 import { StageProgressTimeline } from '@/components/pipeline/stage-progress-timeline'
 import { ApplicationStatusBadge } from '@/components/status-badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -13,6 +14,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
+import { WorkbenchPageShell } from '@/components/workbench-page-shell'
 import { getTenantApplication, moveApplication } from '@/lib/api/applications-api'
 import { ApiRequestError } from '@/lib/api/client'
 import {
@@ -114,7 +116,7 @@ export default function TenantApplicationDetailPage() {
     : undefined
 
   return (
-    <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-8 p-4 lg:p-8">
+    <WorkbenchPageShell className="max-w-3xl">
       <Button variant="outline" size="sm" className="w-fit" asChild>
         <Link href="/empresa/candidaturas">Lista de candidaturas</Link>
       </Button>
@@ -134,14 +136,13 @@ export default function TenantApplicationDetailPage() {
 
       {row && (
         <>
-          <div className="flex flex-wrap items-center gap-2">
-            <h1 className="text-2xl font-semibold tracking-tight">{row.candidate.name}</h1>
+          <PageHead title={row.candidate.name}>
             <ApplicationStatusBadge status={row.status} />
-          </div>
+          </PageHead>
 
-          <Card>
+          <Card className="border-border shadow-none">
             <CardHeader>
-              <CardTitle className="text-lg">Dados do candidato</CardTitle>
+              <CardTitle className="font-display text-lg">Dados do candidato</CardTitle>
               <CardDescription>Visíveis apenas à equipe de recrutamento.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
@@ -171,9 +172,9 @@ export default function TenantApplicationDetailPage() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="border-border shadow-none">
             <CardHeader>
-              <CardTitle className="text-lg">Vaga associada</CardTitle>
+              <CardTitle className="font-display text-lg">Vaga associada</CardTitle>
             </CardHeader>
             <CardContent className="space-y-1 text-sm">
               <p className="font-medium">{row.job.title}</p>
@@ -183,9 +184,9 @@ export default function TenantApplicationDetailPage() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="border-border shadow-none">
             <CardHeader>
-              <CardTitle className="text-lg">Etapas da pipeline</CardTitle>
+              <CardTitle className="font-display text-lg">Etapas da pipeline</CardTitle>
               <CardDescription>
                 Mover a candidatura para outra etapa. O candidato vê a etapa atual no portal.
               </CardDescription>
@@ -222,6 +223,7 @@ export default function TenantApplicationDetailPage() {
                     <Button
                       type="button"
                       disabled={!targetStageId || moveStageMut.isPending}
+                      className="min-h-11"
                       onClick={() => moveStageMut.mutate(targetStageId)}
                     >
                       Mover para a etapa
@@ -268,9 +270,9 @@ export default function TenantApplicationDetailPage() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="border-border shadow-none">
             <CardHeader>
-              <CardTitle className="text-lg">Estado macro</CardTitle>
+              <CardTitle className="font-display text-lg">Estado macro</CardTitle>
               <CardDescription>
                 Transições de status entre `APPLIED`, `IN_PROGRESS`, `HIRED`, `REJECTED` e
                 `WITHDRAWN`.
@@ -300,6 +302,6 @@ export default function TenantApplicationDetailPage() {
           </Card>
         </>
       )}
-    </main>
+    </WorkbenchPageShell>
   )
 }

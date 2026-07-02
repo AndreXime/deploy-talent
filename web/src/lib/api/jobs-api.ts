@@ -66,7 +66,7 @@ export function changeJobStatus(id: string, status: ApiJobStatus) {
   })
 }
 
-/** Público — sem cookie (career site; filtros q, modality, location, seniority). */
+/** Público, sem cookie (career site; filtros q, modality, location, seniority). */
 export function listPublicJobsForTenant(tenantId: string, query?: PublicJobListFilters) {
   return apiRequest<Paginated<JobResponse>>(`/tenants/${tenantId}/jobs`, {
     method: 'GET',

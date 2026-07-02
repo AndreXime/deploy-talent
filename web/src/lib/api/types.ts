@@ -62,7 +62,7 @@ export interface JobResponse {
   updatedAt: string
 }
 
-/** Linha de GET /jobs/public — vaga + empresa. */
+/** Linha de GET /jobs/public: vaga + empresa. */
 export interface PublicJobWithTenantRow {
   job: JobResponse
   tenant: TenantSnippet
@@ -73,7 +73,7 @@ export interface MarketplaceTenantFilterOption {
   name: string
 }
 
-/** GET /jobs/public/filters — facetas alinhadas ao listado do marketplace. */
+/** GET /jobs/public/filters: facetas alinhadas ao listado do marketplace. */
 export interface MarketplaceJobFilterOptions {
   modalities: string[]
   locations: string[]

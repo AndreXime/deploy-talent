@@ -14,7 +14,7 @@ export function JobStatusBadge({
       : status === 'PUBLISHED'
         ? 'border-transparent bg-primary text-primary-foreground'
         : status === 'PAUSED'
-          ? 'border-transparent bg-amber-500/90 text-white'
+          ? 'border-transparent bg-accent text-accent-foreground'
           : 'border-transparent bg-secondary text-secondary-foreground'
 
   const label = audience === 'public' ? jobStatusPublicLabel(status) : jobStatusLabel(status)
@@ -26,13 +26,13 @@ export function ApplicationStatusBadge({ status }: Readonly<{ status: ApiApplica
   if (status === 'IN_PROGRESS') {
     cls = 'border-transparent bg-primary/90 text-primary-foreground'
   } else if (status === 'HIRED') {
-    cls = 'border-transparent bg-emerald-600 text-white'
+    cls = 'border-transparent bg-primary text-primary-foreground'
   } else if (status === 'REJECTED' || status === 'WITHDRAWN') {
     cls = 'border-transparent bg-destructive/85 text-white'
   } else if (status === 'APPLIED') {
-    cls = 'border-transparent bg-sky-600 text-white'
+    cls = 'border-transparent bg-secondary text-secondary-foreground'
   } else if (status === 'SOURCED') {
-    cls = 'border-transparent bg-violet-600 text-white'
+    cls = 'border-transparent bg-accent text-accent-foreground'
   }
 
   return <Badge className={cls}>{applicationStatusLabel(status)}</Badge>

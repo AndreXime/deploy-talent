@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
-import { DemoEnvironmentBanner } from '@/components/demo-environment-banner'
+import { Geist, Geist_Mono, Instrument_Sans } from 'next/font/google'
 import { AppProviders } from '@/providers/app-providers'
 import './globals.css'
 
@@ -12,6 +11,12 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: '--font-geist-mono',
   subsets: ['latin'],
+})
+
+const instrumentSans = Instrument_Sans({
+  variable: '--font-instrument-sans',
+  subsets: ['latin'],
+  weight: ['500', '600', '700'],
 })
 
 export const metadata: Metadata = {
@@ -28,10 +33,9 @@ export default function RootLayout({
     <html
       lang="pt"
       suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${instrumentSans.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col bg-background font-sans text-foreground">
-        <DemoEnvironmentBanner />
         <AppProviders>{children}</AppProviders>
       </body>
     </html>

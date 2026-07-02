@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { ChevronRight, PlusCircle, Users } from 'lucide-react'
 import Link from 'next/link'
 import { useState } from 'react'
+import { PageHead } from '@/components/page-head'
 import { JobStatusBadge } from '@/components/status-badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -16,6 +17,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { WorkbenchPageShell } from '@/components/workbench-page-shell'
 import { listTenantJobs } from '@/lib/api/jobs-api'
 import type { ApiJobStatus } from '@/lib/api/types'
 import { jobStatusLabel } from '@/lib/domain-labels'
@@ -41,21 +43,18 @@ export default function TenantJobsPage() {
   const rows = q.data?.items ?? []
 
   return (
-    <main className="flex flex-1 flex-col gap-6 p-4 lg:p-8">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Vagas da empresa</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Crie, edite e controle onde cada posição está no ciclo de publicação.
-          </p>
-        </div>
-        <Button className="shrink-0 gap-2" asChild>
+    <WorkbenchPageShell>
+      <PageHead
+        title="Vagas da empresa"
+        description="Crie, edite e controle onde cada posição está no ciclo de publicação."
+      >
+        <Button className="min-h-11 shrink-0 gap-2 rounded-full" asChild>
           <Link href="/empresa/vagas/nova">
             <PlusCircle className="size-4" aria-hidden />
             Nova vaga
           </Link>
         </Button>
-      </div>
+      </PageHead>
 
       <div className="flex flex-col gap-2">
         <label className="text-sm font-medium" htmlFor="job_status_filter">
@@ -82,7 +81,7 @@ export default function TenantJobsPage() {
         </Alert>
       )}
 
-      <div className="rounded-lg border bg-card">
+      <div className="rounded-lg border border-border bg-card shadow-none">
         <Table>
           <TableHeader>
             <TableRow>
@@ -135,7 +134,7 @@ export default function TenantJobsPage() {
           </TableBody>
         </Table>
       </div>
-    </main>
+    </WorkbenchPageShell>
   )
 }
 
