@@ -19,6 +19,9 @@ RUN mkdir -p public
 ARG NEXT_PUBLIC_API_BASE_URL=""
 ENV NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL}
 
+ARG IS_DEMO=""
+ENV IS_DEMO=${IS_DEMO}
+
 RUN npm run build
 
 # 3) runner: imagem final só com o output standalone do Next + assets estáticos.

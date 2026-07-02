@@ -1,19 +1,17 @@
 import { Suspense } from 'react'
 import { LoginForm } from '@/app/entrar/login-form'
 import { AuthPageShell } from '@/components/auth-page-shell'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
+import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
+import { IS_DEMO } from '@/lib/env'
 
 function LoginFormFallback() {
   return (
-    <>
+    <Card className="border-border shadow-none">
+      <CardHeader>
+        <Skeleton className="h-8 w-24" />
+        <Skeleton className="h-4 w-full" />
+      </CardHeader>
       <CardContent className="grid gap-4">
         <Skeleton className="h-10 w-full" />
         <Skeleton className="h-10 w-full" />
@@ -21,24 +19,16 @@ function LoginFormFallback() {
       <CardFooter className="pt-4">
         <Skeleton className="h-11 w-full" />
       </CardFooter>
-    </>
+    </Card>
   )
 }
 
 export default function LoginPage() {
   return (
     <AuthPageShell>
-      <Card className="border-border shadow-none">
-        <CardHeader>
-          <CardTitle className="font-display text-2xl">Entrar</CardTitle>
-          <CardDescription>
-            Use as credenciais que recebeu. Sua conta abre diretamente na área certa.
-          </CardDescription>
-        </CardHeader>
-        <Suspense fallback={<LoginFormFallback />}>
-          <LoginForm />
-        </Suspense>
-      </Card>
+      <Suspense fallback={<LoginFormFallback />}>
+        <LoginForm isDemo={IS_DEMO} />
+      </Suspense>
     </AuthPageShell>
   )
 }
