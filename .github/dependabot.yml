@@ -4,6 +4,8 @@ updates:
     directory: /api
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7
     groups:
       nestjs:
         patterns:
@@ -17,6 +19,8 @@ updates:
     directory: /web
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7
     groups:
       nextjs:
         patterns:
@@ -28,3 +32,5 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7
