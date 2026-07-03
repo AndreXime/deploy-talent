@@ -3,14 +3,15 @@ updates:
   - package-ecosystem: npm
     directory: /api
     schedule:
-      interval: weekly
-    cooldown:
-      default-days: 7
+      interval: daily
+    open-pull-requests-limit: 0
     groups:
       nestjs:
+        applies-to: security-updates
         patterns:
           - "@nestjs/*"
       prisma:
+        applies-to: security-updates
         patterns:
           - "@prisma/*"
           - "prisma"
@@ -18,11 +19,11 @@ updates:
   - package-ecosystem: npm
     directory: /web
     schedule:
-      interval: weekly
-    cooldown:
-      default-days: 7
+      interval: daily
+    open-pull-requests-limit: 0
     groups:
       nextjs:
+        applies-to: security-updates
         patterns:
           - "next"
           - "react"
@@ -31,6 +32,5 @@ updates:
   - package-ecosystem: github-actions
     directory: /
     schedule:
-      interval: weekly
-    cooldown:
-      default-days: 7
+      interval: daily
+    open-pull-requests-limit: 0
