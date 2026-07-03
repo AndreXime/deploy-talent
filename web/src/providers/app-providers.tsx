@@ -21,7 +21,12 @@ export function AppProviders({ children }: Readonly<{ children: React.ReactNode 
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+      <ThemeProvider
+        attribute="class"
+        forcedTheme="light"
+        enableSystem={false}
+        disableTransitionOnChange
+      >
         <AuthProvider>
           {children}
           <Toaster richColors closeButton />
