@@ -23,8 +23,6 @@ modern-minimal
 - `--color-accent`  oklch(52% 0.18 264)
 - `--color-focus`   oklch(55% 0.20 264)
 
-Dark: paper oklch(14% 0.018 250), accent oklch(62% 0.16 264).
-
 ## Typography
 
 - Display: Instrument Sans, weight 600, style normal
