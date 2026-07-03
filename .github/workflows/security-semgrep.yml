@@ -1,0 +1,25 @@
+name: Security Scan (Semgrep)
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  semgrep:
+    name: Run Semgrep Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+
+      - name: Executar Semgrep Local (CLI Only)
+        uses: semgrep/semgrep-action@713efdd345f3035192eaa63f56867b88e63e4e5d # v1
+        with:
+          # Executa o subcomando 'scan' em vez de 'ci' para não exigir login na nuvem
+          auditOnInvalidConfig: true
+        env:
+          # Configurações cruciais para rodar sem Cloud:
+          SEMGREP_ARGS: "--config=p/default --error" # Passa as regras e força o erro no CI

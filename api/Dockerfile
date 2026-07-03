@@ -49,10 +49,13 @@ FROM node:${NODE_VERSION}-alpine AS migrate
 RUN apk add --no-cache libc6-compat python3 make g++
 WORKDIR /app
 ENV HUSKY=0
+RUN addgroup -S app && adduser -S app -G app
 COPY package.json package-lock.json prisma.config.ts tsconfig.json ./
 COPY prisma ./prisma
 RUN npm ci \
-  && DATABASE_URL="postgresql://build:build@localhost:5432/build" npx prisma generate
+  && DATABASE_URL="postgresql://build:build@localhost:5432/build" npx prisma generate \
+  && chown -R app:app /app
+USER app
 CMD ["npx", "prisma", "migrate", "deploy"]
 
 # 5) seed: popula dados de demo após migrate (`prisma db seed`).

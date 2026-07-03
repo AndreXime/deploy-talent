@@ -117,7 +117,7 @@ export class ApplicationCandidateListItemDto extends ApplicationResponseDto {
 export class AccessTokenDto {
   @ApiProperty({
     description: 'JWT Bearer usado em `Authorization: Bearer <token>`',
-    example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIuLi4ifQ.signature',
+    example: 'access-token-placeholder',
   })
   access_token!: string
 }
