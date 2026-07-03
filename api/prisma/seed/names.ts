@@ -1,10 +1,10 @@
 /** Nomes de tenant para seed (5 empresas reais, únicos entre si). */
 export const SEED_TENANT_NAMES = [
-  'Nubank',
-  'iFood',
-  'Mercado Livre',
-  'Stone Pagamentos',
-  'QuintoAndar',
+  'PurpleBank',
+  'UaiFood',
+  'FeiraLivre',
+  'BrickPagamentos',
+  'NonoAndar',
 ] as const
 
 /** Partes combináveis para títulos de vaga (PT-BR). */
