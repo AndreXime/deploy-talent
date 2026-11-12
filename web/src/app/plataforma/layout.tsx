@@ -45,7 +45,7 @@ export default function PlatformLayout({ children }: Readonly<{ children: React.
 
   return (
     <div className="flex min-h-full flex-col">
-      <header className="sticky top-0 z-[var(--z-sticky-nav)] border-b border-border bg-background/90 backdrop-blur-md">
+      <header className="sticky top-0 z-(--z-sticky-nav) border-b border-border bg-background/90 backdrop-blur-md">
         <div className="page-container flex h-14 max-w-5xl items-center gap-4">
           <Link
             href="/plataforma/empresas"

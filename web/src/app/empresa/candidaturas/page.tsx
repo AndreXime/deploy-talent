@@ -107,7 +107,7 @@ export default function TenantApplicationsPage() {
           id="application_status_filter"
           value={status}
           onChange={(e) => setStatus(e.target.value as ApiApplicationStatus | 'ALL')}
-          className="flex h-10 w-full max-w-[280px] rounded-lg border border-input bg-transparent px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="flex h-10 w-full max-w-70 rounded-lg border border-input bg-transparent px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <option value="ALL">Todas</option>
           {APPLICATION_STATUS_OPTIONS.map((s) => (

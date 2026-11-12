@@ -64,7 +64,7 @@ export default function TenantJobsPage() {
           id="job_status_filter"
           value={status}
           onChange={(e) => setStatus(e.target.value as ApiJobStatus | 'ALL')}
-          className="flex h-10 w-full max-w-[220px] rounded-lg border border-input bg-transparent px-3 text-sm outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring"
+          className="flex h-10 w-full max-w-55 rounded-lg border border-input bg-transparent px-3 text-sm outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring"
         >
           <option value="ALL">Todas</option>
           {JOB_STATUS_OPTIONS.map((s) => (

@@ -133,7 +133,7 @@ export function PublicHeader() {
   const [menuOpen, setMenuOpen] = useState(false)
 
   return (
-    <header className="sticky top-0 z-[var(--z-sticky-nav)] border-b border-border/80 bg-background/90 backdrop-blur-md supports-[backdrop-filter]:bg-background/75">
+    <header className="sticky top-0 z-(--z-sticky-nav) border-b border-border bg-background/95 backdrop-blur-sm supports-backdrop-filter:bg-background/90">
       <div className="page-container flex h-14 items-center justify-between gap-3">
         <Link
           href="/"

@@ -21,7 +21,8 @@ const instrumentSans = Instrument_Sans({
 
 export const metadata: Metadata = {
   title: 'Deploy Talent',
-  description: 'Plataforma de recrutamento multi-tenant.',
+  description:
+    'Plataforma para vagas de tecnologia: publique aberturas, receba candidaturas e acompanhe o processo.',
 }
 
 export default function RootLayout({

@@ -79,7 +79,7 @@ function CareerListInner({ tenantId, valid }: { tenantId: string; valid: boolean
       {brandingQ.data?.banner?.url ? (
         <div className="relative h-44 w-full overflow-hidden border-b md:h-56 lg:h-72">
           <img src={brandingQ.data.banner.url} alt="" className="h-full w-full object-cover" />
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background/90 to-transparent" />
+          <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-background/90 to-transparent" />
         </div>
       ) : null}
       <main className="page-container flex flex-1 flex-col gap-8 py-10 lg:py-12">

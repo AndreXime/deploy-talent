@@ -56,7 +56,7 @@ body {
 :root {
   --background: var(--color-paper);
   --foreground: var(--color-ink);
-  --card: var(--color-paper);
+  --card: var(--color-paper-2);
   --card-foreground: var(--color-ink);
   --popover: var(--color-paper);
   --popover-foreground: var(--color-ink);
@@ -127,6 +127,6 @@ body {
   }
   .hover-lift:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 24px oklch(18% 0.02 250 / 8%);
+    box-shadow: 0 8px 24px oklch(18% 0.008 60 / 10%);
   }
 }
