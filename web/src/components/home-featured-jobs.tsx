@@ -1,26 +1,55 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import { ArrowRight, MapPin, MonitorSmartphone } from 'lucide-react'
+import { ArrowRight, Bookmark, Briefcase, Building2, MapPin } from 'lucide-react'
 import Link from 'next/link'
-import { JobStatusBadge } from '@/components/status-badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { listMarketplaceJobs } from '@/lib/api/jobs-api'
+import type { JobResponse } from '@/lib/api/types'
 
 const FEATURED_LIMIT = 3
 
 const skeletonPlaceholders = ['featured-a', 'featured-b', 'featured-c'] as const
 
-function snippetFromDescription(raw: string, maxLen: number): string {
-  const collapsed = raw.replace(/\s+/g, ' ').trim()
-  if (collapsed.length <= maxLen) {
-    return collapsed
-  }
-  return `${collapsed.slice(0, maxLen - 1).trimEnd()}…`
+const TECH_TOKENS = [
+  'TypeScript',
+  'JavaScript',
+  'React',
+  'Node',
+  'Python',
+  'SQL',
+  'AWS',
+  'Azure',
+  'GCP',
+  'Docker',
+  'Kubernetes',
+  'Terraform',
+  'Go',
+  'Rust',
+  'Java',
+  'Kotlin',
+  'Swift',
+  'PostgreSQL',
+  'MongoDB',
+  'Redis',
+  'GraphQL',
+  'Next.js',
+  'Vue',
+  'Angular',
+  'Power BI',
+  'Excel',
+  'HTML',
+  'CSS',
+] as const
+
+function tagsFromJob(job: JobResponse): string[] {
+  const haystack = `${job.title} ${job.description}`
+  const found = TECH_TOKENS.filter((token) =>
+    new RegExp(`\\b${token.replace('.', '\\.')}\\b`, 'i').test(haystack),
+  )
+  return found.slice(0, 4)
 }
 
 export function HomeFeaturedJobs() {
@@ -30,30 +59,34 @@ export function HomeFeaturedJobs() {
   })
 
   return (
-    <section id="vagas-destaque" className="scroll-mt-28 py-16 lg:py-20">
-      <div className="page-container">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <div className="section-head min-w-0">
-            <h2 className="text-balance text-[length:var(--text-display-s)] font-semibold tracking-tight">
-              Publicadas agora
-            </h2>
-            <p className="max-w-2xl text-pretty text-sm text-muted-foreground">
-              As {FEATURED_LIMIT} vagas mais recentes do marketplace, o mesmo índice do explorador.
-            </p>
-          </div>
-          <Button variant="outline" className="min-h-11 shrink-0 rounded-full" asChild>
-            <Link href="/vagas" className="gap-2">
-              Ver índice completo
-              <ArrowRight className="size-4" aria-hidden />
-            </Link>
-          </Button>
+    <section
+      id="vagas-destaque"
+      className="relative scroll-mt-28 overflow-hidden border-y border-border bg-muted/30 py-16 lg:py-24"
+    >
+      <div
+        className="pointer-events-none absolute -top-16 -left-10 size-56 rounded-full bg-primary/8 blur-3xl"
+        aria-hidden
+      />
+      <div
+        className="pointer-events-none absolute -right-8 -bottom-20 size-64 rounded-full bg-primary/6 blur-3xl"
+        aria-hidden
+      />
+
+      <div className="page-container relative">
+        <div className="max-w-2xl">
+          <h2 className="text-balance font-display text-(length:--text-display-s) font-semibold tracking-tight">
+            Vagas de tecnologia em destaque
+          </h2>
+          <p className="mt-3 text-pretty text-muted-foreground">
+            Oportunidades em destaque para profissionais de TI.
+          </p>
         </div>
 
         {jobsQ.isLoading ? (
-          <ul className="mt-12 grid grid-cols-1 gap-4 min-[480px]:grid-cols-2 lg:grid-cols-3">
+          <ul className="mt-10 grid grid-cols-1 gap-5 min-[480px]:grid-cols-2 lg:grid-cols-3">
             {skeletonPlaceholders.map((id) => (
               <li key={id} className="min-w-0">
-                <Skeleton className="h-52 w-full rounded-xl" />
+                <Skeleton className="h-56 w-full rounded-2xl" />
               </li>
             ))}
           </ul>
@@ -64,7 +97,7 @@ export function HomeFeaturedJobs() {
             <AlertDescription>
               Não foi possível carregar as vagas.{' '}
               <Link href="/vagas" className="font-medium underline underline-offset-4">
-                Abrir explorador
+                Abrir lista de vagas
               </Link>
               .
             </AlertDescription>
@@ -72,81 +105,113 @@ export function HomeFeaturedJobs() {
         ) : null}
 
         {jobsQ.data && jobsQ.data.items.length === 0 ? (
-          <Card className="mt-10 border-dashed">
-            <CardHeader>
-              <CardTitle className="font-display text-base">Ainda sem vagas públicas</CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Quando existirem posições publicadas, aparecem aqui automaticamente.
-              </p>
-            </CardHeader>
-            <CardFooter>
-              <Button variant="secondary" className="min-h-11" asChild>
-                <Link href="/vagas">Ir ao explorador</Link>
-              </Button>
-            </CardFooter>
-          </Card>
+          <div className="mt-10 rounded-2xl border border-dashed border-border bg-card p-8">
+            <p className="font-display text-base font-semibold">Ainda sem vagas públicas</p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Quando existirem posições publicadas, aparecem aqui automaticamente.
+            </p>
+            <Button variant="secondary" className="mt-6 min-h-11" asChild>
+              <Link href="/vagas">Ver todas as vagas</Link>
+            </Button>
+          </div>
         ) : null}
 
         {jobsQ.data && jobsQ.data.items.length > 0 ? (
-          <ul className="mt-12 grid grid-cols-1 gap-4 min-[480px]:grid-cols-2 lg:grid-cols-3">
-            {jobsQ.data.items.map(({ job, tenant }) => (
-              <li key={job.id} className="min-w-0">
-                <Card className="hover-lift h-full border-border transition-shadow">
-                  <CardHeader className="pb-2">
-                    <div className="flex flex-wrap items-start justify-between gap-2">
-                      <CardTitle className="min-w-0 pr-2 font-display text-base leading-snug">
-                        {job.title}
-                      </CardTitle>
-                      <JobStatusBadge status={job.status} audience="public" />
-                    </div>
-                    <Link
-                      href={`/carreiras/${tenant.id}`}
-                      className="text-sm font-medium text-primary hover:underline"
-                    >
-                      {tenant.name}
-                    </Link>
-                  </CardHeader>
-                  <CardContent className="space-y-3 pt-0">
-                    <div className="flex flex-wrap gap-2">
-                      <Badge variant="secondary">{job.seniority}</Badge>
-                      <Badge
-                        variant="outline"
-                        className="inline-flex items-center gap-1 font-normal"
-                      >
-                        <MonitorSmartphone className="size-3 shrink-0" aria-hidden />
-                        {job.modality}
-                      </Badge>
-                      <Badge
-                        variant="outline"
-                        className="inline-flex items-center gap-1 font-normal"
-                      >
-                        <MapPin className="size-3 shrink-0" aria-hidden />
-                        {job.location}
-                      </Badge>
-                    </div>
-                    {job.description.trim() ? (
-                      <p className="line-clamp-3 text-pretty text-xs leading-relaxed text-muted-foreground">
-                        {snippetFromDescription(job.description, 220)}
+          <>
+            <ul className="mt-10 grid grid-cols-1 gap-5 min-[480px]:grid-cols-2 lg:grid-cols-3">
+              {jobsQ.data.items.map(({ job, tenant }) => {
+                const tags = tagsFromJob(job)
+                const href = `/carreiras/${job.tenantId}/vagas/${job.id}`
+
+                return (
+                  <li key={job.id} className="min-w-0">
+                    <article className="hover-lift flex h-full flex-col rounded-2xl border border-border bg-card p-6 shadow-[0_10px_30px_oklch(18%_0.008_60/0.05)]">
+                      <h3 className="min-w-0 font-display text-lg font-semibold leading-snug tracking-tight">
+                        <Link href={href} className="hover:text-primary">
+                          {job.title}
+                        </Link>
+                      </h3>
+
+                      <p className="mt-4 inline-flex min-w-0 items-center gap-2.5 text-sm">
+                        <Building2
+                          className="size-4 shrink-0 text-primary"
+                          strokeWidth={2.25}
+                          aria-hidden
+                        />
+                        <Link
+                          href={`/carreiras/${tenant.id}`}
+                          className="truncate font-medium text-foreground hover:text-primary"
+                        >
+                          {tenant.name}
+                        </Link>
                       </p>
-                    ) : null}
-                  </CardContent>
-                  <CardFooter className="border-t-0 pt-0">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="min-h-11 w-full justify-between px-0"
-                      asChild
-                    >
-                      <Link href={`/carreiras/${job.tenantId}/vagas/${job.id}`}>
-                        Ver vaga
-                        <ArrowRight className="size-4" aria-hidden />
-                      </Link>
-                    </Button>
-                  </CardFooter>
-                </Card>
-              </li>
-            ))}
-          </ul>
+
+                      <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+                        <span className="inline-flex items-center gap-2.5 text-foreground">
+                          <MapPin
+                            className="size-4 shrink-0 text-primary"
+                            strokeWidth={2.25}
+                            aria-hidden
+                          />
+                          {job.location}
+                        </span>
+                        <span className="font-medium text-primary">{job.modality}</span>
+                      </p>
+
+                      {job.seniority.trim() ? (
+                        <p className="mt-2 inline-flex min-w-0 items-center gap-2.5 text-sm text-foreground">
+                          <Briefcase
+                            className="size-4 shrink-0 text-primary"
+                            strokeWidth={2.25}
+                            aria-hidden
+                          />
+                          {job.seniority}
+                        </p>
+                      ) : null}
+
+                      {tags.length > 0 ? (
+                        <ul className="mt-4 flex flex-wrap gap-2">
+                          {tags.map((tag) => (
+                            <li
+                              key={`${job.id}-${tag}`}
+                              className="rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-foreground"
+                            >
+                              {tag}
+                            </li>
+                          ))}
+                        </ul>
+                      ) : null}
+
+                      <div className="mt-auto flex items-center justify-between pt-6">
+                        <Link
+                          href={href}
+                          className="inline-flex min-h-11 items-center gap-1 text-sm font-medium text-primary hover:underline"
+                        >
+                          Ver vaga
+                          <ArrowRight className="size-3.5" aria-hidden />
+                        </Link>
+                        <Link
+                          href={href}
+                          className="flex size-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary"
+                          aria-label={`Abrir ${job.title}`}
+                        >
+                          <Bookmark className="size-4" aria-hidden />
+                        </Link>
+                      </div>
+                    </article>
+                  </li>
+                )
+              })}
+            </ul>
+
+            <Link
+              href="/vagas"
+              className="mt-8 inline-flex min-h-11 items-center gap-1 text-sm font-medium text-primary underline-offset-4 hover:underline"
+            >
+              Ver todas as vagas
+              <ArrowRight className="size-3.5" aria-hidden />
+            </Link>
+          </>
         ) : null}
       </div>
     </section>

@@ -1,16 +1,13 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import { Briefcase, ChevronRight, MapPin, MonitorSmartphone } from 'lucide-react'
+import { ArrowRight, Briefcase, Building2, MapPin, Search } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { type ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
-import { PageHead } from '@/components/page-head'
 import { PublicHeader } from '@/components/public-header'
-import { JobStatusBadge } from '@/components/status-badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
@@ -247,185 +244,274 @@ export function ExploreJobsClient() {
     router.replace(`${pathname}?${p.toString()}`)
   }
 
+  function clearFilters() {
+    setDraftQ('')
+    setDraftModality('')
+    setDraftLocation('')
+    setDraftSeniority('')
+    setDraftTenantId('')
+    router.replace(pathname)
+  }
+
+  const hasActiveFilters = Boolean(q || modality || location || seniority || tenantId)
+  const resultCount = jobsQ.data?.total
+
   return (
-    <div className="flex min-h-full flex-col">
+    <div className="flex min-h-full flex-col bg-background">
       <PublicHeader />
-      <main className="page-container flex flex-1 flex-col gap-8 py-10 lg:py-12">
-        <PageHead
-          title="Índice de vagas"
-          description="Oportunidades publicadas por empresas ativas na plataforma. Filtre por stack, senioridade, modalidade ou empresa."
+      <main className="relative flex flex-1 flex-col">
+        <div
+          className="pointer-events-none absolute inset-x-0 top-0 h-64 bg-[radial-gradient(ellipse_70%_80%_at_0%_0%,var(--color-accent)/0.12,transparent_55%)]"
+          aria-hidden
         />
 
-        <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:gap-10">
-          <aside className="w-full shrink-0 lg:sticky lg:top-[calc(var(--banner-height)+3.5rem)] lg:w-72 xl:w-80">
-            <Card className="border-border shadow-none">
-              <CardHeader className="pb-3">
-                <CardTitle className="font-display text-base">Filtros</CardTitle>
+        <div className="page-container relative flex flex-1 flex-col gap-8 py-10 lg:py-14">
+          <header className="max-w-2xl">
+            <h1 className="text-balance font-display text-3xl font-semibold tracking-tight sm:text-4xl">
+              Vagas de tecnologia
+            </h1>
+            <p className="mt-3 text-pretty text-muted-foreground">
+              Oportunidades de TI publicadas por empresas. Filtre por área, nível, modalidade ou
+              cidade.
+            </p>
+            {typeof resultCount === 'number' && !jobsQ.isLoading ? (
+              <p className="mt-4 text-sm font-medium text-foreground">
+                {resultCount === 0
+                  ? 'Nenhuma vaga encontrada'
+                  : resultCount === 1
+                    ? '1 vaga encontrada'
+                    : `${resultCount} vagas encontradas`}
+              </p>
+            ) : null}
+          </header>
+
+          <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:gap-10">
+            <aside className="w-full shrink-0 lg:sticky lg:top-[calc(var(--banner-height)+3.5rem)] lg:w-72 xl:w-80">
+              <div className="rounded-2xl border border-border bg-card p-5 shadow-[0_10px_30px_oklch(18%_0.008_60/0.05)]">
+                <h2 className="font-display text-base font-semibold">Filtros</h2>
                 {filtersQ.isError ? (
-                  <CardDescription className="text-destructive">
-                    Não foi possível carregar as listas de filtro; pode usar palavras-chave e tentar
-                    de novo.
-                  </CardDescription>
+                  <p className="mt-3 text-sm text-destructive">
+                    Não foi possível carregar as listas de filtro. Você ainda pode buscar por
+                    palavras-chave.
+                  </p>
                 ) : null}
-              </CardHeader>
-              <CardContent className="grid gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="ex-q">Palavras-chave</Label>
-                  <Input
-                    id="ex-q"
-                    value={draftQ}
-                    onChange={(e) => setDraftQ(e.target.value)}
-                    placeholder="Ex.: React, Rust…"
+
+                <div className="mt-5 grid gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="ex-q">Buscar</Label>
+                    <div className="relative">
+                      <Search
+                        className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
+                        aria-hidden
+                      />
+                      <Input
+                        id="ex-q"
+                        value={draftQ}
+                        onChange={(e) => setDraftQ(e.target.value)}
+                        placeholder="Ex.: desenvolvimento, dados…"
+                        className="h-11 pl-10"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') applyFilters()
+                        }}
+                      />
+                    </div>
+                  </div>
+                  <MarketplaceStringFacetSelect
+                    id="ex-mod"
+                    label="Modalidade"
+                    value={draftModality}
+                    onChange={setDraftModality}
+                    options={modalityOptions}
+                    chooseLabel="Qualquer modalidade"
+                    disabled={facetSelectDisabled}
                   />
+                  <MarketplaceStringFacetSelect
+                    id="ex-loc"
+                    label="Cidade"
+                    value={draftLocation}
+                    onChange={setDraftLocation}
+                    options={locationOptions}
+                    chooseLabel="Qualquer cidade"
+                    disabled={facetSelectDisabled}
+                  />
+                  <MarketplaceStringFacetSelect
+                    id="ex-sen"
+                    label="Nível"
+                    value={draftSeniority}
+                    onChange={setDraftSeniority}
+                    options={seniorityOptions}
+                    chooseLabel="Qualquer nível"
+                    disabled={facetSelectDisabled}
+                  />
+                  <MarketplaceTenantFacetSelect
+                    id="ex-tid"
+                    label="Empresa"
+                    value={draftTenantId}
+                    onChange={setDraftTenantId}
+                    tenants={tenantOptions}
+                    chooseLabel="Qualquer empresa"
+                    disabled={facetSelectDisabled}
+                  />
+                  <Button
+                    type="button"
+                    className="min-h-11 w-full rounded-xl"
+                    onClick={applyFilters}
+                  >
+                    Aplicar filtros
+                  </Button>
+                  {hasActiveFilters ? (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      className="min-h-11 w-full rounded-xl"
+                      onClick={clearFilters}
+                    >
+                      Limpar filtros
+                    </Button>
+                  ) : null}
                 </div>
-                <MarketplaceStringFacetSelect
-                  id="ex-mod"
-                  label="Modalidade"
-                  value={draftModality}
-                  onChange={setDraftModality}
-                  options={modalityOptions}
-                  chooseLabel="Qualquer modalidade"
-                  disabled={facetSelectDisabled}
-                />
-                <MarketplaceStringFacetSelect
-                  id="ex-loc"
-                  label="Local"
-                  value={draftLocation}
-                  onChange={setDraftLocation}
-                  options={locationOptions}
-                  chooseLabel="Qualquer local"
-                  disabled={facetSelectDisabled}
-                />
-                <MarketplaceStringFacetSelect
-                  id="ex-sen"
-                  label="Senioridade"
-                  value={draftSeniority}
-                  onChange={setDraftSeniority}
-                  options={seniorityOptions}
-                  chooseLabel="Qualquer senioridade"
-                  disabled={facetSelectDisabled}
-                />
-                <MarketplaceTenantFacetSelect
-                  id="ex-tid"
-                  label="Empresa"
-                  value={draftTenantId}
-                  onChange={setDraftTenantId}
-                  tenants={tenantOptions}
-                  chooseLabel="Qualquer empresa"
-                  disabled={facetSelectDisabled}
-                />
-                <Button type="button" className="min-h-11 w-full" onClick={applyFilters}>
-                  Aplicar filtros
-                </Button>
-              </CardContent>
-            </Card>
-          </aside>
-
-          <div className="min-w-0 flex-1 space-y-4">
-            {!tenantIdValid && tenantId ? (
-              <Alert variant="destructive">
-                <AlertDescription>
-                  A empresa seleccionada não é um UUID válido; limpe o filtro ou corrija o URL.
-                </AlertDescription>
-              </Alert>
-            ) : null}
-
-            {jobsQ.isLoading ? (
-              <div className="space-y-3">
-                <Skeleton className="h-24 w-full" />
-                <Skeleton className="h-24 w-full" />
               </div>
-            ) : null}
+            </aside>
 
-            {jobsQ.isError ? (
-              <Alert variant="destructive">
-                <AlertDescription>
-                  Não foi possível carregar as vagas. Tente mais tarde.
-                </AlertDescription>
-              </Alert>
-            ) : null}
+            <div className="min-w-0 flex-1 space-y-4">
+              {!tenantIdValid && tenantId ? (
+                <Alert variant="destructive">
+                  <AlertDescription>
+                    A empresa selecionada não é um UUID válido. Limpe o filtro ou corrija o URL.
+                  </AlertDescription>
+                </Alert>
+              ) : null}
 
-            {jobsQ.data && jobsQ.data.items.length === 0 ? (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-base">
-                    <Briefcase className="size-5 text-muted-foreground" aria-hidden />
-                    Nenhuma vaga encontrada
-                  </CardTitle>
-                  <CardDescription>Alargue os filtros ou volte mais tarde.</CardDescription>
-                </CardHeader>
-              </Card>
-            ) : null}
+              {jobsQ.isLoading ? (
+                <div className="space-y-4">
+                  <Skeleton className="h-36 w-full rounded-2xl" />
+                  <Skeleton className="h-36 w-full rounded-2xl" />
+                  <Skeleton className="h-36 w-full rounded-2xl" />
+                </div>
+              ) : null}
 
-            <ul className="flex flex-col gap-3">
-              {jobsQ.data?.items.map(({ job, tenant }) => (
-                <li key={job.id} className="min-w-0">
-                  <Card className="hover-lift overflow-hidden border-border transition-shadow">
-                    <CardContent className="flex flex-col gap-4 p-5 lg:flex-row lg:items-start lg:justify-between">
-                      <div className="min-w-0 space-y-2">
-                        <Link
-                          href={`/carreiras/${tenant.id}`}
-                          className="text-xs font-medium uppercase tracking-wide text-primary hover:underline"
+              {jobsQ.isError ? (
+                <Alert variant="destructive">
+                  <AlertDescription>
+                    Não foi possível carregar as vagas. Tente mais tarde.
+                  </AlertDescription>
+                </Alert>
+              ) : null}
+
+              {jobsQ.data && jobsQ.data.items.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-border bg-card p-8">
+                  <div className="flex size-12 items-center justify-center rounded-full bg-primary/12 text-primary">
+                    <Briefcase className="size-5" aria-hidden />
+                  </div>
+                  <p className="mt-4 font-display text-lg font-semibold">Nenhuma vaga encontrada</p>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Amplie os filtros ou volte mais tarde para novas oportunidades.
+                  </p>
+                  {hasActiveFilters ? (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="mt-6 min-h-11 rounded-xl"
+                      onClick={clearFilters}
+                    >
+                      Limpar filtros
+                    </Button>
+                  ) : null}
+                </div>
+              ) : null}
+
+              <ul className="flex flex-col gap-4">
+                {jobsQ.data?.items.map(({ job, tenant }) => {
+                  const href = `/carreiras/${job.tenantId}/vagas/${job.id}`
+                  return (
+                    <li key={job.id} className="min-w-0">
+                      <article className="hover-lift flex h-full flex-col gap-4 rounded-2xl border border-border bg-card p-5 shadow-[0_10px_30px_oklch(18%_0.008_60/0.05)] sm:flex-row sm:items-center sm:justify-between sm:gap-6 sm:p-6">
+                        <div className="min-w-0 flex-1">
+                          <h2 className="font-display text-lg font-semibold tracking-tight">
+                            <Link href={href} className="hover:text-primary">
+                              {job.title}
+                            </Link>
+                          </h2>
+
+                          <p className="mt-3 inline-flex min-w-0 items-center gap-2.5 text-sm">
+                            <Building2
+                              className="size-4 shrink-0 text-primary"
+                              strokeWidth={2.25}
+                              aria-hidden
+                            />
+                            <Link
+                              href={`/carreiras/${tenant.id}`}
+                              className="truncate font-medium text-foreground hover:text-primary"
+                            >
+                              {tenant.name}
+                            </Link>
+                          </p>
+
+                          <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+                            <span className="inline-flex items-center gap-2.5 text-foreground">
+                              <MapPin
+                                className="size-4 shrink-0 text-primary"
+                                strokeWidth={2.25}
+                                aria-hidden
+                              />
+                              {job.location}
+                            </span>
+                            <span className="font-medium text-primary">{job.modality}</span>
+                          </p>
+
+                          {job.seniority.trim() ? (
+                            <p className="mt-2 inline-flex min-w-0 items-center gap-2.5 text-sm text-foreground">
+                              <Briefcase
+                                className="size-4 shrink-0 text-primary"
+                                strokeWidth={2.25}
+                                aria-hidden
+                              />
+                              {job.seniority}
+                            </p>
+                          ) : null}
+                        </div>
+
+                        <Button
+                          asChild
+                          className="min-h-11 shrink-0 gap-2 self-stretch rounded-xl sm:self-center"
                         >
-                          {tenant.name}
-                        </Link>
-                        <div className="flex flex-wrap items-center gap-2">
-                          <h2 className="font-display text-lg font-semibold">{job.title}</h2>
-                          <JobStatusBadge status={job.status} audience="public" />
-                        </div>
-                        <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
-                          <span className="inline-flex items-center gap-1">
-                            <MonitorSmartphone className="size-4 shrink-0" aria-hidden />
-                            {job.modality}
-                          </span>
-                          <span className="inline-flex items-center gap-1">
-                            <MapPin className="size-4 shrink-0" aria-hidden />
-                            {job.location}
-                          </span>
-                        </div>
-                      </div>
-                      <Button
-                        asChild
-                        className="min-h-11 shrink-0 gap-2 self-stretch rounded-full lg:self-center"
-                      >
-                        <Link href={`/carreiras/${job.tenantId}/vagas/${job.id}`}>
-                          Ver detalhes
-                          <ChevronRight className="size-4" aria-hidden />
-                        </Link>
-                      </Button>
-                    </CardContent>
-                  </Card>
-                </li>
-              ))}
-            </ul>
+                          <Link href={href}>
+                            Ver detalhes
+                            <ArrowRight className="size-4" aria-hidden />
+                          </Link>
+                        </Button>
+                      </article>
+                    </li>
+                  )
+                })}
+              </ul>
 
-            {jobsQ.data && totalPages > 1 ? (
-              <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="min-h-11"
-                  disabled={page <= 1}
-                  onClick={() => goPage(page - 1)}
-                >
-                  Anterior
-                </Button>
-                <span className="text-sm text-muted-foreground">
-                  Página {page} de {totalPages}
-                </span>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="min-h-11"
-                  disabled={page >= totalPages}
-                  onClick={() => goPage(page + 1)}
-                >
-                  Seguinte
-                </Button>
-              </div>
-            ) : null}
+              {jobsQ.data && totalPages > 1 ? (
+                <div className="flex flex-wrap items-center justify-center gap-3 pt-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="min-h-11 rounded-xl"
+                    disabled={page <= 1}
+                    onClick={() => goPage(page - 1)}
+                  >
+                    Anterior
+                  </Button>
+                  <span className="text-sm text-muted-foreground">
+                    Página {page} de {totalPages}
+                  </span>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="min-h-11 rounded-xl"
+                    disabled={page >= totalPages}
+                    onClick={() => goPage(page + 1)}
+                  >
+                    Próxima
+                  </Button>
+                </div>
+              ) : null}
+            </div>
           </div>
         </div>
       </main>

@@ -1,27 +1,27 @@
 # Design: Deploy Talent
 
-Sistema travado para o app em `/web`. Tema Hallmark **Cobalt** (custom).
+Sistema travado para o app em `/web`. Tema Hallmark custom **Warm Teal Trust**.
 
 ## Genre
 
-modern-minimal
+modern-minimal (tom humano, domínio TI)
 
 ## Macrostructure family
 
-- Marketing / marketplace / carreiras: **Ecosystem Index** (#20)
-- Auth: painel centrado minimal
-- App logado: **Workbench** (#05), sidebar + superfície de trabalho
+- Marketing / marketplace / carreiras: home confiança humana + explorar vagas
+- Auth: split claro (visual + formulário)
+- App logado: Workbench (fora do redesign desta rodada; herda tokens)
 
-## Theme: Cobalt
+## Theme: Warm Teal Trust
 
-- `--color-paper`   oklch(98.5% 0.010 250)
-- `--color-paper-2` oklch(96% 0.012 250)
-- `--color-paper-3` oklch(92.5% 0.014 250)
-- `--color-ink`     oklch(18% 0.020 250)
-- `--color-ink-2`   oklch(26% 0.018 250)
-- `--color-rule`    oklch(88% 0.012 250)
-- `--color-accent`  oklch(52% 0.18 264)
-- `--color-focus`   oklch(55% 0.20 264)
+- `--color-paper`   oklch(96.8% 0.006 85)
+- `--color-paper-2` oklch(98.5% 0.004 85)
+- `--color-paper-3` oklch(93.5% 0.008 85)
+- `--color-ink`     oklch(18% 0.008 60)
+- `--color-ink-2`   oklch(28% 0.01 60)
+- `--color-rule`    oklch(88% 0.008 85)
+- `--color-accent`  oklch(48% 0.09 180)
+- `--color-focus`   oklch(52% 0.1 180)
 
 ## Typography
 
@@ -36,12 +36,13 @@ modern-minimal
 
 ## Motion
 
-hover-lift em cards · focus instantâneo · sem biblioteca de motion
+hover-lift em cards · focus instantâneo · entradas leves opacity/transform · sem biblioteca nova
 
 ## CTA voice
 
-Verbos diretos: Explorar, Publicar, Candidatar, Entrar.
+Verbos diretos: Ver vagas, Sou empresa, Criar conta, Entrar.
 
 ## Copy rules
 
-Sem métricas inventadas. Placeholders: rótulo "a confirmar" com bloco neutro.
+Sem métricas inventadas. Sem “indexado” / “toolchain” / “stack” como slogan.
+Domínio: vagas de tecnologia / TI em português simples para RH e candidatos.
