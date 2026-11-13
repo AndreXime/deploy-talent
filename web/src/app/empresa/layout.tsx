@@ -37,7 +37,7 @@ export default function CompanyLayout({ children }: Readonly<{ children: React.R
   if (!claims || !allowed) {
     return (
       <div className="flex flex-1 items-center justify-center p-8 text-muted-foreground">
-        A redirecionar…
+        Redirecionando…
       </div>
     )
   }

@@ -10,7 +10,7 @@ modern-minimal (tom humano, domínio TI)
 
 - Marketing / marketplace / carreiras: home confiança humana + explorar vagas
 - Auth: split claro (visual + formulário)
-- App logado: Workbench (fora do redesign desta rodada; herda tokens)
+- App logado (empresa): workbench funcional com polish Warm Teal (shell, selects, cards, PT-BR)
 
 ## Theme: Warm Teal Trust
 

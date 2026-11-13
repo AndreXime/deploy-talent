@@ -87,7 +87,7 @@ export default function TenantJobDetailPage() {
     },
     onError: (err: unknown) => {
       if (err instanceof ApiRequestError) toast.error(err.message)
-      else toast.error('Falha ao guardar.')
+      else toast.error('Falha ao salvar.')
     },
   })
 
@@ -174,14 +174,14 @@ export default function TenantJobDetailPage() {
 
       {j && (
         <>
-          <PageHead title="Gerir posição">
+          <PageHead title="Gerenciar vaga">
             <JobStatusBadge status={j.status} />
           </PageHead>
 
-          <Card className="border-border shadow-none">
+          <Card className="rounded-2xl border-border shadow-[0_10px_30px_oklch(18%_0.008_60/0.04)]">
             <CardHeader>
-              <CardTitle className="font-display">Editar textos públicos futuros</CardTitle>
-              <CardDescription>O que aparece aos candidatos após publicar.</CardDescription>
+              <CardTitle className="font-display">Textos da vaga</CardTitle>
+              <CardDescription>O que os candidatos veem depois da publicação.</CardDescription>
             </CardHeader>
             <CardContent className="grid gap-4">
               <div className="space-y-2">
@@ -220,16 +220,16 @@ export default function TenantJobDetailPage() {
                 className="min-h-11"
                 onClick={() => patchMut.mutate()}
               >
-                {patchMut.isPending ? 'A guardar…' : 'Guardar alterações'}
+                {patchMut.isPending ? 'Salvando…' : 'Salvar alterações'}
               </Button>
             </CardFooter>
           </Card>
 
-          <Card className="border-border shadow-none">
+          <Card className="rounded-2xl border-border shadow-[0_10px_30px_oklch(18%_0.008_60/0.04)]">
             <CardHeader>
               <CardTitle className="font-display">Ciclo de publicação</CardTitle>
               <CardDescription>
-                Avance apenas para estados seguintes válidos nesta ferramenta.
+                Avance apenas para os status seguintes válidos nesta ferramenta.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
@@ -241,7 +241,7 @@ export default function TenantJobDetailPage() {
               )}
               {nextStatuses.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
-                  Este estado já não permite novas mudanças.
+                  Este status não permite mais alterações.
                 </p>
               ) : (
                 <div className="flex flex-wrap gap-2">
@@ -264,7 +264,7 @@ export default function TenantJobDetailPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-border shadow-none">
+          <Card className="rounded-2xl border-border shadow-[0_10px_30px_oklch(18%_0.008_60/0.04)]">
             <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <CardTitle className="font-display">Sourcing por email</CardTitle>

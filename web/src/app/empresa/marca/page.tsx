@@ -79,12 +79,12 @@ export default function TenantBrandingPage() {
     <WorkbenchPageShell className="max-w-xl">
       <PageHead
         title="Marca no site de carreiras"
-        description="Estas imagens aparecem no topo da página pública de vagas da sua empresa."
+        description="Logo e banner aparecem na página pública de vagas da sua empresa."
       />
 
-      <Card className="border-border shadow-none">
+      <Card className="rounded-2xl border-border shadow-[0_10px_30px_oklch(18%_0.008_60/0.04)]">
         <CardHeader>
-          <CardTitle className="font-display">Logótipo</CardTitle>
+          <CardTitle className="font-display">Logo</CardTitle>
           <CardDescription>Formato quadrado funciona melhor em listagens.</CardDescription>
         </CardHeader>
         <CardContent>
@@ -94,7 +94,7 @@ export default function TenantBrandingPage() {
             <ImageAssetField
               currentUrl={logoUrl}
               aspect="square"
-              alt={`Logótipo de ${brandingQ.data?.name ?? ''}`}
+              alt={`Logo de ${brandingQ.data?.name ?? ''}`}
               hint="JPG, PNG ou WEBP."
               uploading={busy === 'logo' && patchMut.isPending}
               removing={busy === 'logo' && patchMut.isPending && logoUrl !== null}
@@ -105,7 +105,7 @@ export default function TenantBrandingPage() {
         </CardContent>
       </Card>
 
-      <Card className="border-border shadow-none">
+      <Card className="rounded-2xl border-border shadow-[0_10px_30px_oklch(18%_0.008_60/0.04)]">
         <CardHeader>
           <CardTitle className="font-display">Banner</CardTitle>
           <CardDescription>

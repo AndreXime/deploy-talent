@@ -4,11 +4,19 @@ import { useQuery } from '@tanstack/react-query'
 import { ChevronRight, X } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useState } from 'react'
+import { type ReactNode, useMemo, useState } from 'react'
 import { PageHead } from '@/components/page-head'
 import { ApplicationStatusBadge } from '@/components/status-badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
   Table,
@@ -33,11 +41,15 @@ const APPLICATION_STATUS_OPTIONS: ApiApplicationStatus[] = [
   'WITHDRAWN',
   'HIRED',
 ]
+const FILTER_ALL = 'ALL'
+
+const tablePanelClass =
+  'overflow-hidden rounded-2xl border border-border bg-card shadow-[0_10px_30px_oklch(18%_0.008_60/0.04)]'
 
 function formatUpdatedAt(iso: string): string {
   const date = new Date(iso)
   if (Number.isNaN(date.getTime())) return iso
-  return date.toLocaleDateString('pt-PT', { day: '2-digit', month: 'short', year: 'numeric' })
+  return date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })
 }
 
 export default function TenantApplicationsPage() {
@@ -45,7 +57,7 @@ export default function TenantApplicationsPage() {
   const searchParams = useSearchParams()
   const jobId = searchParams.get('jobId') ?? undefined
   const { claims } = useAuth()
-  const [status, setStatus] = useState<ApiApplicationStatus | 'ALL'>('ALL')
+  const [status, setStatus] = useState<ApiApplicationStatus | typeof FILTER_ALL>(FILTER_ALL)
 
   const q = useQuery({
     enabled: !!claims,
@@ -54,7 +66,7 @@ export default function TenantApplicationsPage() {
       listTenantApplications({
         page: 1,
         limit: 50,
-        status: status === 'ALL' ? undefined : status,
+        status: status === FILTER_ALL ? undefined : status,
         jobId,
       }),
   })
@@ -71,16 +83,26 @@ export default function TenantApplicationsPage() {
 
   const rows = q.data?.items ?? []
 
+  const statusItems = useMemo(() => {
+    const rec: Record<string, ReactNode> = {
+      [FILTER_ALL]: 'Todas',
+    }
+    for (const s of APPLICATION_STATUS_OPTIONS) {
+      rec[s] = applicationStatusLabel(s)
+    }
+    return rec
+  }, [])
+
   return (
     <WorkbenchPageShell>
       <PageHead
         title="Candidaturas"
-        description="Consulte quem está em processo e abra o detalhe para movimentar o funil."
+        description="Veja quem está no processo e abra a ficha para avançar no funil."
       />
 
       {jobId && (
-        <div className="flex flex-wrap items-center gap-3 rounded-lg border bg-muted/40 px-4 py-3 text-sm">
-          <span className="text-muted-foreground">A mostrar candidaturas da vaga</span>
+        <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-border bg-muted/40 px-4 py-3 text-sm">
+          <span className="text-muted-foreground">Mostrando candidaturas da vaga</span>
           <span className="font-medium">
             {jobQ.isLoading ? <Skeleton className="inline-block h-4 w-32 align-middle" /> : null}
             {jobQ.data?.title}
@@ -90,7 +112,7 @@ export default function TenantApplicationsPage() {
             type="button"
             variant="ghost"
             size="sm"
-            className="ml-auto gap-1"
+            className="ml-auto gap-1 rounded-xl"
             onClick={clearJobFilter}
           >
             <X className="size-4" aria-hidden />
@@ -99,23 +121,32 @@ export default function TenantApplicationsPage() {
         </div>
       )}
 
-      <div className="flex flex-col gap-2">
-        <label className="text-sm font-medium" htmlFor="application_status_filter">
-          Filtrar por estado
-        </label>
-        <select
-          id="application_status_filter"
+      <div className="flex max-w-xs flex-col gap-2">
+        <Label htmlFor="application_status_filter">Filtrar por status</Label>
+        <Select
           value={status}
-          onChange={(e) => setStatus(e.target.value as ApiApplicationStatus | 'ALL')}
-          className="flex h-10 w-full max-w-70 rounded-lg border border-input bg-transparent px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          items={statusItems}
+          onValueChange={(v) => {
+            if (v == null) return
+            setStatus(v as ApiApplicationStatus | typeof FILTER_ALL)
+          }}
         >
-          <option value="ALL">Todas</option>
-          {APPLICATION_STATUS_OPTIONS.map((s) => (
-            <option key={s} value={s}>
-              {applicationStatusLabel(s)}
-            </option>
-          ))}
-        </select>
+          <SelectTrigger
+            id="application_status_filter"
+            size="default"
+            className="h-10 w-full min-w-0 rounded-xl"
+          >
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent alignItemWithTrigger={false}>
+            <SelectItem value={FILTER_ALL}>Todas</SelectItem>
+            {APPLICATION_STATUS_OPTIONS.map((s) => (
+              <SelectItem key={s} value={s}>
+                {applicationStatusLabel(s)}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {q.isError && (
@@ -124,16 +155,16 @@ export default function TenantApplicationsPage() {
         </Alert>
       )}
 
-      <div className="rounded-lg border border-border bg-card shadow-none">
+      <div className={tablePanelClass}>
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Candidato</TableHead>
               <TableHead>Vaga</TableHead>
-              <TableHead>Estado</TableHead>
+              <TableHead>Status</TableHead>
               <TableHead>Etapa</TableHead>
               <TableHead>Última atualização</TableHead>
-              <TableHead className="text-end">Acções</TableHead>
+              <TableHead className="text-end">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -141,10 +172,21 @@ export default function TenantApplicationsPage() {
               <ApplicationsLoadingRows />
             ) : rows.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="py-10 text-center text-sm text-muted-foreground">
-                  {jobId
-                    ? 'Esta vaga ainda não tem candidaturas.'
-                    : 'Não há candidaturas com este filtro.'}
+                <TableCell colSpan={6} className="py-12 text-center">
+                  <div className="mx-auto flex max-w-sm flex-col items-center gap-3">
+                    <p className="text-sm text-muted-foreground">
+                      {jobId
+                        ? 'Esta vaga ainda não recebeu candidaturas. Compartilhe a página pública para atrair profissionais.'
+                        : status === FILTER_ALL
+                          ? 'Nenhuma candidatura por enquanto. Publique uma vaga e acompanhe as entradas aqui.'
+                          : 'Nenhuma candidatura com este status. Tente outro filtro.'}
+                    </p>
+                    {!jobId ? (
+                      <Button variant="outline" className="min-h-10 rounded-full" asChild>
+                        <Link href="/empresa/vagas">Ir para vagas</Link>
+                      </Button>
+                    ) : null}
+                  </div>
                 </TableCell>
               </TableRow>
             ) : (
@@ -162,7 +204,7 @@ export default function TenantApplicationsPage() {
                     {formatUpdatedAt(row.updatedAt)}
                   </TableCell>
                   <TableCell className="text-end">
-                    <Button variant="outline" size="sm" className="gap-1" asChild>
+                    <Button variant="outline" size="sm" className="gap-1 rounded-xl" asChild>
                       <Link href={`/empresa/candidaturas/${row.id}`}>
                         Abrir ficha
                         <ChevronRight className="size-4" aria-hidden />
@@ -183,7 +225,7 @@ function ApplicationsLoadingRows() {
   return (
     <>
       {[0, 1, 2].map((i) => (
-        <TableRow key={i}>
+        <TableRow key={`apps-skel-${i}`}>
           <TableCell>
             <Skeleton className="h-4 w-40" />
           </TableCell>

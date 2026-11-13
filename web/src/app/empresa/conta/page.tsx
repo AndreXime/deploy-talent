@@ -38,7 +38,7 @@ export default function B2BAccountPage() {
     },
     onError: (err: unknown) => {
       if (err instanceof ApiRequestError) toast.error(err.message)
-      else toast.error('Não foi possível guardar.')
+      else toast.error('Não foi possível salvar.')
     },
   })
 
@@ -72,7 +72,7 @@ export default function B2BAccountPage() {
         description="Foto usada internamente na equipe (não confundir com a marca pública da empresa)."
       />
 
-      <Card className="border-border shadow-none">
+      <Card className="rounded-2xl border-border shadow-[0_10px_30px_oklch(18%_0.008_60/0.04)]">
         <CardHeader>
           <CardTitle className="font-display">Foto de perfil</CardTitle>
           <CardDescription>JPEG, PNG ou WebP.</CardDescription>

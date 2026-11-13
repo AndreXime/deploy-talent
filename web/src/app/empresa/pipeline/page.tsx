@@ -8,6 +8,7 @@ import { toast } from 'sonner'
 import { PageHead } from '@/components/page-head'
 import { StageConfigEditor } from '@/components/pipeline/stage-config-editor'
 import { StageKindBadge } from '@/components/pipeline/stage-kind-badge'
+import { StageKindSelect } from '@/components/pipeline/stage-kind-select'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -81,7 +82,7 @@ export default function TenantPipelinePage() {
     },
     onError: (err: unknown) => {
       if (err instanceof ApiRequestError) toast.error(err.message)
-      else toast.error('Não foi possível guardar a pipeline.')
+      else toast.error('Não foi possível salvar a pipeline.')
     },
   })
 
@@ -110,8 +111,8 @@ export default function TenantPipelinePage() {
   return (
     <WorkbenchPageShell>
       <PageHead
-        title="Pipeline default"
-        description="Define as etapas que cada nova vaga clona ao ser criada. Cada etapa tem um tipo que determina a interação do candidato."
+        title="Pipeline padrão"
+        description="Defina as etapas que cada nova vaga herda ao ser criada. O tipo da etapa define a interação com o candidato."
       />
 
       {templateQ.isError && (
@@ -126,7 +127,10 @@ export default function TenantPipelinePage() {
         <>
           <div className="flex flex-col gap-4">
             {drafts.map((stage, idx) => (
-              <Card key={stage.draftId} className="border-border shadow-none">
+              <Card
+                key={stage.draftId}
+                className="rounded-2xl border-border shadow-[0_10px_30px_oklch(18%_0.008_60/0.04)]"
+              >
                 <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div className="flex flex-col gap-2">
                     <div className="flex flex-wrap items-center gap-2">
@@ -134,7 +138,7 @@ export default function TenantPipelinePage() {
                       <StageKindBadge kind={stage.kind} />
                     </div>
                     <CardDescription>
-                      Posição na pipeline; arrasta com as setas para reordenar.
+                      Posição na pipeline. Use as setas para reordenar.
                     </CardDescription>
                   </div>
                   {!readOnly && (
@@ -190,33 +194,18 @@ export default function TenantPipelinePage() {
                         }
                       />
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor={`kind_${stage.draftId}`}>Tipo</Label>
-                      <select
-                        id={`kind_${stage.draftId}`}
-                        value={stage.kind}
-                        disabled={readOnly}
-                        onChange={(e) =>
-                          setDrafts((prev) =>
-                            prev.map((s) =>
-                              s.draftId === stage.draftId
-                                ? {
-                                    ...s,
-                                    kind: e.target.value as PipelineStageKind,
-                                    config: {},
-                                  }
-                                : s,
-                            ),
-                          )
-                        }
-                        className="flex h-10 w-full rounded-lg border border-input bg-transparent px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60"
-                      >
-                        <option value="MANUAL">Manual (só recrutador)</option>
-                        <option value="QUESTIONNAIRE">Questionário</option>
-                        <option value="INTERVIEW_LINK">Entrevista (link)</option>
-                        <option value="FILE_UPLOAD">Envio de arquivo</option>
-                      </select>
-                    </div>
+                    <StageKindSelect
+                      id={`kind_${stage.draftId}`}
+                      value={stage.kind}
+                      disabled={readOnly}
+                      onChange={(kind) =>
+                        setDrafts((prev) =>
+                          prev.map((s) =>
+                            s.draftId === stage.draftId ? { ...s, kind, config: {} } : s,
+                          ),
+                        )
+                      }
+                    />
                   </div>
 
                   <StageConfigEditor
@@ -251,7 +240,7 @@ export default function TenantPipelinePage() {
                 className="min-h-11 gap-2 rounded-full"
               >
                 <Save className="size-4" />
-                Guardar pipeline
+                Salvar pipeline
               </Button>
             </div>
           )}
