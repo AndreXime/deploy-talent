@@ -1,9 +1,9 @@
 'use client'
 
-import { Briefcase } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useEffect } from 'react'
+import { BrandMark } from '@/components/brand-mark'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -51,9 +51,7 @@ export default function PlatformLayout({ children }: Readonly<{ children: React.
             href="/plataforma/empresas"
             className="flex min-w-0 items-center gap-2.5 font-display font-semibold tracking-tight"
           >
-            <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-              <Briefcase className="size-4" aria-hidden />
-            </span>
+            <BrandMark size={32} className="size-8" />
             <span className="truncate">Gestão da plataforma</span>
           </Link>
           <Button

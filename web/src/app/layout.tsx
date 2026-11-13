@@ -23,6 +23,7 @@ export const metadata: Metadata = {
   title: 'Deploy Talent',
   description:
     'Plataforma para vagas de tecnologia: publique aberturas, receba candidaturas e acompanhe o processo.',
+  applicationName: 'Deploy Talent',
 }
 
 export default function RootLayout({

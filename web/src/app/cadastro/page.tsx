@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { AuthPageShell } from '@/components/auth-page-shell'
+import { BrandMark } from '@/components/brand-mark'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -63,12 +64,7 @@ export default function RegisterPage() {
     <AuthPageShell>
       <div className="flex w-full flex-col gap-8">
         <div className="flex flex-col items-center gap-3 text-center">
-          <span
-            className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground"
-            aria-hidden
-          >
-            <UserPlus className="size-5" />
-          </span>
+          <BrandMark size={40} className="size-10" />
           <div className="min-w-0">
             <h1 className="font-display text-3xl font-semibold tracking-tight text-foreground">
               Criar conta

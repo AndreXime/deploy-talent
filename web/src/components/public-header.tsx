@@ -2,7 +2,6 @@
 
 import {
   Bookmark,
-  Briefcase,
   Building2,
   ClipboardList,
   Compass,
@@ -16,6 +15,7 @@ import {
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState } from 'react'
+import { BrandMark } from '@/components/brand-mark'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { homePathForRole } from '@/lib/routes'
@@ -139,12 +139,7 @@ export function PublicHeader() {
           href="/"
           className="flex min-w-0 shrink items-center gap-2.5 font-display text-base font-semibold tracking-tight text-foreground"
         >
-          <span
-            className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground"
-            aria-hidden
-          >
-            <Briefcase className="size-4" />
-          </span>
+          <BrandMark size={32} className="size-8" priority />
           <span className="truncate">Deploy Talent</span>
         </Link>
 
