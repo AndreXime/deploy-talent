@@ -13,6 +13,7 @@ import {
 } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { BrandMark } from '@/components/brand-mark'
 import { HomeFeaturedJobs } from '@/components/home-featured-jobs'
 import { PublicHeader } from '@/components/public-header'
 import { Button } from '@/components/ui/button'
@@ -409,8 +410,9 @@ export default function HomePage() {
               <div className="min-w-0 max-w-xl">
                 <Link
                   href="/"
-                  className="inline-flex font-display text-base font-semibold tracking-tight text-foreground"
+                  className="inline-flex items-center gap-2.5 font-display text-base font-semibold tracking-tight text-foreground"
                 >
+                  <BrandMark size={32} className="size-8" />
                   Deploy Talent
                 </Link>
                 <p className="mt-6 font-display text-2xl font-semibold tracking-tight text-balance sm:text-3xl">

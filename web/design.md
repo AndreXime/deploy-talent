@@ -23,6 +23,12 @@ modern-minimal (tom humano, domínio TI)
 - `--color-accent`  oklch(48% 0.09 180)
 - `--color-focus`   oklch(52% 0.1 180)
 
+## Logo / mark
+
+- Mark: monograma D com folha (Warm Teal), arquivo `public/brand/logo-mark.png`
+- Favicon / app icon: `app/favicon.ico`, `app/icon.png`, `app/apple-icon.png`
+- Componente: `BrandMark`
+
 ## Typography
 
 - Display: Instrument Sans, weight 600, style normal

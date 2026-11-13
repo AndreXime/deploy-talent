@@ -5,6 +5,7 @@ import { Briefcase, Building2, ListChecks, Menu, Palette, UserPlus, Users } from
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState } from 'react'
+import { BrandMark } from '@/components/brand-mark'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
@@ -79,8 +80,9 @@ function CompanyHeading() {
     <div className="flex flex-col gap-1">
       <Link
         href="/"
-        className="font-display text-sm font-semibold tracking-tight text-sidebar-foreground/70 transition-colors hover:text-sidebar-foreground"
+        className="inline-flex items-center gap-2 font-display text-sm font-semibold tracking-tight text-sidebar-foreground/70 transition-colors hover:text-sidebar-foreground"
       >
+        <BrandMark size={24} className="size-6" />
         Deploy Talent
       </Link>
       {tenantQ.isLoading ? (
