@@ -7,5 +7,7 @@ interface WorkbenchPageShellProps {
 }
 
 export function WorkbenchPageShell({ children, className }: WorkbenchPageShellProps) {
-  return <div className={cn('flex flex-1 flex-col gap-6 p-4 lg:p-8', className)}>{children}</div>
+  return (
+    <div className={cn('flex flex-1 flex-col gap-6 p-4 sm:p-6 lg:p-8', className)}>{children}</div>
+  )
 }

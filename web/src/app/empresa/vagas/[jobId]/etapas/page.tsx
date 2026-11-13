@@ -9,6 +9,7 @@ import { toast } from 'sonner'
 import { PageHead } from '@/components/page-head'
 import { StageConfigEditor } from '@/components/pipeline/stage-config-editor'
 import { StageKindBadge } from '@/components/pipeline/stage-kind-badge'
+import { StageKindSelect } from '@/components/pipeline/stage-kind-select'
 import { JobStatusBadge } from '@/components/status-badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -92,7 +93,7 @@ export default function JobStagesPage() {
     },
     onError: (err: unknown) => {
       if (err instanceof ApiRequestError) toast.error(err.message)
-      else toast.error('Não foi possível guardar as etapas.')
+      else toast.error('Não foi possível salvar as etapas.')
     },
   })
 
@@ -144,7 +145,10 @@ export default function JobStagesPage() {
 
             <div className="flex flex-col gap-4">
               {drafts.map((stage, idx) => (
-                <Card key={stage.draftId} className="border-border shadow-none">
+                <Card
+                  key={stage.draftId}
+                  className="rounded-2xl border-border shadow-[0_10px_30px_oklch(18%_0.008_60/0.04)]"
+                >
                   <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div className="flex flex-col gap-2">
                       <div className="flex flex-wrap items-center gap-2">
@@ -206,33 +210,18 @@ export default function JobStagesPage() {
                           }
                         />
                       </div>
-                      <div className="space-y-2">
-                        <Label htmlFor={`kind_${stage.draftId}`}>Tipo</Label>
-                        <select
-                          id={`kind_${stage.draftId}`}
-                          value={stage.kind}
-                          disabled={readOnly}
-                          onChange={(e) =>
-                            setDrafts((prev) =>
-                              prev.map((s) =>
-                                s.draftId === stage.draftId
-                                  ? {
-                                      ...s,
-                                      kind: e.target.value as PipelineStageKind,
-                                      config: {},
-                                    }
-                                  : s,
-                              ),
-                            )
-                          }
-                          className="flex h-10 w-full rounded-lg border border-input bg-transparent px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60"
-                        >
-                          <option value="MANUAL">Manual</option>
-                          <option value="QUESTIONNAIRE">Questionário</option>
-                          <option value="INTERVIEW_LINK">Entrevista</option>
-                          <option value="FILE_UPLOAD">Envio de arquivo</option>
-                        </select>
-                      </div>
+                      <StageKindSelect
+                        id={`kind_${stage.draftId}`}
+                        value={stage.kind}
+                        disabled={readOnly}
+                        onChange={(kind) =>
+                          setDrafts((prev) =>
+                            prev.map((s) =>
+                              s.draftId === stage.draftId ? { ...s, kind, config: {} } : s,
+                            ),
+                          )
+                        }
+                      />
                     </div>
                     <StageConfigEditor
                       kind={stage.kind}
@@ -275,7 +264,7 @@ export default function JobStagesPage() {
                   }
                 >
                   <Save className="size-4" />
-                  Guardar etapas
+                  Salvar etapas
                 </Button>
               </div>
             )}

@@ -59,9 +59,9 @@ export default function NewJobPage() {
       </div>
       <PageHead
         title="Nova vaga"
-        description="Começa em estado de rascunho até publicar com todos os campos necessários preenchidos."
+        description="A vaga começa como rascunho. Complete os campos e publique quando estiver pronta."
       />
-      <Card className="border-border shadow-none">
+      <Card className="rounded-2xl border-border shadow-[0_10px_30px_oklch(18%_0.008_60/0.04)]">
         <CardHeader>
           <CardTitle className="font-display">Dados principais</CardTitle>
           <CardDescription>Há texto visível apenas à equipe até publicar.</CardDescription>
@@ -126,7 +126,7 @@ export default function NewJobPage() {
             className="min-h-11 rounded-full"
             onClick={() => mut.mutate()}
           >
-            {mut.isPending ? 'A guardar…' : 'Criar rascunho'}
+            {mut.isPending ? 'Salvando…' : 'Criar rascunho'}
           </Button>
         </CardFooter>
       </Card>

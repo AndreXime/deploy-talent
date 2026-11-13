@@ -46,7 +46,7 @@ function NavLinks({ onNavigate }: Readonly<{ onNavigate?: () => void }>) {
             onClick={onNavigate}
             aria-current={active ? 'page' : undefined}
             className={cn(
-              'flex min-h-11 items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors duration-(--dur-micro) ease-out',
+              'flex min-h-11 items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors duration-(--dur-micro) ease-out',
               active
                 ? 'bg-sidebar-primary text-sidebar-primary-foreground shadow-sm'
                 : 'text-sidebar-foreground/85 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
@@ -73,21 +73,32 @@ function CompanyHeading() {
     staleTime: 5 * 60 * 1000,
   })
 
+  const careersHref = tenantQ.data?.id ? `/carreiras/${tenantQ.data.id}` : null
+
   return (
-    <div className="flex flex-col gap-0.5">
-      <p className="font-mono text-[0.65rem] font-medium uppercase tracking-widest text-muted-foreground">
-        Área da empresa
-      </p>
+    <div className="flex flex-col gap-1">
+      <Link
+        href="/"
+        className="font-display text-sm font-semibold tracking-tight text-sidebar-foreground/70 transition-colors hover:text-sidebar-foreground"
+      >
+        Deploy Talent
+      </Link>
       {tenantQ.isLoading ? (
-        <Skeleton className="mt-1 h-6 w-36" />
-      ) : (
-        <p
-          className="truncate font-display text-lg font-semibold tracking-tight text-sidebar-foreground"
+        <Skeleton className="mt-0.5 h-6 w-36" />
+      ) : careersHref ? (
+        <Link
+          href={careersHref}
+          className="truncate font-display text-lg font-semibold tracking-tight text-sidebar-foreground transition-colors hover:text-primary"
           title={tenantQ.data?.name}
         >
           {tenantQ.data?.name ?? 'Empresa'}
+        </Link>
+      ) : (
+        <p className="truncate font-display text-lg font-semibold tracking-tight text-sidebar-foreground">
+          Empresa
         </p>
       )}
+      <p className="text-xs text-muted-foreground">Área da empresa</p>
     </div>
   )
 }
@@ -98,7 +109,7 @@ export function CompanyShell({ children }: Readonly<{ children: React.ReactNode 
   const { signOut } = useAuth()
 
   return (
-    <div className="flex min-h-full flex-col lg:h-dvh lg:flex-row lg:overflow-hidden">
+    <div className="flex min-h-full flex-col bg-background lg:h-dvh lg:flex-row lg:overflow-hidden">
       <aside className="hidden w-60 shrink-0 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground lg:flex lg:h-dvh xl:w-64">
         <div className="border-b border-sidebar-border px-4 py-5">
           <CompanyHeading />
@@ -111,7 +122,7 @@ export function CompanyShell({ children }: Readonly<{ children: React.ReactNode 
           <Button
             variant="outline"
             size="sm"
-            className="w-full min-h-11"
+            className="min-h-11 w-full rounded-xl"
             type="button"
             onClick={() => {
               signOut()
@@ -124,12 +135,12 @@ export function CompanyShell({ children }: Readonly<{ children: React.ReactNode 
       </aside>
 
       <div className="flex min-h-full min-w-0 flex-1 flex-col lg:h-dvh lg:min-h-0 lg:overflow-y-auto">
-        <header className="flex items-center justify-between border-b border-border px-4 py-3 lg:hidden">
+        <header className="flex items-center justify-between border-b border-border bg-card/80 px-4 py-3 backdrop-blur-sm lg:hidden">
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger
               className={cn(
                 buttonVariants({ variant: 'outline', size: 'icon' }),
-                'min-h-11 min-w-11 rounded-lg',
+                'min-h-11 min-w-11 rounded-xl',
               )}
               aria-label="Abrir menu"
             >
@@ -146,7 +157,7 @@ export function CompanyShell({ children }: Readonly<{ children: React.ReactNode 
           <Button
             variant="ghost"
             size="sm"
-            className="min-h-11"
+            className="min-h-11 rounded-xl"
             type="button"
             onClick={() => {
               signOut()

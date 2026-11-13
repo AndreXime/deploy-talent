@@ -3,7 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
-import { useState } from 'react'
+import { type ReactNode, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { PageHead } from '@/components/page-head'
 import { StageProgressTimeline } from '@/components/pipeline/stage-progress-timeline'
@@ -13,6 +13,13 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import { WorkbenchPageShell } from '@/components/workbench-page-shell'
 import { getTenantApplication, moveApplication } from '@/lib/api/applications-api'
@@ -105,7 +112,7 @@ export default function TenantApplicationDetailPage() {
     },
     onError: (err: unknown) => {
       if (err instanceof ApiRequestError) toast.error(err.message)
-      else toast.error('Não foi possível guardar o link.')
+      else toast.error('Não foi possível salvar o link.')
     },
   })
 
@@ -140,7 +147,7 @@ export default function TenantApplicationDetailPage() {
             <ApplicationStatusBadge status={row.status} />
           </PageHead>
 
-          <Card className="border-border shadow-none">
+          <Card className="rounded-2xl border-border shadow-[0_10px_30px_oklch(18%_0.008_60/0.04)]">
             <CardHeader>
               <CardTitle className="font-display text-lg">Dados do candidato</CardTitle>
               <CardDescription>Visíveis apenas à equipe de recrutamento.</CardDescription>
@@ -172,7 +179,7 @@ export default function TenantApplicationDetailPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-border shadow-none">
+          <Card className="rounded-2xl border-border shadow-[0_10px_30px_oklch(18%_0.008_60/0.04)]">
             <CardHeader>
               <CardTitle className="font-display text-lg">Vaga associada</CardTitle>
             </CardHeader>
@@ -184,7 +191,7 @@ export default function TenantApplicationDetailPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-border shadow-none">
+          <Card className="rounded-2xl border-border shadow-[0_10px_30px_oklch(18%_0.008_60/0.04)]">
             <CardHeader>
               <CardTitle className="font-display text-lg">Etapas da pipeline</CardTitle>
               <CardDescription>
@@ -206,33 +213,17 @@ export default function TenantApplicationDetailPage() {
                 row.status !== 'WITHDRAWN' &&
                 row.status !== 'HIRED' &&
                 (stagesQ.data ?? []).length > 0 && (
-                  <div className="grid gap-2 sm:grid-cols-[1fr_auto]">
-                    <select
-                      id="target_stage"
-                      value={targetStageId}
-                      onChange={(e) => setTargetStageId(e.target.value)}
-                      className="flex h-10 w-full rounded-lg border border-input bg-transparent px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    >
-                      <option value="">Escolher etapa…</option>
-                      {(stagesQ.data ?? []).map((s) => (
-                        <option key={s.id} value={s.id}>
-                          {s.name}
-                        </option>
-                      ))}
-                    </select>
-                    <Button
-                      type="button"
-                      disabled={!targetStageId || moveStageMut.isPending}
-                      className="min-h-11"
-                      onClick={() => moveStageMut.mutate(targetStageId)}
-                    >
-                      Mover para a etapa
-                    </Button>
-                  </div>
+                  <StageTargetSelect
+                    stages={stagesQ.data ?? []}
+                    value={targetStageId}
+                    onChange={setTargetStageId}
+                    onMove={() => moveStageMut.mutate(targetStageId)}
+                    moving={moveStageMut.isPending}
+                  />
                 )}
 
               {currentStage?.kind === 'INTERVIEW_LINK' && (
-                <div className="space-y-3 rounded-lg border bg-muted/30 p-3">
+                <div className="space-y-3 rounded-xl border border-border bg-muted/30 p-3">
                   <p className="text-sm font-medium">
                     Configurar link da entrevista para a etapa atual ({currentStage.name})
                   </p>
@@ -263,16 +254,16 @@ export default function TenantApplicationDetailPage() {
                     disabled={interviewUrl.trim().length === 0 || interviewMut.isPending}
                     onClick={() => interviewMut.mutate(currentStage.id)}
                   >
-                    Guardar link
+                    Salvar link
                   </Button>
                 </div>
               )}
             </CardContent>
           </Card>
 
-          <Card className="border-border shadow-none">
+          <Card className="rounded-2xl border-border shadow-[0_10px_30px_oklch(18%_0.008_60/0.04)]">
             <CardHeader>
-              <CardTitle className="font-display text-lg">Estado macro</CardTitle>
+              <CardTitle className="font-display text-lg">Status geral</CardTitle>
               <CardDescription>
                 Transições de status entre `APPLIED`, `IN_PROGRESS`, `HIRED`, `REJECTED` e
                 `WITHDRAWN`.
@@ -303,5 +294,62 @@ export default function TenantApplicationDetailPage() {
         </>
       )}
     </WorkbenchPageShell>
+  )
+}
+
+const STAGE_NONE = '__none__'
+
+function StageTargetSelect({
+  stages,
+  value,
+  onChange,
+  onMove,
+  moving,
+}: Readonly<{
+  stages: ReadonlyArray<{ id: string; name: string }>
+  value: string
+  onChange: (next: string) => void
+  onMove: () => void
+  moving: boolean
+}>) {
+  const selectValue = value.trim() ? value : STAGE_NONE
+  const items = useMemo(() => {
+    const rec: Record<string, ReactNode> = {
+      [STAGE_NONE]: 'Escolher etapa…',
+    }
+    for (const s of stages) {
+      rec[s.id] = s.name
+    }
+    return rec
+  }, [stages])
+
+  return (
+    <div className="grid gap-2 sm:grid-cols-[1fr_auto]">
+      <Select
+        value={selectValue}
+        items={items}
+        onValueChange={(v) => onChange(v == null || v === STAGE_NONE ? '' : v)}
+      >
+        <SelectTrigger id="target_stage" size="default" className="h-10 w-full min-w-0 rounded-xl">
+          <SelectValue placeholder="Escolher etapa…" />
+        </SelectTrigger>
+        <SelectContent alignItemWithTrigger={false}>
+          <SelectItem value={STAGE_NONE}>Escolher etapa…</SelectItem>
+          {stages.map((s) => (
+            <SelectItem key={s.id} value={s.id}>
+              {s.name}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <Button
+        type="button"
+        disabled={!value || moving}
+        className="min-h-11 rounded-xl"
+        onClick={onMove}
+      >
+        Mover para a etapa
+      </Button>
+    </div>
   )
 }

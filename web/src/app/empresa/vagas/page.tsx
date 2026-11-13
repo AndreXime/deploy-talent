@@ -3,11 +3,19 @@
 import { useQuery } from '@tanstack/react-query'
 import { ChevronRight, PlusCircle, Users } from 'lucide-react'
 import Link from 'next/link'
-import { useState } from 'react'
+import { type ReactNode, useMemo, useState } from 'react'
 import { PageHead } from '@/components/page-head'
 import { JobStatusBadge } from '@/components/status-badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
   Table,
@@ -24,10 +32,14 @@ import { jobStatusLabel } from '@/lib/domain-labels'
 import { useAuth } from '@/providers/auth-provider'
 
 const JOB_STATUS_OPTIONS: ApiJobStatus[] = ['DRAFT', 'PUBLISHED', 'PAUSED', 'CLOSED']
+const FILTER_ALL = 'ALL'
+
+const tablePanelClass =
+  'overflow-hidden rounded-2xl border border-border bg-card shadow-[0_10px_30px_oklch(18%_0.008_60/0.04)]'
 
 export default function TenantJobsPage() {
   const { claims } = useAuth()
-  const [status, setStatus] = useState<ApiJobStatus | 'ALL'>('ALL')
+  const [status, setStatus] = useState<ApiJobStatus | typeof FILTER_ALL>(FILTER_ALL)
 
   const q = useQuery({
     enabled: !!claims,
@@ -36,17 +48,27 @@ export default function TenantJobsPage() {
       listTenantJobs({
         page: 1,
         limit: 50,
-        status: status === 'ALL' ? undefined : status,
+        status: status === FILTER_ALL ? undefined : status,
       }),
   })
 
   const rows = q.data?.items ?? []
 
+  const statusItems = useMemo(() => {
+    const rec: Record<string, ReactNode> = {
+      [FILTER_ALL]: 'Todas',
+    }
+    for (const s of JOB_STATUS_OPTIONS) {
+      rec[s] = jobStatusLabel(s)
+    }
+    return rec
+  }, [])
+
   return (
     <WorkbenchPageShell>
       <PageHead
-        title="Vagas da empresa"
-        description="Crie, edite e controle onde cada posição está no ciclo de publicação."
+        title="Vagas"
+        description="Crie, publique e acompanhe cada posição no ciclo de recrutamento."
       >
         <Button className="min-h-11 shrink-0 gap-2 rounded-full" asChild>
           <Link href="/empresa/vagas/nova">
@@ -56,23 +78,32 @@ export default function TenantJobsPage() {
         </Button>
       </PageHead>
 
-      <div className="flex flex-col gap-2">
-        <label className="text-sm font-medium" htmlFor="job_status_filter">
-          Filtrar por estado
-        </label>
-        <select
-          id="job_status_filter"
+      <div className="flex max-w-xs flex-col gap-2">
+        <Label htmlFor="job_status_filter">Filtrar por status</Label>
+        <Select
           value={status}
-          onChange={(e) => setStatus(e.target.value as ApiJobStatus | 'ALL')}
-          className="flex h-10 w-full max-w-55 rounded-lg border border-input bg-transparent px-3 text-sm outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring"
+          items={statusItems}
+          onValueChange={(v) => {
+            if (v == null) return
+            setStatus(v as ApiJobStatus | typeof FILTER_ALL)
+          }}
         >
-          <option value="ALL">Todas</option>
-          {JOB_STATUS_OPTIONS.map((s) => (
-            <option key={s} value={s}>
-              {jobStatusLabel(s)}
-            </option>
-          ))}
-        </select>
+          <SelectTrigger
+            id="job_status_filter"
+            size="default"
+            className="h-10 w-full min-w-0 rounded-xl"
+          >
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent alignItemWithTrigger={false}>
+            <SelectItem value={FILTER_ALL}>Todas</SelectItem>
+            {JOB_STATUS_OPTIONS.map((s) => (
+              <SelectItem key={s} value={s}>
+                {jobStatusLabel(s)}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {q.isError && (
@@ -81,7 +112,7 @@ export default function TenantJobsPage() {
         </Alert>
       )}
 
-      <div className="rounded-lg border border-border bg-card shadow-none">
+      <div className={tablePanelClass}>
         <Table>
           <TableHeader>
             <TableRow>
@@ -89,8 +120,8 @@ export default function TenantJobsPage() {
               <TableHead>Modalidade</TableHead>
               <TableHead>Localização</TableHead>
               <TableHead>Senioridade</TableHead>
-              <TableHead>Estado</TableHead>
-              <TableHead className="text-end">Acções</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead className="text-end">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -98,8 +129,20 @@ export default function TenantJobsPage() {
               <JobsLoadingRows />
             ) : rows.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="py-10 text-center text-sm text-muted-foreground">
-                  Sem vagas com este critério. Crie uma nova posição quando estiver preparado.
+                <TableCell colSpan={6} className="py-12 text-center">
+                  <div className="mx-auto flex max-w-sm flex-col items-center gap-3">
+                    <p className="text-sm text-muted-foreground">
+                      {status === FILTER_ALL
+                        ? 'Nenhuma vaga ainda. Crie a primeira posição para começar a receber candidatos.'
+                        : 'Nenhuma vaga com este status. Ajuste o filtro ou crie uma nova posição.'}
+                    </p>
+                    <Button className="min-h-10 gap-2 rounded-full" asChild>
+                      <Link href="/empresa/vagas/nova">
+                        <PlusCircle className="size-4" aria-hidden />
+                        Nova vaga
+                      </Link>
+                    </Button>
+                  </div>
                 </TableCell>
               </TableRow>
             ) : (
@@ -114,15 +157,15 @@ export default function TenantJobsPage() {
                   </TableCell>
                   <TableCell className="text-end">
                     <div className="flex flex-wrap justify-end gap-2">
-                      <Button variant="outline" size="sm" className="gap-1" asChild>
+                      <Button variant="outline" size="sm" className="gap-1 rounded-xl" asChild>
                         <Link href={`/empresa/candidaturas?jobId=${job.id}`}>
                           <Users className="size-4" aria-hidden />
                           Ver candidatos
                         </Link>
                       </Button>
-                      <Button variant="outline" size="sm" className="gap-1" asChild>
+                      <Button variant="outline" size="sm" className="gap-1 rounded-xl" asChild>
                         <Link href={`/empresa/vagas/${job.id}`}>
-                          Gerir
+                          Gerenciar
                           <ChevronRight className="size-4" aria-hidden />
                         </Link>
                       </Button>
@@ -142,7 +185,7 @@ function JobsLoadingRows() {
   return (
     <>
       {[0, 1, 2].map((i) => (
-        <TableRow key={i}>
+        <TableRow key={`jobs-skel-${i}`}>
           <TableCell>
             <Skeleton className="h-4 w-48" />
           </TableCell>

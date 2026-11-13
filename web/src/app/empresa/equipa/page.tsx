@@ -48,7 +48,7 @@ function recruiterInitials(email: string): string {
 function formatJoinedAt(iso: string): string {
   const date = new Date(iso)
   if (Number.isNaN(date.getTime())) return iso
-  return date.toLocaleDateString('pt-PT', { day: '2-digit', month: 'short', year: 'numeric' })
+  return date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })
 }
 
 export default function TeamPage() {
@@ -102,7 +102,7 @@ export default function TeamPage() {
   if (!hydrated || claims?.role !== 'TENANT_ADMIN') {
     return (
       <div className="flex flex-1 items-center justify-center p-8 text-sm text-muted-foreground">
-        A validar permissões…
+        Validando permissões…
       </div>
     )
   }
@@ -114,10 +114,10 @@ export default function TeamPage() {
     <WorkbenchPageShell className="max-w-3xl">
       <PageHead
         title="Equipe"
-        description="Veja quem já tem acesso e envie convites para novos recrutadores. O destinatário define a sua própria senha ao aceitar o convite."
+        description="Veja quem já tem acesso e envie convites para novos recrutadores. O destinatário define a própria senha ao aceitar o convite."
       />
 
-      <Card className="border-border shadow-none">
+      <Card className="rounded-2xl border-border shadow-[0_10px_30px_oklch(18%_0.008_60/0.04)]">
         <CardHeader>
           <CardTitle className="font-display">Recrutadores ativos</CardTitle>
           <CardDescription>Contas com papel `RECRUITER` no contexto desta empresa.</CardDescription>
@@ -148,7 +148,7 @@ export default function TeamPage() {
         </CardContent>
       </Card>
 
-      <Card className="border-border shadow-none">
+      <Card className="rounded-2xl border-border shadow-[0_10px_30px_oklch(18%_0.008_60/0.04)]">
         <CardHeader>
           <CardTitle className="font-display">Convidar para a equipe</CardTitle>
           <CardDescription>
